@@ -1,4 +1,8 @@
 # -*- encoding: utf-8 -*-
+import ast
+from random import random, randint
+from py3o.template.helpers import pformat_ast, Py3oConvertor
+
 __author__ = 'faide'
 
 import unittest
@@ -436,3 +440,19 @@ class TestHelpers(unittest.TestCase):
     #                  {'lines': [{'val': 9}]}]}
     #    )
     #    assert usr_insts == []
+
+    def test_convertor(self):
+
+        py_expr = """
+for i in l.list.test:
+ i.val
+for i in l:
+ i.val2
+        """
+        print(pformat_ast(ast.parse(py_expr)))
+        p = Py3oConvertor()
+
+        data = {'l': Mock(list=Mock(test=[Mock(val=randint(0, 100)) for i in range(0, 10)]) )}
+
+        print(p(py_expr, data))
+        assert False

@@ -203,18 +203,18 @@ class TestDecoder(unittest.TestCase):
 #        expected = "{'my9list': [{'val': 'val1', 'mylist': []}, {'val': 'val2', 'mylist': []}]}"
 #        assert res == expected
 #
-#    def test_jsonify_access_variable_in_nested_loop_with_attribute(self):
-#        """ Test the jsonify function
-#        """
-#        template_xml = pkg_resources.resource_filename(
-#            'py3o.template',
-#            'tests/templates/py3o_access_variable_in_nested_loop_with_attribute.odt'
-#        )
-#        t = Template(template_xml, get_secure_filename())
-#        for_lists, variables = t.get_user_instructions_mapping()
-#        data = {
-#            'my10list': [Mock(my_list=[Mock(val='val1'), Mock(val='val2')]), Mock(my_list=[Mock(val='val3')])]
-#        }
-#        res = ForList.jsonify(for_lists, variables, data)
-#        expected = "{'my10list': [{'my_list': [{'val': 'val1'}, {'val': 'val2'}]}, {'my_list': [{'val': 'val3'}]}]}"
-#        assert res == expected
+    def test_jsonify_access_variable_in_nested_loop_with_attribute(self):
+        """ Test the jsonify function
+        """
+        template_xml = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_access_parent_variable_in_nested_loop_with_attribute.odt'
+        )
+        t = Template(template_xml, get_secure_filename())
+        for_lists, variables = t.get_user_instructions_mapping()
+        #data = {
+        #    'my10list': [Mock(my_list=[Mock(val='val1'), Mock(val='val2')]), Mock(my_list=[Mock(val='val3')])]
+        #}
+        #res = ForList.jsonify(for_lists, variables, data)
+        #expected = "{'my10list': [{'my_list': [{'val': 'val1'}, {'val': 'val2'}]}, {'my_list': [{'val': 'val3'}]}]}"
+        #assert res == expected

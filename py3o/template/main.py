@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import ast
 import decimal
 import logging
 import os
@@ -18,6 +19,7 @@ from genshi.filters.transform import Transformer
 from pyjon.utils import get_secure_filename
 
 from py3o.template.decoder import Decoder, ForList
+from py3o.template.helpers import pformat_ast, Py3oConvertor
 
 log = logging.getLogger(__name__)
 
@@ -145,6 +147,18 @@ def get_list_transformer(namespaces):
     )
 
 
+def get_all_python_expression(content_tree, namespaces):
+    # Get all the python expression
+    xpath_expr = (
+        "//text:a[starts-with(@xlink:href, 'py3o://')] | "
+        "//text:user-field-get[starts-with(@text:name, 'py3o.')]"
+    )
+    return content_tree.xpath(
+        xpath_expr,
+        namespaces=namespaces
+    )
+
+
 def get_instructions(content_tree, namespaces):
     # find all links that have a py3o
     xpath_expr = "//text:a[starts-with(@xlink:href, 'py3o://')]"
@@ -231,6 +245,19 @@ class Template(object):
         # declare our own namespace
         self.namespaces['py3o'] = PY3O_URI
 
+    def get_all_user_python_expression(self):
+        """  Public method to get all python expression
+        """
+        res = []
+        for e in get_all_python_expression(self.content_trees[0],
+                                           self.namespaces):
+            childs = e.getchildren()
+            if childs:
+                res.extend([c.text for c in childs])
+            else:
+                res.append(e.text)
+        return res
+
     def get_user_instructions(self):
         """ Public method to help report engine to find all instructions
         """
@@ -244,17 +271,51 @@ class Template(object):
                 res.append(e.text)
         return res
 
+    def get_user_variables(self):
+        """a public method to help report engines to introspect
+        a template and find what data it needs and how it will be
+        used
+        returns a list of user variable names without starting 'py3o.'"""
+        # TODO: Check if some user fields are stored in other content_trees
+        return [
+            e.get('{%s}name' % e.nsmap.get('text'))[5:]
+            for e in get_user_fields(self.content_trees[0], self.namespaces)
+        ]
+
     def remove_soft_breaks(self):
         for soft_break in get_soft_breaks(
                 self.content_trees[0], self.namespaces):
             soft_break.getparent().remove(soft_break)
 
+    def _convert_py3o_to_python_ast(self, expressions):
+        python_src = ''
+        indent = 0
+
+        def pindent():
+            # Easily add indentation
+            return indent * ' '
+
+        for expression in expressions:
+            if expression.startswith('for='):
+                # For loop
+                # We construct a python for loop with the py3o one
+                python_src += pindent() + 'for ' + expression[5:-1] + ':\n'
+                indent += 1
+            elif expression == '/for':
+                # End of for loop
+                indent -= 1
+            else:
+                # Variable access
+                python_src += pindent() + expression + '\n'
+        return python_src
+
     def get_user_instructions_mapping(self):
         """ Public method to get the mapping of all
         variables defined in the template
         """
-        instructions = self.get_user_instructions()
-        user_variables = self.get_user_variables()
+        expressions = self.get_all_user_python_expression()
+        py_expr = self._convert_py3o_to_python_ast(expressions)
+
 
         # For now we just want for loops
         instructions = [i for i in instructions
@@ -410,17 +471,6 @@ class Template(object):
             log.exception(e)
             raise TemplateException("Could not move siblings for '%s'" %
                                     py3o_base)
-
-    def get_user_variables(self):
-        """a public method to help report engines to introspect
-        a template and find what data it needs and how it will be
-        used
-        returns a list of user variable names without starting 'py3o.'"""
-        # TODO: Check if some user fields are stored in other content_trees
-        return [
-            e.get('{%s}name' % e.nsmap.get('text'))[5:]
-            for e in get_user_fields(self.content_trees[0], self.namespaces)
-        ]
 
     def __prepare_userfield_decl(self):
         self.field_info = dict()
