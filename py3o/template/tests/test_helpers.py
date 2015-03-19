@@ -444,10 +444,10 @@ class TestHelpers(unittest.TestCase):
     def test_convertor(self):
 
         py_expr = """
-for i in l.list.test:
- i.val
-for i in l:
- i.val2
+for i in list1:
+ for j in i.list2:
+  i.val
+  j.val
         """
         print(pformat_ast(ast.parse(py_expr)))
         p = Py3oConvertor()

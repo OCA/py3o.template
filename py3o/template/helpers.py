@@ -1,7 +1,7 @@
 import ast
 import pprint
 from textwrap import dedent
-from .data_holder import Py3oDataHolder
+from py3o.template.data_struct import Py3oArray
 
 
 class Py3oConvertor(ast.NodeVisitor):
@@ -29,7 +29,14 @@ class Py3oConvertor(ast.NodeVisitor):
         """
         #TODO: This may not contains anything else tuple or str, but if it
         #TODO:   does, we should find a way to raise an error
-        return list(target)
+        return tuple(target)
+
+    def _get_body_context(self, targets, iterator, local_context):
+        vals = iterator()
+        new_context = local_context.copy()
+        for target, val in zip(targets, vals):
+            new_context[target] = val
+        return new_context
 
     def visit(self, node, local_context=None):
         """Call the node-class specific visit function."""
@@ -50,50 +57,37 @@ class Py3oConvertor(ast.NodeVisitor):
     def visit_For(self, node, local_context):
         """Visit a for node"""
 
-        # We must get a mapping of target -> iter on the form:
-        #   {target: iter} only if iter is a name
+        # Get the iterator that should be either one of those type:
+        #   - Py3oAttribute,
+        #   - Py3oBuiltin,
+        iterator = self.visit(node.iter, local_context)
 
+        # create a Py3oArray obj to hold our loop information
+        array = Py3oArray(iterator)
         # iter should be an iterable taken from local_context
-        iterable = self.visit(node.iter, local_context)
-        print(iterable)
 
-        # target will be a list of all newly declared variables
-        target = self._format_for_target(
+        # target will be a tuple of all newly declared variables
+        targets = self._format_for_target(
             self.visit(node.target, local_context)
         )
-        print(target)
-
-        res = {}
+        print(targets)
 
         # Iterate through each element found in the local_context
-        # for this iterable
-        for element in iterable:
-            # Update the local_context
-            local_context.update({key: element for key in target})
-
-            # Now visit the body
-            for n in node.body:
-                pass
-        return {}
+        # for this iterable and create a new context
+        body_context = self._get_body_context(
+            targets, iterable, local_context
+        )
+        print(body_context)
+        for n in node.body:
+            local_context.update(self.visit(n, body_context))
+        return local_context
 
     def visit_Name(self, node, local_context):
         """A simple name that should either be stored or loaded"""
         var = node.id
-        ctx = node.ctx
 
-        if isinstance(ctx, ast.Load):
-            # Get the value form the local_context, or raise
-            if not var in local_context:
-                raise NameError("name '%s' is not defined" % var)
-
-            return {var: local_context[var]}
-        elif isinstance(ctx, ast.Store):
-            # Return the id of the newly declarated variable
-            return var
-        else:
-            raise NotImplementedError(
-                "The ctx '%s' cannot be interpreted" % type(ctx)
-            )
+        # Return the string name
+        return var
 
     def visit_Attribute(self, node, local_context):
         """Visit an attribute and return the corresponding
@@ -124,6 +118,9 @@ class Py3oConvertor(ast.NodeVisitor):
             raise NotImplementedError(
                 "The ctx '%s' is not interpreted for Tuple" % type(ctx)
             )
+
+    def visit_Expr(self, node, local_context):
+        """Visit an expression and get its value"""
 
 
 def ast2tree(node, include_attrs=True):

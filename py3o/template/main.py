@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-import ast
 import decimal
 import logging
 import os
@@ -19,7 +18,6 @@ from genshi.filters.transform import Transformer
 from pyjon.utils import get_secure_filename
 
 from py3o.template.decoder import Decoder, ForList
-from py3o.template.helpers import pformat_ast, Py3oConvertor
 
 log = logging.getLogger(__name__)
 
@@ -308,56 +306,6 @@ class Template(object):
                 # Variable access
                 python_src += pindent() + expression + '\n'
         return python_src
-
-    def get_user_instructions_mapping(self):
-        """ Public method to get the mapping of all
-        variables defined in the template
-        """
-        expressions = self.get_all_user_python_expression()
-        py_expr = self._convert_py3o_to_python_ast(expressions)
-
-
-        # For now we just want for loops
-        instructions = [i for i in instructions
-                        if i.startswith('for') or i == '/for']
-
-        # Now we call the decoder to get variable mapping from instructions
-        d = Decoder()
-
-        res = []
-        for_insts = {}
-        tmp = res
-        # Create a hierarchie with for loops
-        for i in instructions:
-            if i == '/for':
-                tmp = tmp.parent
-            else:
-                # Decode the instruction:
-                # inst.values() -> forloop variable
-                # inst.keys() -> forloop iterable
-                var, it = d.decode_py3o_instruction(i)
-                # we keep all inst in a dict
-                for_insts[var] = it
-                # get the variable defined inside the for loop
-                for_vars = [v for v in user_variables if v.split('.')[0] == var]
-                # create a new ForList for the forloop and add it to the
-                # children or list
-                new_list = ForList(it, var)
-                if isinstance(tmp, list):
-                    # We have a root for loop
-                    res.append(new_list)
-                    tmp = res[-1]
-                    tmp.parent = res
-                else:
-                    tmp.add_child(new_list)
-                    tmp = new_list
-                # Add the attributes to our new child
-                for v in for_vars:
-                    tmp.add_attr(v)
-        # Insert global variable in a second list
-        user_vars = [v for v in user_variables
-                     if not v.split('.')[0] in for_insts.keys()]
-        return res, user_vars
 
     @staticmethod
     def handle_instructions(content_trees, namespaces):
