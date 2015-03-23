@@ -444,15 +444,11 @@ class TestHelpers(unittest.TestCase):
     def test_convertor(self):
 
         py_expr = """
-for i in list1:
- for j in i.list2:
-  i.val
-  j.val
+for i in var.list1:
+ i.toto.test
         """
         print(pformat_ast(ast.parse(py_expr)))
         p = Py3oConvertor()
 
-        data = {'l': Mock(list=Mock(test=[Mock(val=randint(0, 100)) for i in range(0, 10)]) )}
-
-        print(p(py_expr, data))
+        print(p(py_expr))
         assert False

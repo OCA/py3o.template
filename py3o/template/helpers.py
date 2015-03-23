@@ -1,11 +1,15 @@
 import ast
 import pprint
 from textwrap import dedent
-from py3o.template.data_struct import Py3oArray
+from py3o.template.data_struct import Py3oModule, Py3oName, Py3oArray
+
+
+# This is used as global context key in the convertor
+PY3O_MODULE_KEY = '__py3o_module__'
 
 
 class Py3oConvertor(ast.NodeVisitor):
-    def __call__(self, source, user_data):
+    def __call__(self, source):
         """
         When called, this class will unfold the ast, and for each node,
           try to represent its content in a JSON format.
@@ -21,7 +25,7 @@ class Py3oConvertor(ast.NodeVisitor):
         self._source = source
         self._ast = ast.parse(source)
 
-        return self.visit(self._ast, user_data)
+        return self.visit(self._ast, {})
 
     @staticmethod
     def _format_for_target(target):
@@ -30,13 +34,6 @@ class Py3oConvertor(ast.NodeVisitor):
         #TODO: This may not contains anything else tuple or str, but if it
         #TODO:   does, we should find a way to raise an error
         return tuple(target)
-
-    def _get_body_context(self, targets, iterator, local_context):
-        vals = iterator()
-        new_context = local_context.copy()
-        for target, val in zip(targets, vals):
-            new_context[target] = val
-        return new_context
 
     def visit(self, node, local_context=None):
         """Call the node-class specific visit function."""
@@ -47,66 +44,72 @@ class Py3oConvertor(ast.NodeVisitor):
         return visitor(node, local_context)
 
     def visit_Module(self, node, local_context):
-        data_struct = {}
+        module = Py3oModule()
+        local_context[PY3O_MODULE_KEY] = module
+
         for n in node.body:
-            data_struct.update(
-                self.visit(n, local_context)
-            )
-        return data_struct
+            self.visit(n, local_context)
+
+        return module
+
+    def bind_target(self, iterable, target, local_context):
+        """ This function fill the local_context according to the iterable and
+         target and return a body_context to pass through the for body
+        :return: dict
+        """
+        if isinstance(target, list):
+            raise NotImplementedError("Can't assign tuple in for loops")
+
+        body_context = local_context.copy()
+
+        if isinstance(iterable, str):
+            if iterable in local_context:
+                body_context[target] = body_context[iterable]
+            else:
+                body_context[target] = Py3oArray()
+                body_context[PY3O_MODULE_KEY].update(
+                    {iterable: body_context[target]}
+                )
+
+        if isinstance(iterable, list):
+            self.list_to_py3o_name(iterable, local_context)
+
+        return body_context
 
     def visit_For(self, node, local_context):
         """Visit a for node"""
 
-        # Get the iterator that should be either one of those type:
-        #   - Py3oAttribute,
-        #   - Py3oBuiltin,
-        iterator = self.visit(node.iter, local_context)
-
-        # create a Py3oArray obj to hold our loop information
-        array = Py3oArray(iterator)
-        # iter should be an iterable taken from local_context
-
-        # target will be a tuple of all newly declared variables
-        targets = self._format_for_target(
-            self.visit(node.target, local_context)
+        print(local_context)
+        # Bind iterable and target
+        body_context = self.bind_target(
+            self.visit(node.iter, local_context),
+            self.visit(node.target, local_context),
+            local_context,
         )
-        print(targets)
+        print(local_context)
 
-        # Iterate through each element found in the local_context
-        # for this iterable and create a new context
-        body_context = self._get_body_context(
-            targets, iterable, local_context
-        )
         print(body_context)
         for n in node.body:
-            local_context.update(self.visit(n, body_context))
-        return local_context
+            self.visit(n, body_context)
 
     def visit_Name(self, node, local_context):
-        """A simple name that should either be stored or loaded"""
-        var = node.id
-
-        # Return the string name
-        return var
+        return node.id
 
     def visit_Attribute(self, node, local_context):
-        """Visit an attribute and return the corresponding
-         tuple (attr1, attr2, ...)
+        """ Visit our children and return a tuple
+         representing the path of attribute
+        :return: tuple
         """
-        ctx = node.ctx
-        if isinstance(ctx, ast.Load):
-            value = self.visit(node.value, local_context)
-            if isinstance(value, dict):
-                return list(value.keys())[0], node.attr
-            elif isinstance(value, tuple):
-                return value + (node.attr,)
-        else:
-            raise NotImplementedError(
-                "The ctx '%s' is not interpreted for Tuple" % type(ctx)
-            )
+        value = self.visit(node.value, local_context)
+        if isinstance(value, str):
+            # Create a tuple with the two values
+            return [value, node.attr]
+        if isinstance(value, list):
+            # Add the string to the tuple
+            value.append(node.attr)
+            return value
 
     def visit_Tuple(self, node, local_context):
-        """Visit a Tuple"""
         ctx = node.ctx
         if isinstance(ctx, ast.Store):
             res = []
@@ -119,8 +122,25 @@ class Py3oConvertor(ast.NodeVisitor):
                 "The ctx '%s' is not interpreted for Tuple" % type(ctx)
             )
 
+    def list_to_py3o_name(self, value, local_context):
+        """ Check if the first attr is in the context, if so,
+         add its attrs to it, or else, add all attrs to the module key
+        """
+        if value[0] in local_context:
+            res = local_context[value[0]]
+            value = value[1:]
+        else:
+            res = local_context[PY3O_MODULE_KEY]
+        tmp = res
+        for elem in value:
+            tmp[elem] = Py3oName()
+            tmp = tmp[elem]
+
     def visit_Expr(self, node, local_context):
-        """Visit an expression and get its value"""
+        value = self.visit(node.value, local_context)
+        if isinstance(value, list):
+            # Convert the list into Py3oName dicts
+            self.list_to_py3o_name(value, local_context)
 
 
 def ast2tree(node, include_attrs=True):
