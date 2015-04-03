@@ -1,7 +1,9 @@
 import ast
 import pprint
 from textwrap import dedent
-from py3o.template.data_struct import Py3oModule, Py3oName, Py3oArray
+import collections
+from py3o.template.data_struct import Py3oModule, Py3oName, Py3oArray, \
+    Py3oObject
 
 
 # This is used as global context key in the convertor
@@ -52,43 +54,79 @@ class Py3oConvertor(ast.NodeVisitor):
 
         return module
 
-    def bind_target(self, iterable, target, local_context):
-        """ This function fill the local_context according to the iterable and
-         target and return a body_context to pass through the for body
+    def set_last_item(self, py3o_obj, inst):
+        # Return the last dictionary item of the chain
+        tmp = py3o_obj
+        keys = tmp.keys()
+        next_keys = keys
+        while keys:
+            next_tmp = tmp[next(iter(keys))]
+            next_keys = next_tmp.keys()
+            if not next_keys:
+                break
+            tmp, keys = next_tmp, next_keys
+        tmp[next(iter(keys))] = inst
+        return tmp
+
+    def update(self, d, n):
+        """
+        Update recursively the dict d with the dict n
+        """
+        for k, v in n.items():
+            if isinstance(v, Py3oObject):
+                r = self.update(d.get(k, Py3oName()), v)
+                d[k] = r
+            else:
+                d[k] = n[k]
+        return d
+
+    def bind_target(self, iterable, target, context):
+        """ This function fill the context according to the iterable and
+         target and return a new_context to pass through the for body
         :return: dict
         """
         if isinstance(target, list):
             raise NotImplementedError("Can't assign tuple in for loops")
 
-        body_context = local_context.copy()
+        new_context = context.copy()
 
         if isinstance(iterable, str):
-            if iterable in local_context:
-                body_context[target] = body_context[iterable]
+            if iterable in context:
+                new_context[target] = new_context[iterable]
             else:
-                body_context[target] = Py3oArray()
-                body_context[PY3O_MODULE_KEY].update(
-                    {iterable: body_context[target]}
+                new_context[target] = Py3oArray()
+                new_context[PY3O_MODULE_KEY].update(
+                    {iterable: new_context[target]}
                 )
 
         if isinstance(iterable, list):
-            self.list_to_py3o_name(iterable, local_context)
+            # Convert the list into a context
+            iter_context = self.list_to_py3o_name(iterable, context)
+            # Now replace the last item by a Py3oArray()
+            new_array = Py3oArray()
+            self.set_last_item(iter_context, new_array)
+            key = next(iter(iter_context))
+            new_context[target] = new_array
+            if key in context:
+                # Update the related context with the new attribute access
+                #self.update(context[key], iter_context[key])
+                #new_context[target] = context[key]
+                pass
+            else:
+                raise Exception
 
-        return body_context
+        return new_context
 
     def visit_For(self, node, local_context):
         """Visit a for node"""
 
-        print(local_context)
         # Bind iterable and target
         body_context = self.bind_target(
             self.visit(node.iter, local_context),
             self.visit(node.target, local_context),
             local_context,
         )
-        print(local_context)
 
-        print(body_context)
         for n in node.body:
             self.visit(n, body_context)
 
@@ -123,24 +161,30 @@ class Py3oConvertor(ast.NodeVisitor):
             )
 
     def list_to_py3o_name(self, value, local_context):
-        """ Check if the first attr is in the context, if so,
-         add its attrs to it, or else, add all attrs to the module key
+        """ Return a context corresponding to the list
         """
-        if value[0] in local_context:
-            res = local_context[value[0]]
-            value = value[1:]
-        else:
-            res = local_context[PY3O_MODULE_KEY]
+        res = Py3oName()
         tmp = res
         for elem in value:
             tmp[elem] = Py3oName()
             tmp = tmp[elem]
+        return res
 
     def visit_Expr(self, node, local_context):
         value = self.visit(node.value, local_context)
         if isinstance(value, list):
-            # Convert the list into Py3oName dicts
-            self.list_to_py3o_name(value, local_context)
+            # An attr access, convert the list into Py3oName dicts
+            #  and add it to the local_context
+            expr = self.list_to_py3o_name(value, local_context)
+            key = next(iter(expr.keys()))
+            if key in local_context:
+                local_context[key].update(expr[key])
+            else:
+                local_context[PY3O_MODULE_KEY].update(expr)
+        if isinstance(value, str):
+            # Tell the object that this is a direct access
+            if value in local_context:
+                local_context[value].direct_access = True
 
 
 def ast2tree(node, include_attrs=True):

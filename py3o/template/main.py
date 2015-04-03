@@ -285,7 +285,7 @@ class Template(object):
                 self.content_trees[0], self.namespaces):
             soft_break.getparent().remove(soft_break)
 
-    def _convert_py3o_to_python_ast(self, expressions):
+    def convert_py3o_to_python_ast(self, expressions):
         python_src = ''
         indent = 0
 

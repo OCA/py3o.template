@@ -223,40 +223,6 @@ class TestHelpers(unittest.TestCase):
         ]
         assert set(user_instructions) == set(expected_vars)
 
-    def test_get_user_instruction_mapping(self):
-        """test the jsonified result of get_user_instruction_mapping"""
-        source_odt_filename = pkg_resources.resource_filename(
-            'py3o.template',
-            'tests/templates/py3o_example_template.odt'
-        )
-        outfilename = get_secure_filename()
-
-        template = Template(source_odt_filename, outfilename)
-        for_lists, vars = template.get_user_instructions_mapping()
-        expected_res = {
-            'document': {
-                'total': 0
-            },
-            'items': [{
-                'val1': 1,
-                'val2': 2,
-                'val3': 3,
-                'Amount': 4,
-                'Currency': 5,
-                'InvoiceRef': 6,
-            }]
-        }
-        data = {
-            'document': Mock(total=0),
-            'items': [
-                Mock(
-                    val1=1, val2=2, val3=3, Amount=4, Currency=5, InvoiceRef=6
-                )
-            ]
-        }
-        res = ForList.to_dict(for_lists, vars, data)
-        assert res == expected_res
-
     def test_detect_boundary_false(self):
         """boundary detection should say no!!"""
 
@@ -427,28 +393,127 @@ class TestHelpers(unittest.TestCase):
         soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
         assert len(soft_breaks) == 0
 
-    # def test_nested_list(self):
-    #    template_xml = pkg_resources.resource_filename(
-    #        'py3o.template',
-    #        'tests/templates/py3o_nested_list_template.odt'
-    #    )
-    #    t = Template(template_xml, get_secure_filename())
-    #    for_list = t.get_user_instructions_mapping()[0]
-    #    print(for_list)
-    #    json_str = ForList.jsonify(for_list, [], {
-    #        'items': [{'lines': [{'val': 5}, {'val': 4}]},
-    #                  {'lines': [{'val': 9}]}]}
-    #    )
-    #    assert usr_insts == []
+    def __load_and_convert_template(self, path):
+        template_xml = pkg_resources.resource_filename(
+            'py3o.template',
+            path
+        )
+        t = Template(template_xml, get_secure_filename())
+        expressions = t.get_all_user_python_expression()
+        py_expr = t.convert_py3o_to_python_ast(expressions)
+        return py_expr
 
-    def test_convertor(self):
-
-        py_expr = """
-for i in var.list1:
- i.toto.test
-        """
-        print(pformat_ast(ast.parse(py_expr)))
+    def test_access_global_variable_inside_loop(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_access_global_variable_inside_loop.odt'
+        )
         p = Py3oConvertor()
+        res = p(py_expr)
 
-        print(p(py_expr))
-        assert False
+        user_data = {
+            'global_var': Mock(val=1),
+            'my4list': [0, 1, 2, 3],
+        }
+        json = res.jsonify(user_data)
+        assert json == {'global_var': {'val': 1}}
+
+    def test_access_in_loop_variable(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_access_in_loop_variable.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'my2list': [0, 1, 2, 3, 4]
+        }
+        json = res.jsonify(user_data)
+        assert json == {'my2list': [0, 1, 2, 3, 4]}
+
+    def test_access_in_loop_variable_with_attribute(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_access_in_loop_variable_with_attribute.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'my3list': [
+                Mock(val=0),
+                Mock(val=1),
+                Mock(val=2),
+            ]
+        }
+        json = res.jsonify(user_data)
+        assert json == {'my3list': [
+            {'val': 0},
+            {'val': 1},
+            {'val': 2},
+        ]}
+
+    def test_access_parent_variable_in_nested_loop(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_access_parent_variable_in_nested_loop.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'my9list': [Mock(val=10), Mock(val=11)]
+        }
+        json = res.jsonify(user_data)
+        assert json == {'my9list': [
+            {'val': 10},
+            {'val': 11},
+        ]}
+
+    def test_access_parent_variable_in_nested_loop_with_attribute(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/'
+            'py3o_access_parent_variable_in_nested_loop_with_attribute.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'my10list': [
+                Mock(my_list=[
+                    Mock(val=10),
+                    Mock(val=11),
+                ]),
+                Mock(my_list=[
+                    Mock(val=20),
+                    Mock(val=21),
+                    Mock(val=22),
+                ]),
+            ]
+        }
+        json = res.jsonify(user_data)
+        assert json == {'my9list': [
+            {'my_list': [
+                {'val': 10},
+                {'val': 11},
+            ]},
+            {'my_list': [
+                {'val': 20},
+                {'val': 21},
+                {'val': 22},
+            ]},
+        ]}
+
+    def test_access_variable_in_nested_loop(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/'
+            'py3o_access_variable_in_nested_loop.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'my8list': [
+                [10, 11, 12],
+                [20, 21, 22, 23],
+            ]
+        }
+        json = res.jsonify(user_data)
+        assert json == {'my8list': [[10, 11, 12], [20, 21, 22, 23]]}
