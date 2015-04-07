@@ -1,7 +1,6 @@
 import ast
 import pprint
 from textwrap import dedent
-import collections
 from py3o.template.data_struct import Py3oModule, Py3oName, Py3oArray, \
     Py3oObject
 
@@ -29,18 +28,8 @@ class Py3oConvertor(ast.NodeVisitor):
 
         return self.visit(self._ast, {})
 
-    @staticmethod
-    def _format_for_target(target):
-        """Return an uniform structure of variable
-        """
-        #TODO: This may not contains anything else tuple or str, but if it
-        #TODO:   does, we should find a way to raise an error
-        return tuple(target)
-
     def visit(self, node, local_context=None):
         """Call the node-class specific visit function."""
-        if local_context is None:
-            local_context = {}
         method = 'visit_' + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node, local_context)
@@ -58,7 +47,6 @@ class Py3oConvertor(ast.NodeVisitor):
         # Return the last dictionary item of the chain
         tmp = py3o_obj
         keys = tmp.keys()
-        next_keys = keys
         while keys:
             next_tmp = tmp[next(iter(keys))]
             next_keys = next_tmp.keys()
@@ -72,12 +60,13 @@ class Py3oConvertor(ast.NodeVisitor):
         """
         Update recursively the dict d with the dict n
         """
-        for k, v in n.items():
-            if isinstance(v, Py3oObject):
-                r = self.update(d.get(k, Py3oName()), v)
-                d[k] = r
-            else:
-                d[k] = n[k]
+        for key, value in n.items():
+            if isinstance(value, Py3oObject):
+                if key in d:
+                    r = self.update(d[key], value)
+                else:
+                    r = value
+                d[key] = r
         return d
 
     def bind_target(self, iterable, target, context):
@@ -85,9 +74,6 @@ class Py3oConvertor(ast.NodeVisitor):
          target and return a new_context to pass through the for body
         :return: dict
         """
-        if isinstance(target, list):
-            raise NotImplementedError("Can't assign tuple in for loops")
-
         new_context = context.copy()
 
         if isinstance(iterable, str):
@@ -106,19 +92,23 @@ class Py3oConvertor(ast.NodeVisitor):
             new_array = Py3oArray()
             self.set_last_item(iter_context, new_array)
             key = next(iter(iter_context))
-            new_context[target] = new_array
             if key in context:
                 # Update the related context with the new attribute access
-                #self.update(context[key], iter_context[key])
-                #new_context[target] = context[key]
-                pass
+                self.update(new_context[key], iter_context[key])
+                new_context[target] = new_array
             else:
-                raise Exception
+                self.update(
+                    new_context[PY3O_MODULE_KEY],
+                    {key: iter_context[key]}
+                )
+                new_context[target] = new_array
 
         return new_context
 
     def visit_For(self, node, local_context):
-        """Visit a for node"""
+        """Update the context so our chidren have access
+         to the newly declared variable.
+        """
 
         # Bind iterable and target
         body_context = self.bind_target(
@@ -147,18 +137,22 @@ class Py3oConvertor(ast.NodeVisitor):
             value.append(node.attr)
             return value
 
-    def visit_Tuple(self, node, local_context):
-        ctx = node.ctx
-        if isinstance(ctx, ast.Store):
-            res = []
-            # Browse each elements of Tuple and visit them
-            for n in node.elts:
-                res.append(self.visit(n, local_context))
-            return res
-        else:
-            raise NotImplementedError(
-                "The ctx '%s' is not interpreted for Tuple" % type(ctx)
-            )
+    # TODO: Manage Tuple in for loop (for i, j in enumerate(list))
+    # def visit_Tuple(self, node, local_context):
+    #     raise NotImplementedError(
+    #         "The tuple interpretation is not already done."
+    #     )
+    #     ctx = node.ctx
+    #     if isinstance(ctx, ast.Store):
+    #         res = []
+    #         # Browse each elements of Tuple and visit them
+    #         for n in node.elts:
+    #             res.append(self.visit(n, local_context))
+    #         return res
+    #     else:
+    #         raise NotImplementedError(
+    #             "The ctx '%s' is not interpreted for Tuple" % type(ctx)
+    #         )
 
     def list_to_py3o_name(self, value, local_context):
         """ Return a context corresponding to the list
@@ -178,16 +172,16 @@ class Py3oConvertor(ast.NodeVisitor):
             expr = self.list_to_py3o_name(value, local_context)
             key = next(iter(expr.keys()))
             if key in local_context:
-                local_context[key].update(expr[key])
+                self.update(local_context[key], expr[key])
             else:
                 local_context[PY3O_MODULE_KEY].update(expr)
-        if isinstance(value, str):
+        elif isinstance(value, str):
             # Tell the object that this is a direct access
             if value in local_context:
                 local_context[value].direct_access = True
 
 
-def ast2tree(node, include_attrs=True):
+def ast2tree(node, include_attrs=True):  # pragma: no cover
     def _transform(node):
         if isinstance(node, ast.AST):
             fields = ((a, _transform(b))
@@ -208,5 +202,5 @@ def ast2tree(node, include_attrs=True):
     return _transform(node)
 
 
-def pformat_ast(node, include_attrs=False, **kws):
+def pformat_ast(node, include_attrs=False, **kws):  # pragma: no cover
     return pprint.pformat(ast2tree(node, include_attrs), **kws)

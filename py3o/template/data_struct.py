@@ -5,7 +5,7 @@ class Py3oDataError(Exception):
 class Py3oObject(dict):
     """ Mother class to be inherited.
     """
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         res = super(Py3oObject, self).__repr__()
         return self.__class__.__name__ + "(" + res + ")"
 
@@ -81,6 +81,7 @@ class Py3oName(Py3oObject):
         if not self:
             return data
         res = {}
+
         for key, value in self.items():
             # Spread only the appropriate data to its children
             res[key] = value.jsonify(getattr(data, key))

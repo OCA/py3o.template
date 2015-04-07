@@ -1,9 +1,6 @@
 # -*- encoding: utf-8 -*-
-import ast
-from random import random, randint
-from py3o.template.helpers import pformat_ast, Py3oConvertor
-
-__author__ = 'faide'
+from py3o.template.data_struct import Py3oDataError
+from py3o.template.helpers import Py3oConvertor
 
 import unittest
 import os
@@ -16,7 +13,6 @@ from pyjon.utils import get_secure_filename
 
 from py3o.template.main import move_siblings, detect_keep_boundary, Template, \
     get_soft_breaks
-from py3o.template.decoder import ForList
 
 if six.PY3:
     # noinspection PyUnresolvedReferences
@@ -430,6 +426,38 @@ class TestHelpers(unittest.TestCase):
         json = res.jsonify(user_data)
         assert json == {'my2list': [0, 1, 2, 3, 4]}
 
+    def test_iterable_with_global_attribute(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_iterable_with_global_attribute.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'foo': Mock(my2list=[0, 1, 2, 3, 4])
+        }
+        json = res.jsonify(user_data)
+        assert json == {'foo': {'my2list': [0, 1, 2, 3, 4]}}
+
+    def test_two_for_list_on_same_attribute(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_two_for_list_on_same_attribute.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'foo': Mock(
+                my2list=[0, 1, 2, 3, 4],
+                my3list=[5, 6, 7, 8],
+            )
+        }
+        json = res.jsonify(user_data)
+        assert json == {'foo': {
+            'my2list': [0, 1, 2, 3, 4],
+            'my3list': [5, 6, 7, 8],
+        }}
+
     def test_access_in_loop_variable_with_attribute(self):
         py_expr = self.__load_and_convert_template(
             'tests/templates/py3o_access_in_loop_variable_with_attribute.odt'
@@ -449,6 +477,28 @@ class TestHelpers(unittest.TestCase):
             {'val': 0},
             {'val': 1},
             {'val': 2},
+        ]}
+
+    def test_access_in_loop_variable_with_multiple_attribute(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/'
+            'py3o_access_in_loop_variable_with_multiple_attribute.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'my3list': [
+                Mock(foo=Mock(val=0)),
+                Mock(foo=Mock(val=1)),
+                Mock(foo=Mock(val=2)),
+            ]
+        }
+        json = res.jsonify(user_data)
+        assert json == {'my3list': [
+            {'foo': {'val': 0}},
+            {'foo': {'val': 1}},
+            {'foo': {'val': 2}},
         ]}
 
     def test_access_parent_variable_in_nested_loop(self):
@@ -489,7 +539,7 @@ class TestHelpers(unittest.TestCase):
             ]
         }
         json = res.jsonify(user_data)
-        assert json == {'my9list': [
+        assert json == {'my10list': [
             {'my_list': [
                 {'val': 10},
                 {'val': 11},
@@ -517,3 +567,14 @@ class TestHelpers(unittest.TestCase):
         }
         json = res.jsonify(user_data)
         assert json == {'my8list': [[10, 11, 12], [20, 21, 22, 23]]}
+
+    def test_bad_user_data(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_access_global_variable_inside_loop.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {}
+        with self.assertRaises(Py3oDataError):
+            res.jsonify(user_data)

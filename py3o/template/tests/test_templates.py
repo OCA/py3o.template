@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-__author__ = 'faide'
-
 import os
 import unittest
 import zipfile
@@ -221,10 +219,11 @@ class TestTemplate(unittest.TestCase):
             expr,
             namespaces=t2.namespaces
         )
-        assert len(paragraphs) == 1, "Only one paragraph should have been found"
+        assert len(paragraphs) == 1, (
+            "Only one paragraph should have been found"
+        )
         p = paragraphs[0]
         result_text = p.text
-        print(result_text)
         assert result_text == "Invoice #1234 for a total of 12345,35 EUR"
 
     def test_ignore_undefined_variables_logo(self):

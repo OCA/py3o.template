@@ -17,7 +17,6 @@ from genshi.filters.transform import Transformer
 
 from pyjon.utils import get_secure_filename
 
-from py3o.template.decoder import Decoder, ForList
 
 log = logging.getLogger(__name__)
 
@@ -501,7 +500,9 @@ class Template(object):
                                 break
 
                             if value_attr in parent_node.attrib:
-                                parent_node.attrib[value_attr] = "${%s}" % value
+                                parent_node.attrib[value_attr] = (
+                                    "${%s}" % value
+                                )
                                 break
 
                             rec += 1
