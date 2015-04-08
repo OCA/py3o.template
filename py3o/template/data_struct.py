@@ -1,3 +1,8 @@
+"""This file contains all the data structure used by Py3oConvertor
+See the docstring of Py3oConvertor.__call__() for further information
+"""
+
+
 class Py3oDataError(Exception):
     pass
 
@@ -14,8 +19,6 @@ class Py3oModule(Py3oObject):
     def jsonify(self, data):
         """ This function will render the datastruct according
          to the user's data
-        :param data: User data to use for jsonification
-        :return: dict
         """
         res = {}
         for key, value in self.items():
@@ -44,7 +47,6 @@ class Py3oArray(Py3oObject):
     def jsonify(self, data):
         """ This function will render the datastruct according
         to the user's data
-        :return: a list of values or a list of Py3oObject
         """
         if self.direct_access:
             return data
@@ -75,8 +77,6 @@ class Py3oName(Py3oObject):
     def jsonify(self, data):
         """ This function will render the datastruct according
         to the user's data
-        :param data: the value to apply on the instance
-        :return:
         """
         if not self:
             return data
