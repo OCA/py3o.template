@@ -8,8 +8,11 @@ class Py3oDataError(Exception):
 
 
 class Py3oObject(dict):
-    """ Mother class to be inherited.
+    """ Base class to be inherited.
     """
+    def jsonify(self, data):  # pragma: no cover
+        raise NotImplementedError("This function should be overriden")
+
     def __repr__(self):  # pragma: no cover
         res = super(Py3oObject, self).__repr__()
         return self.__class__.__name__ + "(" + res + ")"
