@@ -1,8 +1,12 @@
 import ast
 import pprint
 from textwrap import dedent
-from py3o.template.data_struct import Py3oModule, Py3oName, Py3oArray, \
+from py3o.template.data_struct import (
+    Py3oModule,
+    Py3oName,
+    Py3oArray,
     Py3oObject
+)
 
 
 # This is used as global context key in the convertor
@@ -13,38 +17,63 @@ class Py3oConvertor(ast.NodeVisitor):
     def __call__(self, source):
         """
         When called, this class will unfold the ast, and for each node,
-          try to represent its content in a JSON format.
-        A local_context is created at the beginning, initialized
-          with the user_data, and is supposed to hold the defined variables
-          and their values (taken from the user_data dict) in the form:
-            {'var': value}
-        You can also insert function in the local_context so they will be kwown
+          try to represent its content in a simpler tree format.
+
+        A local_context is created at the beginning, and is supposed to hold
+         the defined variables in the form.
+        When we find an Expression (visit_Expr), we search the context to find
+         the related variable, and tell it that we have accessed it.
+        The context is then returned to the user and can be jsonified.
+
+        The context can be considered as an instance of Py3oObject,
+         containing other instances of Py3oObject, and so on.
+        All Py3oObject classes inherit from dict, so the hierarchy is
+         equivalent to a dict of dict, with specific functions.
+        The main node is always a Py3oModule instance.
+        For loops are represented as Py3oArray instances and can contain both
+         an array of python base types (int, str, float..)
+          and an array of Py3oObjects
+        Simple attributes call are represented as Py3oName instances.
+
+        Example of conversion:
+
+          Python source:
+
+          for i in mylist:
+            i.foo
+            for j in i.otherlist:
+              i.bar.num
+              j.egg
+
+          Conversion:
+
+          Py3oModule({
+              'mylist': Py3oArray({
+                  'foo': Py3oName({}),
+                  'otherlist': Py3oArray({
+                      'egg': Py3oName({}),
+                  }),
+                  'bar': Py3oName({
+                      'num': Py3oName({}),
+                  }),
+              }),
+          })
         """
 
-        # Parse the source code, and call the recursive 'visit' function
-        source = dedent(source)
-        self._source = source
-        self._ast = ast.parse(source)
+        # Dedent the source before parsing it
+        dedented_source = dedent(source)
+        self._source = dedented_source
+        self._ast = ast.parse(dedented_source)
 
+        # Call the recursive visit function
         return self.visit(self._ast, {})
 
-    def visit(self, node, local_context=None):
-        """Call the node-class specific visit function."""
-        method = 'visit_' + node.__class__.__name__
-        visitor = getattr(self, method, self.generic_visit)
-        return visitor(node, local_context)
-
-    def visit_Module(self, node, local_context):
-        module = Py3oModule()
-        local_context[PY3O_MODULE_KEY] = module
-
-        for n in node.body:
-            self.visit(n, local_context)
-
-        return module
-
-    def set_last_item(self, py3o_obj, inst):
-        # Return the last dictionary item of the chain
+    @staticmethod
+    def set_last_item(py3o_obj, inst):
+        """Helper function that take a Py3oObject and set the first leaf found
+          with inst.
+        This should not be called with a leaf directly.
+        """
         tmp = py3o_obj
         keys = tmp.keys()
         while keys:
@@ -54,11 +83,13 @@ class Py3oConvertor(ast.NodeVisitor):
                 break
             tmp, keys = next_tmp, next_keys
         tmp[next(iter(keys))] = inst
-        return tmp
 
     def update(self, d, n):
-        """
-        Update recursively the dict d with the dict n
+        """Update recursively the Py3oObject d with the Py3oObject n.
+        Example:
+         d =   {'a': 0, 'b': {'c': 1}}
+         n =   {'b': {'d': 2}}
+         res = {'a': 0, 'b': {'c': 1, 'd': 2}}
         """
         for key, value in n.items():
             if isinstance(value, Py3oObject):
@@ -69,11 +100,36 @@ class Py3oConvertor(ast.NodeVisitor):
                 d[key] = r
         return d
 
-    def bind_target(self, iterable, target, context):
-        """ This function fill the context according to the iterable and
-         target and return a new_context to pass through the for body
-        :return: dict
+    @staticmethod
+    def list_to_py3o_name(value):
+        """Return a Py3oObject corresponding to the list
         """
+        res = Py3oName()
+        tmp = res
+        for elem in value:
+            tmp[elem] = Py3oName()
+            tmp = tmp[elem]
+        return res
+
+    def bind_target(self, iterable, target, context):
+        """Helper function to the For node.
+        This function fill the context according to the iterable and
+         target and return a new_context to pass through the for body
+        The new context should contain the for loop declared variable
+         as main key so our children can update their content without knowing
+         where they come from.
+        Example:
+          python_code = 'for i in list'
+          context = {
+              'i': Py3oArray({}),
+              '__py3o_module__': Py3oModule({'list': Py3oArray({})}),
+          }
+        In the above example, the two Py3oArray are the same instance.
+        So if we later modify the context['i'] Py3oArray,
+         we also modify the context['__py3o_module__]['list'] one.
+        """
+        # TODO: Implement some builtin decoding
+
         new_context = context.copy()
 
         if isinstance(iterable, str):
@@ -87,7 +143,7 @@ class Py3oConvertor(ast.NodeVisitor):
 
         if isinstance(iterable, list):
             # Convert the list into a context
-            iter_context = self.list_to_py3o_name(iterable, context)
+            iter_context = self.list_to_py3o_name(iterable)
             # Now replace the last item by a Py3oArray()
             new_array = Py3oArray()
             self.set_last_item(iter_context, new_array)
@@ -105,6 +161,30 @@ class Py3oConvertor(ast.NodeVisitor):
 
         return new_context
 
+    def visit(self, node, local_context=None):
+        """Call the node-class specific visit function,
+         and propagate the context
+        """
+        method = 'visit_' + node.__class__.__name__
+        visitor = getattr(self, method, self.generic_visit)
+        return visitor(node, local_context)
+
+    def visit_Module(self, node, local_context):
+        """The main node, should be alone.
+        Here we initialize the context and loop for all our children
+        """
+        module = Py3oModule()
+
+        # Initialize the context with a specific key name to avoid duplicates
+        # This key name should not be used as a variable name or
+        #  unexpected behaviours will occur
+        local_context[PY3O_MODULE_KEY] = module
+
+        for n in node.body:
+            self.visit(n, local_context)
+
+        return module
+
     def visit_For(self, node, local_context):
         """Update the context so our chidren have access
          to the newly declared variable.
@@ -121,12 +201,14 @@ class Py3oConvertor(ast.NodeVisitor):
             self.visit(n, body_context)
 
     def visit_Name(self, node, local_context):
+        """Simply return the name of the variable"""
         return node.id
 
     def visit_Attribute(self, node, local_context):
         """ Visit our children and return a tuple
          representing the path of attribute
-        :return: tuple
+        Example:
+          i.egg.foo -> ['i', 'egg', 'foo']
         """
         value = self.visit(node.value, local_context)
         if isinstance(value, str):
@@ -139,48 +221,32 @@ class Py3oConvertor(ast.NodeVisitor):
 
     # TODO: Manage Tuple in for loop (for i, j in enumerate(list))
     # def visit_Tuple(self, node, local_context):
-    #     raise NotImplementedError(
-    #         "The tuple interpretation is not already done."
-    #     )
-    #     ctx = node.ctx
-    #     if isinstance(ctx, ast.Store):
-    #         res = []
-    #         # Browse each elements of Tuple and visit them
-    #         for n in node.elts:
-    #             res.append(self.visit(n, local_context))
-    #         return res
-    #     else:
-    #         raise NotImplementedError(
-    #             "The ctx '%s' is not interpreted for Tuple" % type(ctx)
-    #         )
-
-    def list_to_py3o_name(self, value, local_context):
-        """ Return a context corresponding to the list
-        """
-        res = Py3oName()
-        tmp = res
-        for elem in value:
-            tmp[elem] = Py3oName()
-            tmp = tmp[elem]
-        return res
+    #     pass
 
     def visit_Expr(self, node, local_context):
+        """An Expr is the way to express the will of printing a variable
+         in a Py3oTemplate. So here we must update the context to map all
+         attribute access.
+        We only handle attribute access and simple name (i.foo or i)
+        """
         value = self.visit(node.value, local_context)
         if isinstance(value, list):
             # An attr access, convert the list into Py3oName dicts
             #  and add it to the local_context
-            expr = self.list_to_py3o_name(value, local_context)
+            expr = self.list_to_py3o_name(value)
             key = next(iter(expr.keys()))
             if key in local_context:
                 self.update(local_context[key], expr[key])
             else:
                 local_context[PY3O_MODULE_KEY].update(expr)
         elif isinstance(value, str):
-            # Tell the object that this is a direct access
+            # Tell the object that this is a direct access,
+            #  used mainly by Py3oArray instances
             if value in local_context:
                 local_context[value].direct_access = True
 
 
+# Debug functions used to pretty print ast trees
 def ast2tree(node, include_attrs=True):  # pragma: no cover
     def _transform(node):
         if isinstance(node, ast.AST):
