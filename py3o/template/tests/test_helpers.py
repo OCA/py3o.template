@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import json
 from py3o.template.data_struct import Py3oDataError
 from py3o.template.helpers import Py3oConvertor
 
@@ -410,8 +411,8 @@ class TestHelpers(unittest.TestCase):
             'global_var': Mock(val=1),
             'my4list': [0, 1, 2, 3],
         }
-        json = res.jsonify(user_data)
-        assert json == {'global_var': {'val': 1}}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({'global_var': {'val': 1}})
 
     def test_access_in_loop_variable(self):
         py_expr = self.__load_and_convert_template(
@@ -423,8 +424,8 @@ class TestHelpers(unittest.TestCase):
         user_data = {
             'my2list': [0, 1, 2, 3, 4]
         }
-        json = res.jsonify(user_data)
-        assert json == {'my2list': [0, 1, 2, 3, 4]}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({'my2list': [0, 1, 2, 3, 4]})
 
     def test_iterable_with_global_attribute(self):
         py_expr = self.__load_and_convert_template(
@@ -436,8 +437,8 @@ class TestHelpers(unittest.TestCase):
         user_data = {
             'foo': Mock(my2list=[0, 1, 2, 3, 4])
         }
-        json = res.jsonify(user_data)
-        assert json == {'foo': {'my2list': [0, 1, 2, 3, 4]}}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({'foo': {'my2list': [0, 1, 2, 3, 4]}})
 
     def test_two_for_list_on_same_attribute(self):
         py_expr = self.__load_and_convert_template(
@@ -452,11 +453,13 @@ class TestHelpers(unittest.TestCase):
                 my3list=[5, 6, 7, 8],
             )
         }
-        json = res.jsonify(user_data)
-        assert json == {'foo': {
-            'my2list': [0, 1, 2, 3, 4],
-            'my3list': [5, 6, 7, 8],
-        }}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({
+            'foo': {
+                'my2list': [0, 1, 2, 3, 4],
+                'my3list': [5, 6, 7, 8],
+            }
+        })
 
     def test_access_in_loop_variable_with_attribute(self):
         py_expr = self.__load_and_convert_template(
@@ -472,12 +475,14 @@ class TestHelpers(unittest.TestCase):
                 Mock(val=2),
             ]
         }
-        json = res.jsonify(user_data)
-        assert json == {'my3list': [
-            {'val': 0},
-            {'val': 1},
-            {'val': 2},
-        ]}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({
+            'my3list': [
+                {'val': 0},
+                {'val': 1},
+                {'val': 2},
+            ]
+        })
 
     def test_access_in_loop_variable_with_multiple_attribute(self):
         py_expr = self.__load_and_convert_template(
@@ -494,12 +499,14 @@ class TestHelpers(unittest.TestCase):
                 Mock(foo=Mock(val=2)),
             ]
         }
-        json = res.jsonify(user_data)
-        assert json == {'my3list': [
-            {'foo': {'val': 0}},
-            {'foo': {'val': 1}},
-            {'foo': {'val': 2}},
-        ]}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({
+            'my3list': [
+                {'foo': {'val': 0}},
+                {'foo': {'val': 1}},
+                {'foo': {'val': 2}},
+            ]
+        })
 
     def test_access_parent_variable_in_nested_loop(self):
         py_expr = self.__load_and_convert_template(
@@ -511,11 +518,13 @@ class TestHelpers(unittest.TestCase):
         user_data = {
             'my9list': [Mock(val=10), Mock(val=11)]
         }
-        json = res.jsonify(user_data)
-        assert json == {'my9list': [
-            {'val': 10},
-            {'val': 11},
-        ]}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({
+            'my9list': [
+                {'val': 10},
+                {'val': 11},
+            ]
+        })
 
     def test_access_parent_variable_in_nested_loop_with_attribute(self):
         py_expr = self.__load_and_convert_template(
@@ -538,18 +547,20 @@ class TestHelpers(unittest.TestCase):
                 ]),
             ]
         }
-        json = res.jsonify(user_data)
-        assert json == {'my10list': [
-            {'my_list': [
-                {'val': 10},
-                {'val': 11},
-            ]},
-            {'my_list': [
-                {'val': 20},
-                {'val': 21},
-                {'val': 22},
-            ]},
-        ]}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({
+            'my10list': [
+                {'my_list': [
+                    {'val': 10},
+                    {'val': 11},
+                ]},
+                {'my_list': [
+                    {'val': 20},
+                    {'val': 21},
+                    {'val': 22},
+                ]},
+            ]
+        })
 
     def test_access_variable_in_nested_loop(self):
         py_expr = self.__load_and_convert_template(
@@ -565,8 +576,13 @@ class TestHelpers(unittest.TestCase):
                 [20, 21, 22, 23],
             ]
         }
-        json = res.jsonify(user_data)
-        assert json == {'my8list': [[10, 11, 12], [20, 21, 22, 23]]}
+        json_str = res.jsonify(user_data)
+        assert json_str == json.dumps({
+            'my8list': [
+                [10, 11, 12],
+                [20, 21, 22, 23]
+            ]
+        })
 
     def test_bad_user_data(self):
         py_expr = self.__load_and_convert_template(

@@ -1,6 +1,7 @@
 """This file contains all the data structure used by Py3oConvertor
 See the docstring of Py3oConvertor.__call__() for further information
 """
+import json
 
 
 class Py3oDataError(Exception):
@@ -21,7 +22,7 @@ class Py3oObject(dict):
 class Py3oModule(Py3oObject):
     def jsonify(self, data):
         """ This function will render the datastruct according
-         to the user's data
+         to the user's data and return a json dump
         """
         res = {}
         for key, value in self.items():
@@ -32,10 +33,10 @@ class Py3oModule(Py3oObject):
                     " in your data dictionary" % key
                 )
             # Spread only the appropriate data to its children
-            val = value.jsonify(data.get(key))
+            val = value.dictify(data.get(key))
             if val:
                 res[key] = val
-        return res
+        return json.dumps(res)
 
 
 class Py3oArray(Py3oObject):
@@ -47,7 +48,7 @@ class Py3oArray(Py3oObject):
         super(Py3oArray, self).__init__()
         self.direct_access = False
 
-    def jsonify(self, data):
+    def dictify(self, data):
         """ This function will render the datastruct according
         to the user's data
         """
@@ -60,7 +61,7 @@ class Py3oArray(Py3oObject):
             tmp_dict = {}
             for key, value in self.items():
                 # Spread only the appropriate data to its children
-                tmp_dict[key] = value.jsonify(getattr(d, key))
+                tmp_dict[key] = value.dictify(getattr(d, key))
             res.append(tmp_dict)
         return res
 
@@ -77,7 +78,7 @@ class Py3oName(Py3oObject):
      (another Py3o class or a simple value)
     i.e.: i.egg -> Py3oName({'i': Py3oName({'egg': Py3oName({})})})
     """
-    def jsonify(self, data):
+    def dictify(self, data):
         """ This function will render the datastruct according
         to the user's data
         """
@@ -87,7 +88,7 @@ class Py3oName(Py3oObject):
 
         for key, value in self.items():
             # Spread only the appropriate data to its children
-            res[key] = value.jsonify(getattr(data, key))
+            res[key] = value.dictify(getattr(data, key))
         return res
 
 
