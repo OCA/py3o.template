@@ -1,7 +1,9 @@
 # -*- encoding: utf-8 -*-
+import sys
 import decimal
 import logging
 import os
+import traceback
 
 import lxml.etree
 import zipfile
@@ -95,6 +97,7 @@ def move_siblings(
     @type keep_end_boundary: bool
 
     @returns: None
+    @raises: ValueError
     """
     old_ = start.getparent()
     if keep_start_boundary:
@@ -414,8 +417,9 @@ class Template(object):
                 keep_start_boundary=keep_start_boundary,
                 keep_end_boundary=keep_end_boundary,
             )
-        except ValueError as e:
-            log.exception(e)
+        except ValueError:
+            excrepr = traceback.format_exc()
+            log.exception(excrepr)
             raise TemplateException("Could not move siblings for '%s'" %
                                     py3o_base)
 
