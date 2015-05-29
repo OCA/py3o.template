@@ -1,4 +1,4 @@
-"""This file contains all the data structure used by Py3oConvertor
+"""This file contains all the data structures used by Py3oConvertor
 See the docstring of Py3oConvertor.__call__() for further information
 """
 import json
@@ -16,7 +16,10 @@ class Py3oObject(dict):
 
     def __repr__(self):  # pragma: no cover
         res = super(Py3oObject, self).__repr__()
-        return self.__class__.__name__ + "(" + res + ")"
+        return "{}({})".format(
+            self.__class__.__name__,
+            res
+        )
 
 
 class Py3oModule(Py3oObject):

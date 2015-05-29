@@ -34,7 +34,7 @@ PY3O_IMAGE_PREFIX = 'Pictures/py3o-'
 
 class TemplateException(ValueError):
     """some client code is used to catching ValueErrors, let's keep the old
-    codebase hapy
+    codebase happy
     """
     def __init__(self, message):
         """define the __init__ to handle message... for python3's sake
@@ -272,7 +272,7 @@ class Template(object):
         """a public method to help report engines to introspect
         a template and find what data it needs and how it will be
         used
-        returns a list of user variable names without starting 'py3o.'"""
+        returns a list of user variable names without the leading 'py3o.'"""
         # TODO: Check if some user fields are stored in other content_trees
         return [
             e.get('{%s}name' % e.nsmap.get('text'))[5:]
