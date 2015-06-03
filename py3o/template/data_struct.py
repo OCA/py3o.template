@@ -1,7 +1,6 @@
 """This file contains all the data structures used by Py3oConvertor
 See the docstring of Py3oConvertor.__call__() for further information
 """
-import json
 
 
 class Py3oDataError(Exception):
@@ -11,7 +10,7 @@ class Py3oDataError(Exception):
 class Py3oObject(dict):
     """ Base class to be inherited.
     """
-    def jsonify(self, data):  # pragma: no cover
+    def render(self, data):  # pragma: no cover
         raise NotImplementedError("This function should be overriden")
 
     def __repr__(self):  # pragma: no cover
@@ -23,9 +22,9 @@ class Py3oObject(dict):
 
 
 class Py3oModule(Py3oObject):
-    def jsonify(self, data):
+    def render(self, data):
         """ This function will render the datastruct according
-         to the user's data and return a json dump
+         to the user's data
         """
         res = {}
         for key, value in self.items():
@@ -36,10 +35,10 @@ class Py3oModule(Py3oObject):
                     " in your data dictionary" % key
                 )
             # Spread only the appropriate data to its children
-            val = value.dictify(data.get(key))
+            val = value.render(data.get(key))
             if val:
                 res[key] = val
-        return json.dumps(res)
+        return res
 
 
 class Py3oArray(Py3oObject):
@@ -51,7 +50,7 @@ class Py3oArray(Py3oObject):
         super(Py3oArray, self).__init__()
         self.direct_access = False
 
-    def dictify(self, data):
+    def render(self, data):
         """ This function will render the datastruct according
         to the user's data
         """
@@ -64,7 +63,7 @@ class Py3oArray(Py3oObject):
             tmp_dict = {}
             for key, value in self.items():
                 # Spread only the appropriate data to its children
-                tmp_dict[key] = value.dictify(getattr(d, key))
+                tmp_dict[key] = value.render(getattr(d, key))
             res.append(tmp_dict)
         return res
 
@@ -81,7 +80,7 @@ class Py3oName(Py3oObject):
      (another Py3o class or a simple value)
     i.e.: i.egg -> Py3oName({'i': Py3oName({'egg': Py3oName({})})})
     """
-    def dictify(self, data):
+    def render(self, data):
         """ This function will render the datastruct according
         to the user's data
         """
@@ -91,7 +90,7 @@ class Py3oName(Py3oObject):
 
         for key, value in self.items():
             # Spread only the appropriate data to its children
-            res[key] = value.dictify(getattr(data, key))
+            res[key] = value.render(getattr(data, key))
         return res
 
 

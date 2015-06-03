@@ -255,7 +255,12 @@ class Template(object):
             if childs:
                 res.extend([c.text for c in childs])
             else:
-                res.append(e.text)
+                py_expr = e.get("{%s}name" % self.namespaces['text'])
+                res.append(
+                    py_expr[5:]
+                    if py_expr.startswith('py3o.')
+                    else py_expr
+                )
         return res
 
     def get_user_instructions(self):
