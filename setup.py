@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 from setuptools import setup, find_packages
+import codecs
 
 version = '0.9.1'
 
@@ -7,7 +8,9 @@ setup(
     name='py3o.template',
     version=version,
     description="An easy solution to design reports using OpenOffice",
-    long_description=open("README.rst").read(),
+    long_description=codecs.open(
+        "README.rst", mode='r', encoding="utf-8"
+    ).read(),
     classifiers=[
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
