@@ -88,6 +88,13 @@ directory.
 Changelog
 =========
 
+0.9.1 Jun. 3 2015
+~~~~~~~~~~~~~~~~~
+
+  - Fixed parser to read from the var name instead of its description,
+    if you dont use the helper tool to introspect your reports this release
+    is of no importance to you as it only fixes this particular point.
+
 0.9 Jan. 8 2015
 ~~~~~~~~~~~~~~~~
 
