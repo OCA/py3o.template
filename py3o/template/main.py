@@ -1,9 +1,20 @@
 # -*- encoding: utf-8 -*-
-import sys
 import decimal
 import logging
 import os
 import traceback
+import hashlib
+import six
+
+if six.PY3:
+    # in python 3 we want to emulate  binary files
+    from six import BytesIO as StringIO
+else:
+    # in python 2 we want to try and use the c Implementation if available
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from StringIO import StringIO
 
 import lxml.etree
 import zipfile
@@ -27,11 +38,6 @@ XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 
 GENSHI_URI = 'http://genshi.edgewall.org/'
 PY3O_URI = 'http://py3o.org/'
-
-# Images are stored in the "Pictures" directory and prefixed with "py3o-".
-# Saving images in a sub-directory would be cleaner but doesn't seem to be
-# supported...
-PY3O_IMAGE_PREFIX = 'Pictures/py3o-'
 
 
 class TemplateException(ValueError):
@@ -148,7 +154,8 @@ def get_list_transformer(namespaces):
 
 
 def get_all_python_expression(content_tree, namespaces):
-    # Get all the python expression
+    """Return all the python expressions found in the whole document
+    """
     xpath_expr = (
         "//text:a[starts-with(@xlink:href, 'py3o://')] | "
         "//text:user-field-get[starts-with(@text:name, 'py3o.')]"
@@ -159,8 +166,19 @@ def get_all_python_expression(content_tree, namespaces):
     )
 
 
+def get_image_frames(content_tree, namespaces):
+    """find all draw frames that must be converted to draw:image
+    """
+    xpath_expr = "//draw:frame[starts-with(@draw:name, 'py3o.image')]"
+    return content_tree.xpath(
+        xpath_expr,
+        namespaces=namespaces
+    )
+
+
 def get_instructions(content_tree, namespaces):
-    # find all links that have a py3o
+    """find all text links that have a py3o
+    """
     xpath_expr = "//text:a[starts-with(@xlink:href, 'py3o://')]"
     return content_tree.xpath(
         xpath_expr,
@@ -182,6 +200,39 @@ def get_soft_breaks(content_tree, namespaces):
         xpath_expr,
         namespaces=namespaces
     )
+
+
+class ImageInjector(object):
+
+    def __init__(self, template):
+        """Inject an image data into the template manifest when called back
+        from genshi template rendering
+        :param template: the py3o.template.Template instance this injector
+        must work with
+        :type template: py3o.template.Template instance
+        """
+        self.template = template
+
+    def __call__(self, im_data, mime_type, width=None, height=None):
+        """this will be called by genshi when rendering its template
+        We only register our image data with a unique identifier
+        """
+        identifier = hashlib.sha256(im_data).hexdigest()
+        self.template.set_image_data(identifier, im_data, mime_type=mime_type)
+
+        attrs = {
+            '{%s}href' % self.template.namespaces['xlink']: identifier,
+            '{%s}name' % self.template.namespaces['draw']: (
+                "py3o: %s" % identifier
+            ),
+        }
+        if width:
+            attrs['{%s}width' % self.template.namespaces['svg']] = width
+
+        if height:
+            attrs['{%s}height' % self.template.namespaces['svg']] = height
+
+        return attrs
 
 
 class Template(object):
@@ -315,7 +366,27 @@ class Template(object):
         return python_src
 
     @staticmethod
-    def handle_instructions(content_trees, namespaces):
+    def find_image_frames(content_trees, namespaces):
+        """find all frames that must be converted to images
+        """
+        tags = []
+
+        for content_tree in content_trees:
+            for frame in get_image_frames(content_tree, namespaces):
+                py3o_statement = urllib.parse.unquote(
+                    frame.attrib['{%s}name' % namespaces['draw']]
+                )
+                # remove the "py3o.image("
+                py3o_base = py3o_statement[11:]
+                # remove the trailing ")"
+                py3o_base = py3o_base[:-1]
+
+                tags.append((frame, py3o_base))
+
+        return tags
+
+    @staticmethod
+    def find_instructions(content_trees, namespaces):
 
         opened_starts = list()
         starting_tags = list()
@@ -342,10 +413,14 @@ class Template(object):
 
         return starting_tags, closing_tags
 
-    def handle_link(self, link, py3o_base, closing_link):
-        """transform a py3o link into a proper Genshi statement
-        rebase a py3o link at a proper place in the tree
-        to be ready for Genshi replacement
+    def validate_link(self, link, py3o_base):
+        """this method will ensure a link is valide or raise a TemplateException
+
+        :param link: a link node found in the tree
+        :type link: lxml.Element
+
+        :returns: nothing
+        :raises: TemplateException
         """
         # OLD open office version
         if link.text is not None and link.text.strip():
@@ -360,6 +435,33 @@ class Template(object):
                 raise TemplateException(msg)
         else:
             raise TemplateException("Link text not found")
+
+    def handle_draw_frame(self, frame, py3o_base):
+        """remove a draw:frame content and inject a draw:image with
+        py:attrs="__py3o_image(image_name)"
+        this __py3o_image method will be injected inside the template
+        dictionary to be called back from inside the template
+        """
+        image_inserter = "__py3o_image(%s)" % py3o_base
+
+        drawimage = lxml.etree.Element(
+            '{%s}image' % self.namespaces['draw'],
+            attrib={'{%s}attrs' % self.namespaces['py']: image_inserter},
+            nsmap={
+                'draw': self.namespaces['draw'],
+                'py': GENSHI_URI
+            }
+        )
+        # first child in the frame (ie: draw:text-box or equivalent), will be
+        # removed and replaced by our new draw:image node we created
+        frame.replace(frame[0], drawimage)
+
+    def handle_link(self, link, py3o_base, closing_link):
+        """transform a py3o link into a proper Genshi statement
+        rebase a py3o link at a proper place in the tree
+        to be ready for Genshi replacement
+        """
+        self.validate_link(link, py3o_base)
 
         # find out if the instruction is inside a table
         parent = link.getparent()
@@ -541,11 +643,11 @@ class Template(object):
 
     def __replace_image_links(self):
         """Replace links of placeholder images (the name of which starts with
-        "py3o.") to point to a file saved the "Pictures" directory of the
-        archive.
+        "py3o.staticimage.") to point to a file saved the "Pictures"
+        directory of the archive.
         """
 
-        image_expr = "//draw:frame[starts-with(@draw:name, 'py3o.')]"
+        image_expr = "//draw:frame[starts-with(@draw:name, 'py3o.staticimage')]"
 
         for content_tree in self.content_trees:
 
@@ -554,7 +656,8 @@ class Template(object):
                 image_expr,
                 namespaces=self.namespaces
             ):
-                # Find the identifier of the image (py3o.[identifier]).
+                # Find the identifier of the image
+                # (py3o.staticimage[identifier]).
                 image_id = draw_frame.attrib[
                     '{%s}name' % self.namespaces['draw']
                 ][5:]
@@ -574,7 +677,7 @@ class Template(object):
                 image = draw_frame[0]
                 image.attrib[
                     '{%s}href' % self.namespaces['xlink']
-                ] = PY3O_IMAGE_PREFIX + image_id
+                ] = image_id
 
     def __add_images_to_manifest(self):
         """Add entries for py3o images into the manifest file."""
@@ -592,17 +695,18 @@ class Template(object):
                 continue
 
             for identifier in self.images.keys():
+                mime = self.images.get(identifier).get('mime_type', None)
+                attribs = {
+                    '{%s}full-path' % self.namespaces['manifest']: identifier,
+                    '{%s}media-type' % self.namespaces['manifest']: mime or ''
+                }
                 # Add a manifest:file-entry tag.
                 lxml.etree.SubElement(
                     manifest_e[0],
                     '{%s}file-entry' % self.namespaces['manifest'],
-                    attrib={
-                        '{%s}full-path' % self.namespaces['manifest']: (
-                            PY3O_IMAGE_PREFIX + identifier
-                        ),
-                        '{%s}media-type' % self.namespaces['manifest']: '',
-                    }
+                    attrib=attribs
                 )
+            return manifest_e[0]
 
     def render_tree(self, data):
         """prepare the flows without saving to file
@@ -616,9 +720,9 @@ class Template(object):
         # so we must find a way to localize this a bit... or remove it and
         # consider our caller must pre - render its variables to the desired
         # locale...?
-        new_data = dict(
-            decimal=decimal,
-            format_float=(
+        new_data = {
+            "decimal": decimal,
+            "format_float": (
                 lambda val: (
                     isinstance(
                         val, decimal.Decimal
@@ -627,21 +731,22 @@ class Template(object):
                     )
                 ) and str(val).replace('.', ',') or val
             ),
-            format_percentage=(
+            "format_percentage": (
                 lambda val: ("%0.2f %%" % val).replace('.', ',')
-            )
-        )
+            ),
+            "__py3o_image": ImageInjector(self),
+        }
 
         # Soft page breaks are hints for applications for rendering a page
         # break. Soft page breaks in for loops may compromise the paragraph
         # formatting especially the margins. Open-/LibreOffice will regenerate
-        # the page breaks when displaying the document. Therefore it is save to
+        # the page breaks when displaying the document. Therefore it is safe to
         # remove them.
         self.remove_soft_breaks()
 
         # first we need to transform the py3o template into a valid
         # Genshi template.
-        starting_tags, closing_tags = self.handle_instructions(
+        starting_tags, closing_tags = self.find_instructions(
             self.content_trees,
             self.namespaces
         )
@@ -660,11 +765,21 @@ class Template(object):
                 closing_tags[id(link)]
             )
 
+        # handle all draw links that will need to receive image content in their
+        # childrens
+        tags = self.find_image_frames(self.content_trees, self.namespaces)
+        # draw frames with special names will be auto injected with image
+        # injectors
+        for frame, py3o_base in tags:
+            self.handle_draw_frame(
+                frame,
+                py3o_base,
+            )
+
         self.__prepare_userfield_decl()
         self.__prepare_usertexts()
 
         self.__replace_image_links()
-        self.__add_images_to_manifest()
 
         for fnum, content_tree in enumerate(self.content_trees):
             content = lxml.etree.tostring(content_tree.getroot())
@@ -727,18 +842,50 @@ class Template(object):
         self.set_image_data(identifier, f.read())
         f.close()
 
-    def set_image_data(self, identifier, data):
+    def set_image_data(self, identifier, data, mime_type=None):
         """Set data for an image mentioned in the template.
 
         @param identifier: Identifier of the image; refer to the image in the
-        template by setting "py3o.[identifier]" as the name of that image.
+        template by setting "py3o.staticimage.[identifier]" as the name
+        of that image.
         @type identifier: string
 
         @param data: Contents of the image.
         @type data: binary
         """
 
-        self.images[identifier] = data
+        self.images[identifier] = {
+            'data': data,
+            'mime_type': mime_type,
+        }
+
+    def fix_frames_sizes(self, tree, namespaces):
+        """find all draw images and copy their width & height options
+        and apply it to the container draw:frame
+        """
+        tags = tree.xpath(
+            '//draw:frame/draw:image[@svg:height and @svg:width]',
+            namespaces=namespaces
+        )
+        svg_ns = namespaces['svg']
+        draw_ns = namespaces['draw']
+
+        for tag in tags:
+            width = tag.attrib['{%s}width' % svg_ns]
+            height = tag.attrib['{%s}height' % svg_ns]
+            name = tag.attrib['{%s}name' % draw_ns]
+
+            tag.attrib.pop('{%s}width' % svg_ns)
+            tag.attrib.pop('{%s}height' % svg_ns)
+            tag.attrib.pop('{%s}name' % draw_ns)
+
+            tag.getparent().attrib.update(
+                {
+                    '{%s}height' % svg_ns: height,
+                    '{%s}width' % svg_ns: width,
+                    '{%s}name' % draw_ns: name,
+                }
+            )
 
     def __save_output(self):
         """Saves the output into a native OOo document format.
@@ -748,21 +895,48 @@ class Template(object):
         for info_zip in self.infile.infolist():
 
             if info_zip.filename in self.templated_files:
-                # Template file - we have edited these.
-
                 # get a temp file
                 streamout = open(get_secure_filename(), "w+b")
-                fname, output_stream = self.output_streams[
-                    self.templated_files.index(info_zip.filename)
-                ]
 
-                transformer = get_list_transformer(self.namespaces)
-                remapped_stream = output_stream | transformer
+                # Template file - we have edited these.
+                if "manifest.xml" in info_zip.filename:
+                    fname, _ = self.output_streams[
+                        self.templated_files.index(info_zip.filename)
+                    ]
+                    manifest_e = self.__add_images_to_manifest()
+                    streamout.write(lxml.etree.tostring(manifest_e))
 
-                # write the whole stream to it
-                for chunk in remapped_stream.serialize():
-                    streamout.write(chunk.encode('utf-8'))
-                    yield True
+                else:
+                    fname, output_stream = self.output_streams[
+                        self.templated_files.index(info_zip.filename)
+                    ]
+
+                    transformer = get_list_transformer(self.namespaces)
+                    remapped_stream = output_stream | transformer
+
+                    # write the whole stream to it
+                    for chunk in remapped_stream.serialize():
+                        streamout.write(chunk.encode('utf-8'))
+                        yield True
+
+                    streamout.seek(0)
+                    odt_content = lxml.etree.parse(StringIO(streamout.read()))
+
+                    streamout.close()
+                    os.unlink(streamout.name)
+                    streamout = open(get_secure_filename(), "w+b")
+
+                    self.fix_frames_sizes(
+                        odt_content,
+                        self.namespaces
+                    )
+                    streamout.write(
+                        lxml.etree.tostring(
+                            odt_content,
+                            encoding="utf-8",
+                            xml_declaration=True,
+                        )
+                    )
 
                 # close the temp file to flush all data and make sure we get
                 # it back when writing to the zip archive.
@@ -779,8 +953,8 @@ class Template(object):
                 out.writestr(info_zip, self.infile.read(info_zip.filename))
 
         # Save images in the "Pictures" sub-directory of the archive.
-        for identifier, data in self.images.items():
-            out.writestr(PY3O_IMAGE_PREFIX + identifier, data)
+        for identifier, im_struct in self.images.items():
+            out.writestr(identifier, im_struct.get('data'))
 
         # close the zipfile before leaving
         out.close()

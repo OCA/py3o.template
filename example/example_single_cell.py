@@ -1,8 +1,11 @@
 from py3o.template import Template
 
-t = Template("py3o_example_template_single_cell.odt", "py3o_example_output_single_cell.odt")
+t = Template(
+    "py3o_example_template_single_cell.odt",
+    "py3o_example_output_single_cell.odt"
+)
 
-t.set_image_path('logo', 'images/new_logo.png')
+t.set_image_path('staticimage.logo', 'images/new_logo.png')
 
 
 class Item(object):
@@ -34,4 +37,3 @@ document.total = '9,999,999,999,999.999'
 
 data = dict(items=items, document=document)
 t.render(data)
-

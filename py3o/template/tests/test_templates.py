@@ -33,10 +33,13 @@ class TestTemplate(unittest.TestCase):
         outname = get_secure_filename()
 
         template = Template(template_name, outname)
-        template.set_image_path('logo', pkg_resources.resource_filename(
-            'py3o.template',
-            'tests/templates/images/new_logo.png'
-        ))
+        template.set_image_path(
+            'staticimage.logo',
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/images/new_logo.png'
+            )
+        )
 
         class Item(object):
             pass
@@ -96,10 +99,13 @@ class TestTemplate(unittest.TestCase):
 
         error = False
 
-        template.set_image_path('logo', pkg_resources.resource_filename(
-            'py3o.template',
-            'tests/templates/images/new_logo.png'
-        ))
+        template.set_image_path(
+            'staticimage.logo',
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/images/new_logo.png'
+            )
+        )
         template.render(data_dict)
 
         outodt = zipfile.ZipFile(outname, 'r')
@@ -156,10 +162,13 @@ class TestTemplate(unittest.TestCase):
             "items": [Item(1), Item(2), Item(3), Item(4)]
         }
 
-        template.set_image_path('logo', pkg_resources.resource_filename(
-            'py3o.template',
-            'tests/templates/images/new_logo.png'
-        ))
+        template.set_image_path(
+            'staticimage.logo',
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/images/new_logo.png'
+            )
+        )
         # this will raise a TemplateException... or the test will fail
         error_occured = False
         try:
@@ -182,10 +191,13 @@ class TestTemplate(unittest.TestCase):
         outname = get_secure_filename()
 
         template = Template(template_name, outname)
-        template.set_image_path('logo', pkg_resources.resource_filename(
-            'py3o.template',
-            'tests/templates/images/new_logo.png'
-        ))
+        template.set_image_path(
+            'staticimage.logo',
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/images/new_logo.png'
+            )
+        )
 
         class Item(object):
             pass

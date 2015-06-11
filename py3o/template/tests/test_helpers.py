@@ -1,5 +1,4 @@
 # -*- encoding: utf-8 -*-
-import json
 from py3o.template.data_struct import Py3oDataError
 from py3o.template.helpers import Py3oConvertor
 
@@ -229,7 +228,7 @@ class TestHelpers(unittest.TestCase):
         )
 
         test_xml = lxml.etree.parse(source_xml_filename)
-        starts, ends = self.reference_template.handle_instructions(
+        starts, ends = self.reference_template.find_instructions(
             [test_xml], self.reference_template.namespaces
         )
         for start, base in starts:
@@ -249,7 +248,7 @@ class TestHelpers(unittest.TestCase):
         )
 
         test_xml = lxml.etree.parse(source_xml_filename)
-        starts, ends = self.reference_template.handle_instructions(
+        starts, ends = self.reference_template.find_instructions(
             [test_xml], self.reference_template.namespaces
         )
         for index, (start, base) in enumerate(starts):
@@ -270,7 +269,7 @@ class TestHelpers(unittest.TestCase):
             'tests/templates/move_siblings.xml'
         )
         test_xml = lxml.etree.parse(template_xml)
-        starts, ends = self.reference_template.handle_instructions(
+        starts, ends = self.reference_template.find_instructions(
             [test_xml], self.reference_template.namespaces
         )
 
@@ -324,7 +323,7 @@ class TestHelpers(unittest.TestCase):
             'tests/templates/move_siblings.xml'
         )
         test_xml = lxml.etree.parse(template_xml)
-        starts, ends = self.reference_template.handle_instructions(
+        starts, ends = self.reference_template.find_instructions(
             [test_xml], self.reference_template.namespaces
         )
 
