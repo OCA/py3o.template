@@ -102,6 +102,9 @@ Changelog
       # new way. Note the 'staticimage.' prefix added just before 'logo'
       t.set_image_path('staticimage.logo', 'images/new_logo.png')
 
+  - WARNING: after updating your code you must also update your template
+    to prefix your static images names with the 'staticimage.' prefix.
+
   - Added dynamic images support. You can now add images instructions inside
     for loops or anywhere in your templates and pass the image data
     inside your objects attributes.
