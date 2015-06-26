@@ -217,6 +217,37 @@ class ImageInjector(object):
     def __call__(self, data, mime_type, width=None, height=None, isb64=False):
         """this will be called by genshi when rendering its template
         We only register our image data with a unique identifier
+
+        :param data: the image data, either as a base64 encoded string or
+        as the raw binary data directly from a file.read()
+        :type data: string or binary data
+
+        :param mime_type: the mime type of your image (ie: 'png', 'jpg')
+        :type mime_type: string
+
+        :param width: the desired width of your image. It is recommended to set
+        this param to the real width of your image file (and eventually resize
+        your image with Pillow) because at the moment we only 'forward' this to
+        LibreOffice.
+        :type width: string
+
+        :param height: the desired height of your image. It is recommended
+        to set this param to the real height of your image file
+        (and eventually resize your image with Pillow) because at the moment
+        we only 'forward' this to LibreOffice.
+        :type height: string
+
+        :param isb64: a flag to tell the engine your image data is not in raw
+        format but an b64encode()ed version. If set to True, the engine will
+        try to b64decode() your data before saving it to a file for LibreOffice.
+        Default value is False.
+        :type isb64: Boolean
+
+        :returns: a dict of attributes that can be set on the node that is
+        being treated by Genshi.
+        :raises: TypeError if your set the isb64 flag but your data were
+        incorrectly padded or if there are non-alphabet characters
+        present in the data string.
         """
         if isb64:
             # we need to decode the base64 data to obtain the raw data version
