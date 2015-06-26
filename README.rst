@@ -91,12 +91,15 @@ Changelog
 0.9.2 Jun. 26 2015
 ~~~~~~~~~~~~~~~~~~
 
-  - WARNING: if you used the old image replacement system, please read the doc
-    to see how to continue using it or use the new dynamic image system
-    instead. Basically if your static image was set like this::
+  - WARNING: if you used the old image replacement system, you
+   need to update your code to set static image from this::
+
+      # old way
       t.set_image_path('logo', 'images/new_logo.png')
 
-    You should now set it like this instead::
+      # You should now set it like this instead
+
+      # new way. Note the 'staticimage.' prefix added just before 'logo'
       t.set_image_path('staticimage.logo', 'images/new_logo.png')
 
   - Added dynamic images support. You can now add images instructions inside
