@@ -52,7 +52,7 @@ directory.
 
     t = Template("py3o_example_template.odt", "py3o_example_output.odt")
 
-    t.set_image_path('logo', 'images/new_logo.png')
+    t.set_image_path('staticimage.logo', 'images/new_logo.png')
 
 
     class Item(object):
@@ -90,6 +90,14 @@ Changelog
 
 0.9.2 Jun. 26 2015
 ~~~~~~~~~~~~~~~~~~
+
+  - WARNING: if you used the old image replacement system, please read the doc
+    to see how to continue using it or use the new dynamic image system
+    instead. Basically if your static image was set like this::
+      t.set_image_path('logo', 'images/new_logo.png')
+
+    You should now set it like this instead::
+      t.set_image_path('staticimage.logo', 'images/new_logo.png')
 
   - Added dynamic images support. You can now add images instructions inside
     for loops or anywhere in your templates and pass the image data
