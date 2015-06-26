@@ -21,8 +21,8 @@ single web service usable from any language with just HTTP/POST you can install
 Python 3 support
 ================
 
-py3o.fusion is python3 ready. But, yes there is a but... alas!, you'll need
- to install a trunk version of Genshi::
+py3o.fusion is python3 ready. But, yes there is a but... alas!,
+you'll need to install a trunk version of Genshi::
 
     $ # activate your python env...
     $ svn checkout http://svn.edgewall.org/repos/genshi/trunk genshi_trunk
