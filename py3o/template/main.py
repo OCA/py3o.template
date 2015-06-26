@@ -7,16 +7,6 @@ import hashlib
 import six
 from base64 import b64decode
 
-if six.PY3:
-    # in python 3 we want to emulate  binary files
-    from six import BytesIO as StringIO
-else:
-    # in python 2 we want to try and use the c Implementation if available
-    try:
-        from cStringIO import StringIO
-    except ImportError:
-        from StringIO import StringIO
-
 import lxml.etree
 import zipfile
 
@@ -30,6 +20,16 @@ from genshi.template import MarkupTemplate
 from genshi.filters.transform import Transformer
 
 from pyjon.utils import get_secure_filename
+
+if six.PY3:
+    # in python 3 we want to emulate  binary files
+    from six import BytesIO as StringIO
+else:
+    # in python 2 we want to try and use the c Implementation if available
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from StringIO import StringIO
 
 
 log = logging.getLogger(__name__)
@@ -239,7 +239,8 @@ class ImageInjector(object):
 
         :param isb64: a flag to tell the engine your image data is not in raw
         format but an b64encode()ed version. If set to True, the engine will
-        try to b64decode() your data before saving it to a file for LibreOffice.
+        try to b64decode() your data before saving it to a file for
+        LibreOffice.
         Default value is False.
         :type isb64: Boolean
 
@@ -683,7 +684,9 @@ class Template(object):
         directory of the archive.
         """
 
-        image_expr = "//draw:frame[starts-with(@draw:name, 'py3o.staticimage')]"
+        image_expr = (
+            "//draw:frame[starts-with(@draw:name, 'py3o.staticimage')]"
+        )
 
         for content_tree in self.content_trees:
 
@@ -801,8 +804,8 @@ class Template(object):
                 closing_tags[id(link)]
             )
 
-        # handle all draw links that will need to receive image content in their
-        # childrens
+        # handle all draw links that will need to receive image content
+        # in their childrens
         tags = self.find_image_frames(self.content_trees, self.namespaces)
         # draw frames with special names will be auto injected with image
         # injectors
