@@ -5,6 +5,7 @@ import os
 import traceback
 import hashlib
 import six
+from base64 import b64decode
 
 if six.PY3:
     # in python 3 we want to emulate  binary files
@@ -213,12 +214,16 @@ class ImageInjector(object):
         """
         self.template = template
 
-    def __call__(self, im_data, mime_type, width=None, height=None):
+    def __call__(self, data, mime_type, width=None, height=None, isb64=False):
         """this will be called by genshi when rendering its template
         We only register our image data with a unique identifier
         """
-        identifier = hashlib.sha256(im_data).hexdigest()
-        self.template.set_image_data(identifier, im_data, mime_type=mime_type)
+        if isb64:
+            # we need to decode the base64 data to obtain the raw data version
+            data = b64decode(data)
+
+        identifier = hashlib.sha256(data).hexdigest()
+        self.template.set_image_data(identifier, data, mime_type=mime_type)
 
         attrs = {
             '{%s}href' % self.template.namespaces['xlink']: identifier,
