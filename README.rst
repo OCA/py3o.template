@@ -88,6 +88,18 @@ directory.
 Changelog
 =========
 
+0.9.2 Jun. 26 2015
+~~~~~~~~~~~~~~~~~~
+
+  - Added dynamic images support. You can now add images instructions inside
+    for loops or anywhere in your templates and pass the image data
+    inside your objects attributes.
+  - Added support for image data (dynamic ones) being passed-in as base64 data
+    This is usefull for some clients like `Odoo's report_py3o`_ because they
+    store image data as base64 encoded fields.
+
+.. _Odoo's report_py3o: https://bitbucket.org/xcg/report_py3o
+
 0.9.1 Jun. 3 2015
 ~~~~~~~~~~~~~~~~~
 
