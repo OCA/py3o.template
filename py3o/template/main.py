@@ -898,34 +898,6 @@ class Template(object):
             'mime_type': mime_type,
         }
 
-    def fix_frames_sizes(self, tree, namespaces):
-        """find all draw images and copy their width & height options
-        and apply it to the container draw:frame
-        """
-        tags = tree.xpath(
-            '//draw:frame/draw:image[@svg:height and @svg:width]',
-            namespaces=namespaces
-        )
-        svg_ns = namespaces['svg']
-        draw_ns = namespaces['draw']
-
-        for tag in tags:
-            width = tag.attrib['{%s}width' % svg_ns]
-            height = tag.attrib['{%s}height' % svg_ns]
-            name = tag.attrib['{%s}name' % draw_ns]
-
-            tag.attrib.pop('{%s}width' % svg_ns)
-            tag.attrib.pop('{%s}height' % svg_ns)
-            tag.attrib.pop('{%s}name' % draw_ns)
-
-            tag.getparent().attrib.update(
-                {
-                    '{%s}height' % svg_ns: height,
-                    '{%s}width' % svg_ns: width,
-                    '{%s}name' % draw_ns: name,
-                }
-            )
-
     def __save_output(self):
         """Saves the output into a native OOo document format.
         """
@@ -951,31 +923,14 @@ class Template(object):
                     ]
 
                     transformer = get_list_transformer(self.namespaces)
-                    remapped_stream = output_stream | transformer
+                    nstream = output_stream | transformer
 
                     # write the whole stream to it
-                    for chunk in remapped_stream.serialize():
+                    for chunk in nstream.serialize():
                         streamout.write(chunk.encode('utf-8'))
                         yield True
 
                     streamout.seek(0)
-                    odt_content = lxml.etree.parse(StringIO(streamout.read()))
-
-                    streamout.close()
-                    os.unlink(streamout.name)
-                    streamout = open(get_secure_filename(), "w+b")
-
-                    self.fix_frames_sizes(
-                        odt_content,
-                        self.namespaces
-                    )
-                    streamout.write(
-                        lxml.etree.tostring(
-                            odt_content,
-                            encoding="utf-8",
-                            xml_declaration=True,
-                        )
-                    )
 
                 # close the temp file to flush all data and make sure we get
                 # it back when writing to the zip archive.
