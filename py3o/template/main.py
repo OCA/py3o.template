@@ -906,7 +906,7 @@ class Template(object):
     def __save_output(self):
         """Saves the output into a native OOo document format.
         """
-        out = zipfile.ZipFile(self.outputfilename, 'w')
+        out = zipfile.ZipFile(self.outputfilename, 'w', allowZip64=True)
 
         for info_zip in self.infile.infolist():
 
