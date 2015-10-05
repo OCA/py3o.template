@@ -378,7 +378,12 @@ class Template(object):
     def remove_soft_breaks(self):
         for soft_break in get_soft_breaks(
                 self.content_trees[0], self.namespaces):
-            soft_break.getparent().remove(soft_break)
+            parent = soft_break.getparent()
+            if parent.text:
+                parent.text += soft_break.tail
+            else:
+                parent.text = soft_break.tail
+            parent.remove(soft_break)
 
     def convert_py3o_to_python_ast(self, expressions):
         python_src = ''
