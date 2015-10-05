@@ -13,10 +13,12 @@ import zipfile
 from copy import copy
 from io import BytesIO
 from uuid import uuid4
+import codecs
 
 from six.moves import urllib
 
 from genshi.template import MarkupTemplate
+from genshi.template.text import NewTextTemplate as GenshiTextTemplate
 from genshi.filters.transform import Transformer
 
 from pyjon.utils import get_secure_filename
@@ -270,6 +272,61 @@ class ImageInjector(object):
             attrs['{%s}height' % self.template.namespaces['svg']] = height
 
         return attrs
+
+class TextTemplate(object):
+    """A specific template that can be used to output textual content.
+
+    It works as the ODT or ODS templates, minus the fact that is does not
+    support images.
+    """
+
+    def __init__(
+            self, template, outfile,
+             encoding='utf-8', ignore_undefined_variables=False
+    ):
+        """
+        :param template: a genshi text template. For more information you can
+        refer to the Genshi documentation:
+          http://genshi.edgewall.org/wiki/ApiDocs/genshi.template.text
+
+        :type template: a string representing the full path name to a
+        template file.
+
+        :param outfile: the desired file name for the resulting text document
+        :type outfile: a string representing the full filename for output
+
+        :param encoding: By default the text encoding of the output will be
+        UTF8. If you want another encoding you must specify it.
+        :type encoding: a string representin the desired output encoding
+
+        :param ignore_undefined_variables: Not defined variables are replaced
+        with an empty string during template rendering if True
+        :type ignore_undefined_variables: boolean. Default is False
+        """
+
+        self.outputfilename = outfile
+        self.encoding = encoding
+
+        content = codecs.open(template, 'rb', encoding='utf-8').read()
+
+        if ignore_undefined_variables:
+            self.template = GenshiTextTemplate(content, lookup='lenient')
+        else:
+            self.template = GenshiTextTemplate(content)
+
+    def render(self, data):
+        """Render the template with the provided data.
+
+        :param data: a dictionnary containing your data (preferably
+        a iterators)
+        :return: Nothing
+        """
+        with codecs.open(
+                self.outputfilename, 'wb+', encoding=self.encoding
+        ) as outfile:
+
+            for kind, data, pos in self.template.generate(**data):
+                outfile.write(data)
 
 
 class Template(object):
