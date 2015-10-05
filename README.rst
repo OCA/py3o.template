@@ -95,6 +95,8 @@ Changelog
   - Fixed a memory usage in case of big output file size that
     was introduced by the dynamic image feature.
   - Introduced an experimental TextTemplate
+  - Fixed support for special cases where page breaks removals
+    removed trailing text (thanks to agix)
 
 0.9.3 Jun. 26 2015
 ~~~~~~~~~~~~~~~~~~
@@ -173,6 +175,7 @@ By order of contribution date:
   - `Vincent Lhote-Hatakeyama`_
   - `Anael Lorimier`_
   - `Björn Ricks`_
+  - `Agix`_
 
 .. _Florent Aide: https://bitbucket.org/faide
 .. _Emmanuel Cazenave: https://bitbucket.org/cazino
@@ -184,6 +187,7 @@ By order of contribution date:
 .. _Vincent Lhote-Hatakeyama: https://bitbucket.org/vincent_lhote
 .. _Anael Lorimier: https://bitbucket.org/alorimier
 .. _Björn Ricks: https://bitbucket.org/bjoernricks
+.. _Agix: https://bitbucket.org/agix
 
 .. _py3o.renderserver: https://bitbucket.org/faide/py3o.renderserver/
 .. _provide a documentation: http://py3otemplate.readthedocs.org
