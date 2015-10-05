@@ -88,6 +88,20 @@ directory.
 Changelog
 =========
 
+0.9.4 ???. ?? ????
+~~~~~~~~~~~~~~~~~~
+
+  - Added example source code for ODS output.
+  - Fixed a memory usage in case of big output file size that
+    was introduced by the dynamic image feature.
+  - Introduced an experimental TextTemplate
+
+0.9.3 Jun. 26 2015
+~~~~~~~~~~~~~~~~~~
+
+  - Introduced dynamic image support (ie: pass in image data in the input
+    iterator) and use it to insert images on the fly in the report)
+
 0.9.2 Jun. 26 2015
 ~~~~~~~~~~~~~~~~~~
 
