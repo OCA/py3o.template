@@ -1,8 +1,12 @@
 Introduction
 ============
 
+This work was originally inspired by `relatorio`_ and diverged in
+implementation, scope and ambitions. Relatorio has many more features
+when py3o.template is mainly focused on ODT, ODS and text output.
+
 py3o is an elegant and scalable solution to design
-reports using LibreOffice or OpenOffice.
+reports using LibreOffice.
 py3o.template is the templating component that takes care of
 merging your data sets with a corresponding templated OpenOffice document.
 
@@ -21,7 +25,7 @@ single web service usable from any language with just HTTP/POST you can install
 Python 3 support
 ================
 
-py3o.fusion is python3 ready. But, yes there is a but... alas!,
+py3o.template is python3 ready. But, yes there is a but... alas!,
 you'll need to install a trunk version of Genshi::
 
     $ # activate your python env...
@@ -88,9 +92,10 @@ directory.
 Changelog
 =========
 
-0.9.4 ???. ?? ????
-~~~~~~~~~~~~~~~~~~
+0.9.4 not yet released
+~~~~~~~~~~~~~~~~~~~~~~
 
+  - Added reference to original inspiration in the README
   - Added example source code for ODS output.
   - Fixed a memory usage in case of big output file size that
     was introduced by the dynamic image feature.
@@ -195,3 +200,4 @@ By order of contribution date:
 .. _docker hub: https://registry.hub.docker.com/u/xcgd/py3oserver-docker/
 .. _py3o.fusion: https://bitbucket.org/faide/py3o.fusion
 .. _docker image: https://registry.hub.docker.com/u/xcgd/py3o.fusion
+.. _relatorio: http://relatorio.tryton.org/
