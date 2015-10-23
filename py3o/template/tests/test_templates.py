@@ -182,62 +182,6 @@ class TestTemplate(unittest.TestCase):
         # and make sure we raised
         assert error_occured is True
 
-    def test_render_apply_style(self):
-        template_name = pkg_resources.resource_filename(
-            'py3o.template',
-            'tests/templates/py3o_style1_template.odt'
-        )
-
-        outname = get_secure_filename()
-
-        template = Template(template_name, outname)
-        template.set_image_path(
-            'staticimage.logo',
-            pkg_resources.resource_filename(
-                'py3o.template',
-                'tests/templates/images/new_logo.png'
-            )
-        )
-
-        class Item(object):
-            pass
-
-        items = list()
-
-        item1 = Item()
-        item1.val1 = 'Item1 Value1'
-        item1.val2 = 'Item1 Value2'
-        item1.val3 = 'Item1 Value3'
-        item1.Currency = 'EUR'
-        item1.Amount = 12345.35
-        item1.InvoiceRef = '#1234'
-
-        items.append(item1)
-
-        document = Item()
-        document.total = '9999999999999.999'
-
-        data = dict(items=items, document=document)
-        template.render(data)
-
-        # reuse the template engine just to open our odt file content...
-        tempout = get_secure_filename()
-        t2 = Template(outname, tempout)
-        os.unlink(tempout)
-
-        result_content = t2.content_trees[0]
-        expr = "//text:p[contains(text(), 'Invoice')]"
-        paragraphs = result_content.xpath(
-            expr,
-            namespaces=t2.namespaces
-        )
-        assert len(paragraphs) == 1, (
-            "Only one paragraph should have been found"
-        )
-        p = paragraphs[0]
-        result_text = p.text
-        assert result_text == "Invoice #1234 for a total of 12345,35 EUR"
-
     def test_ignore_undefined_variables_logo(self):
 
         template_name = pkg_resources.resource_filename(
@@ -403,3 +347,41 @@ class TestTemplate(unittest.TestCase):
             error = True
 
         assert error is True, "This template should have been refused"
+
+    def test_template_with_function_call(self):
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_template_function_call.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'amount': 32.123,
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/template_with_function_call_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        assert result_a == result_e

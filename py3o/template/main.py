@@ -61,17 +61,18 @@ def detect_keep_boundary(start, end, namespaces):
     """
     result_start, result_end = False, False
     parent_start = start.getparent()
-    parent_end = end.getparent()
 
     if parent_start.tag == "{%s}p" % namespaces['text']:
         # more than one child in the containing paragraph ?
         # we keep the boundary
         result_start = len(parent_start.getchildren()) > 1
 
-    if parent_end.tag == "{%s}p" % namespaces['text']:
-        # more than one child in the containing paragraph ?
-        # we keep the boundary
-        result_end = len(parent_end.getchildren()) > 1
+    if end is not None:
+        parent_end = end.getparent()
+        if parent_end.tag == "{%s}p" % namespaces['text']:
+            # more than one child in the containing paragraph ?
+            # we keep the boundary
+            result_end = len(parent_end.getchildren()) > 1
 
     return result_start, result_end
 
@@ -133,7 +134,8 @@ def move_siblings(
     old_.replace(start, new_)
 
     # remove ending boundary we already copied it if needed
-    old_.remove(end)
+    if end is not None:
+        old_.remove(end)
 
 
 def get_list_transformer(namespaces):
@@ -205,6 +207,21 @@ def get_soft_breaks(content_tree, namespaces):
     )
 
 
+def format_amount(amount):
+    """Replace the thousands separator from '.' to ','
+    """
+    # TODO: maybe add some format options in the function's args
+    if isinstance(amount, float) or isinstance(amount, decimal.Decimal):
+        return str(amount).replace('.', ',')
+    return amount
+
+
+def format_percentage(val, format_str="%0.2f %%"):
+    """Format the percentage
+    """
+    return (format_str % val).replace('.', ',')
+
+
 class ImageInjector(object):
 
     def __init__(self, template):
@@ -273,6 +290,7 @@ class ImageInjector(object):
 
         return attrs
 
+
 class TextTemplate(object):
     """A specific template that can be used to output textual content.
 
@@ -281,8 +299,8 @@ class TextTemplate(object):
     """
 
     def __init__(
-            self, template, outfile,
-             encoding='utf-8', ignore_undefined_variables=False
+        self, template, outfile,
+        encoding='utf-8', ignore_undefined_variables=False
     ):
         """
         :param template: a genshi text template. For more information you can
@@ -394,18 +412,18 @@ class Template(object):
         """  Public method to get all python expression
         """
         res = []
+        text_nmspc = self.namespaces['text']
         for e in get_all_python_expression(self.content_trees[0],
                                            self.namespaces):
-            childs = e.getchildren()
-            if childs:
-                res.extend([c.text for c in childs])
-            else:
-                py_expr = e.get("{%s}name" % self.namespaces['text'])
-                res.append(
-                    py_expr[5:]
-                    if py_expr.startswith('py3o.')
-                    else py_expr
-                )
+            if e.tag == "{%s}user-field-get" % text_nmspc:
+                py_expr = e.get("{%s}name" % text_nmspc)
+                # Remove the trailing 'py3o.'
+                res.append(py_expr[5:])
+            elif e.tag == "{%s}a" % text_nmspc:
+                py_expr = e.get("{%s}href" % self.namespaces['xlink'])
+                # Remove the trailing 'py3o://'
+                # Also convert the url string into a classic string
+                res.append(urllib.parse.unquote(py_expr[7:]))
         return res
 
     def get_user_instructions(self):
@@ -435,12 +453,7 @@ class Template(object):
     def remove_soft_breaks(self):
         for soft_break in get_soft_breaks(
                 self.content_trees[0], self.namespaces):
-            parent = soft_break.getparent()
-            if parent.text:
-                parent.text += soft_break.tail
-            else:
-                parent.text = soft_break.tail
-            parent.remove(soft_break)
+            soft_break.getparent().remove(soft_break)
 
     def convert_py3o_to_python_ast(self, expressions):
         python_src = ''
@@ -459,6 +472,9 @@ class Template(object):
             elif expression == '/for':
                 # End of for loop
                 indent -= 1
+            elif expression.startswith('function='):
+                # Convert to a function call
+                python_src += pindent() + expression[10:-1] + '\n'
             else:
                 # Variable access
                 python_src += pindent() + expression + '\n'
@@ -593,7 +609,11 @@ class Template(object):
             )
             # we are in a text paragraph
             opening_row = parent
-            closing_row = closing_link.getparent()
+            closing_row = (
+                closing_link.getparent()
+                if closing_link is not None
+                else None
+            )
 
         else:
             raise NotImplementedError(
@@ -603,6 +623,10 @@ class Template(object):
         # max split is one
         instruction, instruction_value = py3o_base.split("=", 1)
         instruction_value = instruction_value.strip('"')
+
+        # Handle function call
+        if instruction == 'function':
+            instruction = 'content'
 
         attribs = dict()
         attribs['{%s}strip' % GENSHI_URI] = 'True'
@@ -615,19 +639,24 @@ class Template(object):
         )
 
         link.getparent().remove(link)
-        closing_link.getparent().remove(closing_link)
+        if closing_link is not None:
+            closing_link.getparent().remove(closing_link)
 
-        try:
-            move_siblings(
-                opening_row, closing_row, genshi_node,
-                keep_start_boundary=keep_start_boundary,
-                keep_end_boundary=keep_end_boundary,
-            )
-        except ValueError:
-            excrepr = traceback.format_exc()
-            log.exception(excrepr)
-            raise TemplateException("Could not move siblings for '%s'" %
-                                    py3o_base)
+        if instruction == 'content':
+            # Put the span at the same place the link was
+            opening_row.append(genshi_node)
+        else:
+            try:
+                move_siblings(
+                    opening_row, closing_row, genshi_node,
+                    keep_start_boundary=keep_start_boundary,
+                    keep_end_boundary=keep_end_boundary,
+                )
+            except ValueError:
+                excrepr = traceback.format_exc()
+                log.exception(excrepr)
+                raise TemplateException("Could not move siblings for '%s'" %
+                                        py3o_base)
 
     def __prepare_userfield_decl(self):
         self.field_info = dict()
@@ -673,57 +702,6 @@ class Template(object):
                 value = userfield.attrib[
                     '{%s}name' % self.namespaces['text']
                 ][5:]
-                value_type = self.field_info[value]['value_type']
-
-                # we try to override global var type with local settings
-                value_type_attr = '{%s}value-type' % self.namespaces['office']
-                rec = 0
-                parent_node = parent
-
-                # special case for float which has a value info on top level
-                # overriding local value
-                found_node = False
-                while rec <= 5:
-                    if parent_node is None:
-                        break
-
-                    # find an ancestor with an  office:value-type attribute
-                    # this is the case when you are inside a table
-                    if value_type_attr in parent_node.attrib:
-                        value_type = parent_node.attrib[value_type_attr]
-                        found_node = True
-                        break
-
-                    rec += 1
-                    parent_node = parent_node.getparent()
-
-                if value_type == 'float':
-                    value_attr = '{%s}value' % self.namespaces['office']
-                    rec = 0
-
-                    if found_node:
-                        parent_node.attrib[value_attr] = "${%s}" % value
-                    else:
-                        parent_node = userfield
-                        while rec <= 7:
-                            if parent_node is None:
-                                break
-
-                            if value_attr in parent_node.attrib:
-                                parent_node.attrib[value_attr] = (
-                                    "${%s}" % value
-                                )
-                                break
-
-                            rec += 1
-                            parent_node = parent_node.getparent()
-
-                    value = "format_float(%s)" % value
-
-                if value_type == 'percentage':
-                    del parent_node.attrib[value_attr]
-                    value = "format_percentage(%s)" % value
-                    parent_node.attrib[value_type_attr] = "string"
 
                 attribs = dict()
                 attribs['{%s}strip' % GENSHI_URI] = 'True'
@@ -809,34 +787,19 @@ class Template(object):
                 )
             return manifest_e[0]
 
+    def add_base_data_to_template(self):
+        return {
+            "decimal": decimal,
+            "format_amount": format_amount,
+            "format_percentage": format_percentage,
+            "__py3o_image": ImageInjector(self),
+        }
+
     def render_tree(self, data):
         """prepare the flows without saving to file
         this method has been decoupled from render_flow to allow better
         unit testing
         """
-        # TODO: find a way to make this localization aware...
-        # because ATM it formats texts using French style numbers...
-        # best way would be to let the user inject its own vars...
-        # but this would not work on fusion servers...
-        # so we must find a way to localize this a bit... or remove it and
-        # consider our caller must pre - render its variables to the desired
-        # locale...?
-        new_data = {
-            "decimal": decimal,
-            "format_float": (
-                lambda val: (
-                    isinstance(
-                        val, decimal.Decimal
-                    ) or isinstance(
-                        val, float
-                    )
-                ) and str(val).replace('.', ',') or val
-            ),
-            "format_percentage": (
-                lambda val: ("%0.2f %%" % val).replace('.', ',')
-            ),
-            "__py3o_image": ImageInjector(self),
-        }
 
         # Soft page breaks are hints for applications for rendering a page
         # break. Soft page breaks in for loops may compromise the paragraph
@@ -863,7 +826,7 @@ class Template(object):
             self.handle_link(
                 link,
                 py3o_base,
-                closing_tags[id(link)]
+                closing_tags.get(id(link), None),
             )
 
         # handle all draw links that will need to receive image content
@@ -881,6 +844,10 @@ class Template(object):
         self.__prepare_usertexts()
 
         self.__replace_image_links()
+
+        # Add base functions/module access inside the template.
+        # Also allow users to add their own data
+        new_data = self.add_base_data_to_template()
 
         for fnum, content_tree in enumerate(self.content_trees):
             content = lxml.etree.tostring(content_tree.getroot())
@@ -963,7 +930,7 @@ class Template(object):
     def __save_output(self):
         """Saves the output into a native OOo document format.
         """
-        out = zipfile.ZipFile(self.outputfilename, 'w', allowZip64=True)
+        out = zipfile.ZipFile(self.outputfilename, 'w')
 
         for info_zip in self.infile.infolist():
 

@@ -5,7 +5,9 @@ from py3o.template.data_struct import (
     Py3oModule,
     Py3oName,
     Py3oArray,
-    Py3oObject
+    Py3oObject,
+    Py3oCall,
+    Py3oDummy,
 )
 
 
@@ -100,17 +102,6 @@ class Py3oConvertor(ast.NodeVisitor):
                 d[key] = r
         return d
 
-    @staticmethod
-    def list_to_py3o_name(value):
-        """Return a Py3oObject corresponding to the list
-        """
-        res = Py3oName()
-        tmp = res
-        for elem in value:
-            tmp[elem] = Py3oName()
-            tmp = tmp[elem]
-        return res
-
     def bind_target(self, iterable, target, context):
         """Helper function to the For node.
         This function fill the context according to the iterable and
@@ -131,33 +122,31 @@ class Py3oConvertor(ast.NodeVisitor):
         # TODO: Implement some builtin decoding
 
         new_context = context.copy()
+        iter_key = iterable.get_key()
+        target_key = target.get_key()
 
-        if isinstance(iterable, str):
-            if iterable in context:
-                new_context[target] = new_context[iterable]
+        if iterable.get_size() == 1:
+            if iter_key in context:
+                new_context[target_key] = new_context[iter_key]
             else:
-                new_context[target] = Py3oArray()
+                new_context[target_key] = Py3oArray()
                 new_context[PY3O_MODULE_KEY].update(
-                    {iterable: new_context[target]}
+                    {iter_key: new_context[target_key]}
                 )
-
-        if isinstance(iterable, list):
-            # Convert the list into a context
-            iter_context = self.list_to_py3o_name(iterable)
-            # Now replace the last item by a Py3oArray()
+        else:
+            # Replace the last item by a Py3oArray()
             new_array = Py3oArray()
-            self.set_last_item(iter_context, new_array)
-            key = next(iter(iter_context))
-            if key in context:
+            self.set_last_item(iterable, new_array)
+            if iter_key in context:
                 # Update the related context with the new attribute access
-                self.update(new_context[key], iter_context[key])
-                new_context[target] = new_array
+                self.update(new_context[iter_key], iterable[iter_key])
+                new_context[target_key] = new_array
             else:
                 self.update(
                     new_context[PY3O_MODULE_KEY],
-                    {key: iter_context[key]}
+                    {iter_key: iterable[iter_key]}
                 )
-                new_context[target] = new_array
+                new_context[target_key] = new_array
 
         return new_context
 
@@ -201,23 +190,24 @@ class Py3oConvertor(ast.NodeVisitor):
             self.visit(n, body_context)
 
     def visit_Name(self, node, local_context):
-        """Simply return the name of the variable"""
-        return node.id
+        """Simply return Py3oDummy equivalent"""
+        return Py3oDummy({node.id: Py3oName()})
 
     def visit_Attribute(self, node, local_context):
-        """ Visit our children and return a tuple
-         representing the path of attribute
+        """ Visit our children and return a Py3oDummy equivalent
         Example:
-          i.egg.foo -> ['i', 'egg', 'foo']
+          i.egg.foo -> Py3oDummy({
+              'i': Py3oName({
+                  'egg': Py3oName({'foo': Py3oName()})
+              }
+          }
         """
         value = self.visit(node.value, local_context)
-        if isinstance(value, str):
-            # Create a tuple with the two values
-            return [value, node.attr]
-        if isinstance(value, list):
-            # Add the string to the tuple
-            value.append(node.attr)
+        if isinstance(value, Py3oDummy):
+            self.set_last_item(value, Py3oName({node.attr: Py3oName()}))
             return value
+        else:
+            raise NotImplementedError
 
     # TODO: Manage Tuple in for loop (for i, j in enumerate(list))
     # def visit_Tuple(self, node, local_context):
@@ -229,21 +219,57 @@ class Py3oConvertor(ast.NodeVisitor):
          attribute access.
         We only handle attribute access and simple name (i.foo or i)
         """
+        # The value should be a Py3oDummy or a Py3oCall
         value = self.visit(node.value, local_context)
-        if isinstance(value, list):
-            # An attr access, convert the list into Py3oName dicts
-            #  and add it to the local_context
-            expr = self.list_to_py3o_name(value)
-            key = next(iter(expr.keys()))
+        if isinstance(value, Py3oDummy):
+            key = value.get_key()
             if key in local_context:
-                self.update(local_context[key], expr[key])
+                self.update(local_context[key], value[key])
+                if value.get_size() == 1:
+                    # Tell the object that this is a direct access,
+                    #  used mainly by Py3oArray instances
+                    local_context[key].direct_access = True
             else:
-                local_context[PY3O_MODULE_KEY].update(expr)
-        elif isinstance(value, str):
-            # Tell the object that this is a direct access,
-            #  used mainly by Py3oArray instances
-            if value in local_context:
-                local_context[value].direct_access = True
+                local_context[PY3O_MODULE_KEY].update(value)
+
+        elif isinstance(value, Py3oCall):
+            for arg in value.values():
+                if not arg:
+                    continue
+                key = arg.get_key()
+                if key in local_context:
+                    self.update(local_context, arg[key])
+                else:
+                    local_context[PY3O_MODULE_KEY].update(arg)
+        else:
+            raise NotImplementedError
+
+    def visit_Call(self, node, local_context):
+        """Visit a function call.
+        """
+        # For now, we just gather the args/kwargs to send to the function
+        # Get the args
+        args = [self.visit(arg, local_context) for arg in node.args]
+        # Get the kwargs
+        kwargs = {}
+        for keyword in node.keywords:
+            cut_keyword = self.visit(keyword, local_context)
+            # Keywords are tuple in the form (key, val)
+            kwargs[cut_keyword[0]] = cut_keyword[1]
+        # Create the Py3oCall coresponding to those value
+        call = Py3oCall({n: arg for n, arg in enumerate(args)})
+        call.update({k: arg for k, arg in kwargs.items()})
+        # Set the name of the function
+        call.name = self.visit(node.func, local_context)
+        return call
+
+    def visit_keyword(self, node, local_context):
+        return node.arg, self.visit(node.value, local_context)
+
+    def visit_Str(self, node, local_context):
+        """Do nothing
+        """
+        return Py3oDummy()
 
 
 # Debug functions used to pretty print ast trees

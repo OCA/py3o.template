@@ -426,6 +426,21 @@ class TestHelpers(unittest.TestCase):
         json_str = res.render(user_data)
         assert json_str == {'my2list': [0, 1, 2, 3, 4]}
 
+    def test_access_global_variable(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_access_global_variable.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'var0': 0,
+            'var1': 1,
+            'var2': 2,
+        }
+        json_str = res.render(user_data)
+        assert json_str == {'var0': 0, 'var1': 1, 'var2': 2}
+
     def test_iterable_with_global_attribute(self):
         py_expr = self.__load_and_convert_template(
             'tests/templates/py3o_iterable_with_global_attribute.odt'
@@ -593,3 +608,49 @@ class TestHelpers(unittest.TestCase):
         user_data = {}
         with self.assertRaises(Py3oDataError):
             res.render(user_data)
+
+#    def test_enumerate(self):
+#        #TODO: Make this works
+#        py_expr = self.__load_and_convert_template(
+#            'tests/templates/py3o_enumerate.odt'
+#        )
+#        p = Py3oConvertor()
+#        res = p(py_expr)
+#
+#        user_data = {
+#            'mylist': [10, 9, 8, 7, 6],
+#        }
+#        json_dict = res.render(user_data)
+#        assert json_dict == {
+#            'mylist': [10, 9, 8, 7, 6],
+#        }
+
+    def test_template_function_call(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_template_function_call.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+        user_data = {
+            'amount': 32.123,
+        }
+        json_dict = res.render(user_data)
+        assert json_dict == {
+            'amount': 32.123,
+        }
+
+    # def test_template_function_call_in_for_loop(self):
+    #     py_expr = self.__load_and_convert_template(
+    #         'tests/templates/py3o_template_function_call_in_for_loop.odt'
+    #     )
+    #     p = Py3oConvertor()
+    #     res = p(py_expr)
+    #     user_data = {
+    #         'var': 32.123,
+    #         'test': '2.3',
+    #     }
+    #     json_dict = res.render(user_data)
+    #     assert json_dict == {
+    #         'var': 32.123,
+    #         'test': '2.3',
+    #     }

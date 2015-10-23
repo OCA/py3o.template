@@ -20,6 +20,19 @@ class Py3oObject(dict):
             res
         )
 
+    def get_size(self):
+        """Return the max depth of the object
+        """
+        sizes = [val.get_size() for val in self.values()]
+        if not sizes:
+            return 0
+        return max(sizes) + 1
+
+    def get_key(self):
+        """Return the first key
+        """
+        return next(iter(self.keys()))
+
 
 class Py3oModule(Py3oObject):
     def render(self, data):
@@ -34,10 +47,14 @@ class Py3oModule(Py3oObject):
                     "The key '%s' must be present"
                     " in your data dictionary" % key
                 )
-            # Spread only the appropriate data to its children
-            val = value.render(data.get(key))
-            if val:
-                res[key] = val
+            # If the value is None, then we have a simple variable
+            if value is not None:
+                # Spread only the appropriate data to its children
+                val = value.render(data.get(key))
+                if val is not None:
+                    res[key] = val
+            else:
+                res[key] = data.get(key)
         return res
 
 
@@ -94,8 +111,20 @@ class Py3oName(Py3oObject):
         return res
 
 
+class Py3oCall(Py3oObject):
+    """This class holds information of function call.
+    'name' holds the name of function as a Py3oName
+    The keys are the arguments as:
+        - numeric keys are positional arguments oredered ascendently
+        - string keys are keywords arguments
+    """
+    def __init__(self, dict):
+        super(Py3oCall, self).__init__(dict)
+        self.name = None
+
+
 class Py3oDummy(Py3oObject):
-    """ This class holds unused defined attribute,
+    """ This class holds temporary dict, or unused attribute
      such as counters from enumerate()
     """
     pass
