@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 import codecs
 
-version = '0.9.5'
+version = '0.9.6'
 
 setup(
     name='py3o.template',
