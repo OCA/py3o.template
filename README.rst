@@ -92,9 +92,14 @@ directory.
 Changelog
 =========
 
-0.9.4 not yet released
-~~~~~~~~~~~~~~~~~~~~~~
+0.9.5 Oct. 30 2015
+~~~~~~~~~~~~~~~~~~~~
 
+  - 0.9.5 is just a rerelease of 0.9.4 with this README correctly
+    amended...
+
+  - Added support for formatting functions in the template in
+    order to control date number localization
   - Added reference to original inspiration in the README
   - Added example source code for ODS output.
   - Fixed a memory usage in case of big output file size that
