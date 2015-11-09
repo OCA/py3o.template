@@ -1,5 +1,4 @@
 import ast
-from pprint import pprint
 from textwrap import dedent
 from py3o.template.data_struct import (
     Py3oModule,
