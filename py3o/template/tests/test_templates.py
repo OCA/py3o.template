@@ -385,3 +385,81 @@ class TestTemplate(unittest.TestCase):
         result_e = result_e.replace("\n", "").replace(" ", "")
 
         assert result_a == result_e
+
+    def test_format_date(self):
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_template_format_date.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'date': '2015-08-02',
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/template_format_date_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        assert result_a == result_e
+
+    def test_style_application_with_function_call(self):
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/style_application_with_function_call.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'date': '2015-08-02',
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template', (
+                    'tests/templates/'
+                    'style_application_with_function_call_result.xml'
+                )
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        assert result_a == result_e

@@ -1,5 +1,5 @@
 import ast
-import pprint
+from pprint import pprint
 from textwrap import dedent
 from py3o.template.data_struct import (
     Py3oModule,
@@ -128,10 +128,13 @@ class Py3oConvertor(ast.NodeVisitor):
         if iterable.get_size() == 1:
             if iter_key in context:
                 new_context[target_key] = new_context[iter_key]
+            elif iter_key in context[PY3O_MODULE_KEY]:
+                new_context[target_key] = context[PY3O_MODULE_KEY][iter_key]
             else:
                 new_context[target_key] = Py3oArray()
-                new_context[PY3O_MODULE_KEY].update(
-                    {iter_key: new_context[target_key]}
+                self.update(
+                    new_context[PY3O_MODULE_KEY],
+                    Py3oDummy({iter_key: new_context[target_key]})
                 )
         else:
             # Replace the last item by a Py3oArray()
@@ -230,7 +233,7 @@ class Py3oConvertor(ast.NodeVisitor):
                     #  used mainly by Py3oArray instances
                     local_context[key].direct_access = True
             else:
-                local_context[PY3O_MODULE_KEY].update(value)
+                self.update(local_context[PY3O_MODULE_KEY], value)
 
         elif isinstance(value, Py3oCall):
             for arg in value.values():
@@ -238,9 +241,9 @@ class Py3oConvertor(ast.NodeVisitor):
                     continue
                 key = arg.get_key()
                 if key in local_context:
-                    self.update(local_context, arg[key])
+                    self.update(local_context[key], arg[key])
                 else:
-                    local_context[PY3O_MODULE_KEY].update(arg)
+                    self.update(local_context[PY3O_MODULE_KEY], arg)
         else:
             raise NotImplementedError
 
@@ -270,6 +273,30 @@ class Py3oConvertor(ast.NodeVisitor):
         """Do nothing
         """
         return Py3oDummy()
+
+    def visit_If(self, node, local_context):
+        vars = self.visit(node.test)
+        if not isinstance(vars, list):
+            vars = [vars]
+        for var in vars:
+            key = var.get_key()
+            if key in local_context:
+                self.update(local_context[key], var[key])
+                if var.get_size() == 1:
+                    local_context[key].direct_access = True
+            else:
+                self.update(local_context[PY3O_MODULE_KEY], var)
+
+    def visit_Compare(self, node, local_context):
+        comparators = []
+        for comparator in node.comparators:
+            res = self.visit(comparator, local_context)
+            if res:
+                comparators.append(res)
+        left = self.visit(node.left, local_context)
+        if left:
+            comparators.append(left)
+        return comparators
 
 
 # Debug functions used to pretty print ast trees

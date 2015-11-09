@@ -609,6 +609,71 @@ class TestHelpers(unittest.TestCase):
         with self.assertRaises(Py3oDataError):
             res.render(user_data)
 
+    def test_test_statement(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_test_statement.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'var0': 42,
+            'myvar': Mock(
+                var0=43,
+                var1='val',
+            ),
+        }
+        json_dict = res.render(user_data)
+        assert json_dict == {
+            'var0': 42,
+            'myvar': {
+                'var0': 43,
+                'var1': 'val',
+            },
+        }
+
+    def test_double_loop_on_same_object(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_double_loop_on_same_object.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {
+            'varlist': [
+                Mock(var0=42, var1=-42),
+                Mock(var0=170, var1=-170),
+            ]
+        }
+        json_dict = res.render(user_data)
+        assert json_dict == {
+            'varlist': [
+                {'var0': 42, 'var1': -42},
+                {'var0': 170, 'var1': -170},
+            ]
+        }
+
+    def test_false_value(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/test_false_value.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        false_mock = Mock()
+        false_mock.__nonzero__ = lambda x: False
+        false_mock.__bool__ = lambda x: False
+
+        user_data = {
+            'false_value': false_mock,
+        }
+        json_dict = res.render(user_data)
+        print(json_dict)
+        assert json_dict == {
+            'false_value': u'',
+        }
+
+
 #    def test_enumerate(self):
 #        #TODO: Make this works
 #        py_expr = self.__load_and_convert_template(

@@ -1,6 +1,7 @@
 """This file contains all the data structures used by Py3oConvertor
 See the docstring of Py3oConvertor.__call__() for further information
 """
+from numbers import Number
 
 
 class Py3oDataError(Exception):
@@ -102,7 +103,11 @@ class Py3oName(Py3oObject):
         to the user's data
         """
         if not self:
-            return data
+            # We only send False values if the value is a number
+            # otherwise we convert the False into an empty string
+            if isinstance(data, Number):
+                return data
+            return data or u""
         res = {}
 
         for key, value in self.items():

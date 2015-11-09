@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import decimal
 import logging
+from datetime import datetime
 import os
 import traceback
 import hashlib
@@ -158,17 +159,22 @@ def get_list_transformer(namespaces):
     )
 
 
-def get_all_python_expression(content_tree, namespaces):
+def get_all_python_expression(content_trees, namespaces):
     """Return all the python expressions found in the whole document
     """
     xpath_expr = (
         "//text:a[starts-with(@xlink:href, 'py3o://')] | "
         "//text:user-field-get[starts-with(@text:name, 'py3o.')]"
     )
-    return content_tree.xpath(
-        xpath_expr,
-        namespaces=namespaces
-    )
+    res = []
+    for content_tree in content_trees:
+        res.extend(
+            content_tree.xpath(
+                xpath_expr,
+                namespaces=namespaces,
+            )
+        )
+    return res
 
 
 def get_image_frames(content_tree, namespaces):
@@ -207,19 +213,35 @@ def get_soft_breaks(content_tree, namespaces):
     )
 
 
-def format_amount(amount):
+def format_amount(amount, format="%f"):
     """Replace the thousands separator from '.' to ','
     """
     # TODO: maybe add some format options in the function's args
     if isinstance(amount, float) or isinstance(amount, decimal.Decimal):
-        return str(amount).replace('.', ',')
+        return (format % amount).replace('.', ',')
     return amount
 
 
-def format_percentage(val, format_str="%0.2f %%"):
-    """Format the percentage
+ISO_DATE_FORMAT = '%Y-%m-%d'
+ISO_DATETIME_FORMAT = ISO_DATE_FORMAT + '%H:%M:%S'
+
+
+def format_date(date, format=ISO_DATE_FORMAT):
     """
-    return (format_str % val).replace('.', ',')
+    Format the date according to format string
+    :param date: datetime.datetime object or ISO formatted string
+     ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S')
+    """
+    if isinstance(date, str) or isinstance(date, unicode):
+        try:
+            date = datetime.strptime(date, ISO_DATE_FORMAT)
+        except ValueError:
+            try:
+                date = datetime.strptime(date, ISO_DATETIME_FORMAT)
+            except ValueError as e:
+                raise TemplateException(e)
+    res = date.strftime(format)
+    return res
 
 
 class ImageInjector(object):
@@ -413,7 +435,7 @@ class Template(object):
         """
         res = []
         text_nmspc = self.namespaces['text']
-        for e in get_all_python_expression(self.content_trees[0],
+        for e in get_all_python_expression(self.content_trees,
                                            self.namespaces):
             if e.tag == "{%s}user-field-get" % text_nmspc:
                 py_expr = e.get("{%s}name" % text_nmspc)
@@ -469,8 +491,21 @@ class Template(object):
                 # We construct a python for loop with the py3o one
                 python_src += pindent() + 'for ' + expression[5:-1] + ':\n'
                 indent += 1
+                # Care of empty loop statement
+                if expressions[expressions.index(expression) + 1] == '/for':
+                    python_src += pindent() + 'pass\n'
             elif expression == '/for':
                 # End of for loop
+                indent -= 1
+            elif expression.startswith('if='):
+                # Construct an if statement
+                python_src += pindent() + 'if ' + expression[4:-1] + ':\n'
+                indent += 1
+                # Care of empty if statement
+                if expressions[expressions.index(expression) + 1] == '/if':
+                    python_src += pindent() + 'pass\n'
+            elif expression == '/if':
+                # End of if
                 indent -= 1
             elif expression.startswith('function='):
                 # Convert to a function call
@@ -516,7 +551,8 @@ class Template(object):
                 py3o_base = py3o_statement[7:]
 
                 if not py3o_base.startswith("/"):
-                    opened_starts.append(link)
+                    if not py3o_base.startswith('function'):
+                        opened_starts.append(link)
                     starting_tags.append((link, py3o_base))
 
                 else:
@@ -583,6 +619,10 @@ class Template(object):
         keep_start_boundary = False
         keep_end_boundary = False
 
+        # keep the link's previous node style
+        # if we need to apply its style later
+        previous_node = link.getprevious()
+
         if parent.getparent() is not None and parent.getparent().tag == (
             "{%s}table-cell" % self.namespaces['table']
         ):
@@ -591,16 +631,18 @@ class Template(object):
             opening_cell = opening_paragraph.getparent()
 
             # same for closing
-            closing_paragraph = closing_link.getparent()
-            closing_cell = closing_paragraph.getparent()
-
-            if opening_cell == closing_cell:
-                # block is fully in a single cell
-                opening_row = opening_paragraph
-                closing_row = closing_paragraph
+            if closing_link is not None:
+                closing_paragraph = closing_link.getparent()
+                closing_cell = closing_paragraph.getparent()
+                if opening_cell == closing_cell:
+                    # block is fully in a single cell
+                    opening_row = opening_paragraph
+                    closing_row = closing_paragraph
+                else:
+                    opening_row = opening_cell.getparent()
+                    closing_row = closing_cell.getparent()
             else:
-                opening_row = opening_cell.getparent()
-                closing_row = closing_cell.getparent()
+                opening_row = opening_paragraph
 
         elif parent.tag == "{%s}p" % self.namespaces['text']:
             # if we are using text we want to keep start/end nodes
@@ -643,8 +685,21 @@ class Template(object):
             closing_link.getparent().remove(closing_link)
 
         if instruction == 'content':
+            # Find the previous node style
+            style_node = previous_node if previous_node is not None else parent
+
+            # Create a span
+            new_span = lxml.etree.Element(
+                '{%s}span' % self.namespaces['text'],
+                attrib={
+                    '{%s}style-name' % self.namespaces['text']: style_node.get(
+                        '{%s}style-name' % self.namespaces['text']
+                    )
+                }
+            )
             # Put the span at the same place the link was
-            opening_row.append(genshi_node)
+            new_span.append(genshi_node)
+            opening_row.append(new_span)
         else:
             try:
                 move_siblings(
@@ -791,7 +846,7 @@ class Template(object):
         return {
             "decimal": decimal,
             "format_amount": format_amount,
-            "format_percentage": format_percentage,
+            "format_date": format_date,
             "__py3o_image": ImageInjector(self),
         }
 
