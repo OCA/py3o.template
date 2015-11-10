@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import datetime
 import os
 import unittest
 import zipfile
@@ -397,7 +398,13 @@ class TestTemplate(unittest.TestCase):
         template = Template(template_name, outname)
 
         data_dict = {
-            'date': '2015-08-02',
+            'datestring': '2015-08-02',
+            'datetimestring': '2015-08-02 17:05:06',
+            'datestring2': '2015-10-15',
+            'datetime': datetime.datetime.strptime(
+                '2015-11-13 17:00:20',
+                '%Y-%m-%d %H:%M:%S'
+            ),
         }
 
         template.render(data_dict)
@@ -423,6 +430,31 @@ class TestTemplate(unittest.TestCase):
         result_e = result_e.replace("\n", "").replace(" ", "")
 
         assert result_a == result_e
+
+    def test_format_date_exception(self):
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_template_format_date_exception.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'date': '2015/08/02',
+        }
+
+        # this will raise a TemplateException... or the test will fail
+        error_occured = False
+        try:
+            template.render(data_dict)
+
+        except TemplateException as e:
+            error_occured = True
+
+        # and make sure we raised
+        assert error_occured is True
 
     def test_style_application_with_function_call(self):
         template_name = pkg_resources.resource_filename(

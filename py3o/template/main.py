@@ -223,7 +223,7 @@ def format_amount(amount, format="%f"):
 
 
 ISO_DATE_FORMAT = '%Y-%m-%d'
-ISO_DATETIME_FORMAT = ISO_DATE_FORMAT + '%H:%M:%S'
+ISO_DATETIME_FORMAT = ISO_DATE_FORMAT + ' %H:%M:%S'
 
 
 def format_date(date, format=ISO_DATE_FORMAT):
@@ -232,7 +232,7 @@ def format_date(date, format=ISO_DATE_FORMAT):
     :param date: datetime.datetime object or ISO formatted string
      ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S')
     """
-    if isinstance(date, str) or isinstance(date, unicode):
+    if isinstance(date, str):
         try:
             date = datetime.strptime(date, ISO_DATE_FORMAT)
         except ValueError:
