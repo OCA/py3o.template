@@ -34,6 +34,34 @@ class Py3oObject(dict):
         """
         return next(iter(self.keys()))
 
+    def rupdate(self, other):
+        """Update recursively the Py3oObject self with the Py3oObject other.
+        Example:
+        self = Py3oObject({
+            'a': Py3oObject({}),
+            'b': Py3oObject({
+                'c': Py3oObject({}),
+            }),
+        })
+        other = Py3oObject({
+            'b': Py3oObject({
+                'd': Py3oObject({}),
+            }),
+        })
+        res = Py3oObject({
+            'a': Py3oObject({}),
+            'b': Py3oObject({
+                'c': Py3oObject({}),
+                'd': Py3oObject({}),
+            }),
+        })
+        """
+        for key, value in other.items():
+            if key in self:
+                self[key].rupdate(value)
+            else:
+                self[key] = value
+
 
 class Py3oModule(Py3oObject):
     def render(self, data):

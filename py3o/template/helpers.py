@@ -22,19 +22,21 @@ class Py3oConvertor(ast.NodeVisitor):
 
         A local_context is created at the beginning, and is supposed to hold
          the defined variables in the form.
-        When we find an Expression (visit_Expr), we search the context to find
-         the related variable, and tell it that we have accessed it.
-        The context is then returned to the user and can be jsonified.
+        When we find an Expression (visit_expr, visit_if), we search
+         the context to find the related variable, and tell
+         it that we have accessed it.
+        The context is then returned to the user and can
+         be converted into dict.
 
         The context can be considered as an instance of Py3oObject,
          containing other instances of Py3oObject, and so on.
         All Py3oObject classes inherit from dict, so the hierarchy is
          equivalent to a dict of dict, with specific functions.
         The main node is always a Py3oModule instance.
-        For loops are represented as Py3oArray instances and can contain both
-         an array of python base types (int, str, float..)
-          and an array of Py3oObjects
-        Simple attributes call are represented as Py3oName instances.
+        For loops are represented as Py3oArray instances and can contain
+         an array of Py3oObjects.
+        Simple attributes calls are represented as Py3oName instances.
+
 
         Example of conversion:
 
@@ -85,22 +87,6 @@ class Py3oConvertor(ast.NodeVisitor):
             tmp, keys = next_tmp, next_keys
         tmp[next(iter(keys))] = inst
 
-    def update(self, d, n):
-        """Update recursively the Py3oObject d with the Py3oObject n.
-        Example:
-         d =   {'a': 0, 'b': {'c': 1}}
-         n =   {'b': {'d': 2}}
-         res = {'a': 0, 'b': {'c': 1, 'd': 2}}
-        """
-        for key, value in n.items():
-            if isinstance(value, Py3oObject):
-                if key in d:
-                    r = self.update(d[key], value)
-                else:
-                    r = value
-                d[key] = r
-        return d
-
     def bind_target(self, iterable, target, context):
         """Helper function to the For node.
         This function fill the context according to the iterable and
@@ -131,8 +117,7 @@ class Py3oConvertor(ast.NodeVisitor):
                 new_context[target_key] = context[PY3O_MODULE_KEY][iter_key]
             else:
                 new_context[target_key] = Py3oArray()
-                self.update(
-                    new_context[PY3O_MODULE_KEY],
+                new_context[PY3O_MODULE_KEY].rupdate(
                     Py3oDummy({iter_key: new_context[target_key]})
                 )
         else:
@@ -141,11 +126,10 @@ class Py3oConvertor(ast.NodeVisitor):
             self.set_last_item(iterable, new_array)
             if iter_key in context:
                 # Update the related context with the new attribute access
-                self.update(new_context[iter_key], iterable[iter_key])
+                new_context[iter_key].rupdate(iterable[iter_key])
                 new_context[target_key] = new_array
             else:
-                self.update(
-                    new_context[PY3O_MODULE_KEY],
+                new_context[PY3O_MODULE_KEY].rupdate(
                     {iter_key: iterable[iter_key]}
                 )
                 new_context[target_key] = new_array
@@ -156,11 +140,11 @@ class Py3oConvertor(ast.NodeVisitor):
         """Call the node-class specific visit function,
          and propagate the context
         """
-        method = 'visit_' + node.__class__.__name__
+        method = 'visit_' + node.__class__.__name__.lower()
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node, local_context)
 
-    def visit_Module(self, node, local_context):
+    def visit_module(self, node, local_context):
         """The main node, should be alone.
         Here we initialize the context and loop for all our children
         """
@@ -176,7 +160,7 @@ class Py3oConvertor(ast.NodeVisitor):
 
         return module
 
-    def visit_For(self, node, local_context):
+    def visit_for(self, node, local_context):
         """Update the context so our chidren have access
          to the newly declared variable.
         """
@@ -191,11 +175,11 @@ class Py3oConvertor(ast.NodeVisitor):
         for n in node.body:
             self.visit(n, body_context)
 
-    def visit_Name(self, node, local_context):
+    def visit_name(self, node, local_context):
         """Simply return Py3oDummy equivalent"""
         return Py3oDummy({node.id: Py3oName()})
 
-    def visit_Attribute(self, node, local_context):
+    def visit_attribute(self, node, local_context):
         """ Visit our children and return a Py3oDummy equivalent
         Example:
           i.egg.foo -> Py3oDummy({
@@ -215,7 +199,7 @@ class Py3oConvertor(ast.NodeVisitor):
     # def visit_Tuple(self, node, local_context):
     #     pass
 
-    def visit_Expr(self, node, local_context):
+    def visit_expr(self, node, local_context):
         """An Expr is the way to express the will of printing a variable
          in a Py3oTemplate. So here we must update the context to map all
          attribute access.
@@ -226,13 +210,13 @@ class Py3oConvertor(ast.NodeVisitor):
         if isinstance(value, Py3oDummy):
             key = value.get_key()
             if key in local_context:
-                self.update(local_context[key], value[key])
+                local_context[key].rupdate(value[key])
                 if value.get_size() == 1:
                     # Tell the object that this is a direct access,
                     #  used mainly by Py3oArray instances
                     local_context[key].direct_access = True
             else:
-                self.update(local_context[PY3O_MODULE_KEY], value)
+                local_context[PY3O_MODULE_KEY].rupdate(value)
 
         elif isinstance(value, Py3oCall):
             for arg in value.values():
@@ -240,13 +224,13 @@ class Py3oConvertor(ast.NodeVisitor):
                     continue
                 key = arg.get_key()
                 if key in local_context:
-                    self.update(local_context[key], arg[key])
+                    local_context[key].rupdate(arg[key])
                 else:
-                    self.update(local_context[PY3O_MODULE_KEY], arg)
+                    local_context[PY3O_MODULE_KEY].rupdate(arg)
         else:
             raise NotImplementedError
 
-    def visit_Call(self, node, local_context):
+    def visit_call(self, node, local_context):
         """Visit a function call.
         """
         # For now, we just gather the args/kwargs to send to the function
@@ -268,25 +252,25 @@ class Py3oConvertor(ast.NodeVisitor):
     def visit_keyword(self, node, local_context):
         return node.arg, self.visit(node.value, local_context)
 
-    def visit_Str(self, node, local_context):
+    def visit_str(self, node, local_context):
         """Do nothing
         """
         return Py3oDummy()
 
-    def visit_If(self, node, local_context):
+    def visit_if(self, node, local_context):
         vars = self.visit(node.test)
         if not isinstance(vars, list):
             vars = [vars]
         for var in vars:
             key = var.get_key()
             if key in local_context:
-                self.update(local_context[key], var[key])
+                local_context[key].rupdate(var[key])
                 if var.get_size() == 1:
                     local_context[key].direct_access = True
             else:
-                self.update(local_context[PY3O_MODULE_KEY], var)
+                local_context[PY3O_MODULE_KEY].rupdate(var)
 
-    def visit_Compare(self, node, local_context):
+    def visit_compare(self, node, local_context):
         comparators = []
         for comparator in node.comparators:
             res = self.visit(comparator, local_context)
