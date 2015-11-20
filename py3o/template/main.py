@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import decimal
 import logging
+import warnings
 from datetime import datetime
 import os
 import traceback
@@ -216,7 +217,6 @@ def get_soft_breaks(content_tree, namespaces):
 def format_amount(amount, format="%f"):
     """Replace the thousands separator from '.' to ','
     """
-    # TODO: maybe add some format options in the function's args
     if isinstance(amount, float) or isinstance(amount, decimal.Decimal):
         return (format % amount).replace('.', ',')
     return amount
@@ -450,7 +450,14 @@ class Template(object):
 
     def get_user_instructions(self):
         """ Public method to help report engine to find all instructions
+        This method will be removed in a future version.
+        Please use :meth:`.Py3oTemplate.get_all_user_python_expression`.
         """
+        warnings.warn(
+            "This method will be removed in a future version. "
+            "Please use get_all_user_python_expression() instead.",
+            DeprecationWarning,
+        )
         res = []
         # TODO: Check if instructions can be stored in other content_trees
         for e in get_instructions(self.content_trees[0], self.namespaces):
@@ -465,8 +472,16 @@ class Template(object):
         """a public method to help report engines to introspect
         a template and find what data it needs and how it will be
         used
-        returns a list of user variable names without the leading 'py3o.'"""
+        returns a list of user variable names without the leading 'py3o.'
+        This method will be removed in a future version.
+        Please use :meth:`.Py3oTemplate.get_all_user_python_expression`.
+        """
         # TODO: Check if some user fields are stored in other content_trees
+        warnings.warn(
+            "This method will be removed in a future version. "
+            "Please use get_all_user_python_expression() instead.",
+            DeprecationWarning,
+        )
         return [
             e.get('{%s}name' % e.nsmap.get('text'))[5:]
             for e in get_user_fields(self.content_trees[0], self.namespaces)
@@ -483,7 +498,8 @@ class Template(object):
                     parent.text = soft_break.tail
             parent.remove(soft_break)
 
-    def convert_py3o_to_python_ast(self, expressions):
+    @staticmethod
+    def convert_py3o_to_python_ast(expressions):
         python_src = ''
         indent = 0
 
@@ -495,30 +511,30 @@ class Template(object):
             if expression.startswith('for='):
                 # For loop
                 # We construct a python for loop with the py3o one
-                python_src += pindent() + 'for ' + expression[5:-1] + ':\n'
+                python_src += '{}for {}:\n'.format(pindent(), expression[5:-1])
                 indent += 1
                 # Care of empty loop statement
                 if expressions[expressions.index(expression) + 1] == '/for':
-                    python_src += pindent() + 'pass\n'
+                    python_src += '{}pass\n'.format(pindent())
             elif expression == '/for':
                 # End of for loop
                 indent -= 1
             elif expression.startswith('if='):
                 # Construct an if statement
-                python_src += pindent() + 'if ' + expression[4:-1] + ':\n'
+                python_src += '{}if {}:\n'.format(pindent(), expression[4:-1])
                 indent += 1
                 # Care of empty if statement
                 if expressions[expressions.index(expression) + 1] == '/if':
-                    python_src += pindent() + 'pass\n'
+                    python_src += '{}pass\n'.format(pindent())
             elif expression == '/if':
                 # End of if
                 indent -= 1
             elif expression.startswith('function='):
                 # Convert to a function call
-                python_src += pindent() + expression[10:-1] + '\n'
+                python_src += '{}{}\n'.format(pindent(), expression[10:-1])
             else:
                 # Variable access
-                python_src += pindent() + expression + '\n'
+                python_src += '{}{}\n'.format(pindent(), expression)
         return python_src
 
     @staticmethod
@@ -570,7 +586,8 @@ class Template(object):
 
         return starting_tags, closing_tags
 
-    def validate_link(self, link, py3o_base):
+    @staticmethod
+    def validate_link(link, py3o_base):
         """this method will ensure a link is valide or raise a TemplateException
 
         :param link: a link node found in the tree
