@@ -92,16 +92,16 @@ directory.
 Changelog
 =========
 
-0.9.6 Oct. 20 2015
-~~~~~~~~~~~~~~~~~~~~
+0.9.6 Nov. 20 2015
+~~~~~~~~~~~~~~~~~~
 
- - Fixing formatting function 
- - Fixing if="" functionality that was not correctly parsed
- - Display empty string instead of "False" when browsing relational fiel:
- - Code formatting in the ast parser
+  - Fixed formatting function 
+  - Fixed if="" functionality that was not correctly parsed
+  - Display empty string instead of "False" when browsing relational field
+  - Code formatting in the ast parser
 
 0.9.5 Oct. 30 2015
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
   - 0.9.5 is just a rerelease of 0.9.4 with this README correctly
     amended...
