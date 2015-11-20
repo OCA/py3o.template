@@ -389,6 +389,31 @@ class TestHelpers(unittest.TestCase):
         soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
         assert len(soft_breaks) == 0
 
+    def test_remove_soft_breaks_without_tail(self):
+        template_xml = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_page_break_without_tail.odt'
+        )
+        t = Template(template_xml, get_secure_filename())
+        soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
+        assert len(soft_breaks) > 0
+
+        t.remove_soft_breaks()
+        soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
+        assert len(soft_breaks) == 0
+
+        t = Template(template_xml, get_secure_filename())
+        soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
+        assert len(soft_breaks) > 0
+
+        t.render(data={"items": [
+            {'Amount': 3, 'Currency': 'D'},
+            {'Amount': 2, 'Currency': 'E'},
+            {'Amount': 1, 'Currency': 'C'},
+        ]})
+        soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
+        assert len(soft_breaks) == 0
+
     def __load_and_convert_template(self, path):
         template_xml = pkg_resources.resource_filename(
             'py3o.template',

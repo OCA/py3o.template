@@ -1,7 +1,7 @@
 from py3o.template import Template
 
 t = Template(
-    "py3o_example_template_page_break.odt",
+    "py3o_page_break_without_tail.odt",
     "py3o_example_page_break_output.odt"
 )
 
