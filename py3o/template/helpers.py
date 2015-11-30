@@ -1,4 +1,5 @@
 import ast
+import pprint
 from textwrap import dedent
 from py3o.template.data_struct import (
     Py3oModule,
@@ -225,6 +226,10 @@ class Py3oConvertor(ast.NodeVisitor):
                 key = arg.get_key()
                 if key in local_context:
                     local_context[key].rupdate(arg[key])
+                    if arg.get_size() == 1:
+                        # Tell the object that this is a direct access,
+                        #  used mainly by Py3oArray instances
+                        local_context[key].direct_access = True
                 else:
                     local_context[PY3O_MODULE_KEY].rupdate(arg)
         else:
@@ -258,17 +263,20 @@ class Py3oConvertor(ast.NodeVisitor):
         return Py3oDummy()
 
     def visit_if(self, node, local_context):
-        vars = self.visit(node.test)
-        if not isinstance(vars, list):
-            vars = [vars]
-        for var in vars:
-            key = var.get_key()
+        tests = self.visit(node.test)
+        if not isinstance(tests, list):
+            tests = [tests]
+        for test in tests:
+            key = test.get_key()
             if key in local_context:
-                local_context[key].rupdate(var[key])
-                if var.get_size() == 1:
+                local_context[key].rupdate(test[key])
+                if test.get_size() == 1:
                     local_context[key].direct_access = True
             else:
-                local_context[PY3O_MODULE_KEY].rupdate(var)
+                local_context[PY3O_MODULE_KEY].rupdate(test)
+
+        for n in node.body:
+            self.visit(n, local_context)
 
     def visit_compare(self, node, local_context):
         comparators = []
@@ -280,6 +288,9 @@ class Py3oConvertor(ast.NodeVisitor):
         if left:
             comparators.append(left)
         return comparators
+
+    def visit_pass(self, node, local_context):
+        pass
 
 
 # Debug functions used to pretty print ast trees

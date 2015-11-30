@@ -693,7 +693,6 @@ class TestHelpers(unittest.TestCase):
             'false_value': false_mock,
         }
         json_dict = res.render(user_data)
-        print(json_dict)
         assert json_dict == {
             'false_value': u'',
         }
@@ -744,3 +743,171 @@ class TestHelpers(unittest.TestCase):
     #         'var': 32.123,
     #         'test': '2.3',
     #     }
+
+    # Tes if function
+
+    def test_if(self):
+        expressions = [
+            'if="item.mytest"',
+            'item.myvar',
+            'item.myvar2',
+            '/if',
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'item': Mock(mytest=0, myvar=1, myvar2=2),
+        })
+
+        assert json_dict == {
+            'item': {'mytest': 0, 'myvar': 1, 'myvar2': 2},
+        }
+
+    def test_if_global(self):
+        expressions = [
+            'if="mytest"',
+            'item.myvar',
+            'item.myvar2',
+            '/if',
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'item': Mock(myvar=1, myvar2=2),
+            'mytest': 0
+        })
+
+        assert json_dict == {
+            'mytest': 0,
+            'item': {'myvar': 1, 'myvar2': 2},
+        }
+
+    def test_if_global_array(self):
+        expressions = [
+            'for="var in myarray"',
+            'if="var"',
+            'var',
+            '/if',
+            '/for',
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'myarray': list(range(0, 5)),
+        })
+
+        assert json_dict == {
+            'myarray': list(range(0, 5)),
+        }
+
+    def test_if_in_for(self):
+        expressions = [
+            'for="item in object.mylist"',
+            'if="item.mytest"',
+            'item.myvar',
+            'item.myvar2',
+            '/if',
+            '/for',
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'object': Mock(mylist=[
+                Mock(mytest=0, myvar=1, myvar2=2),
+                Mock(mytest=3, myvar=4, myvar2=5),
+                Mock(mytest=6, myvar=7, myvar2=8),
+            ])
+        })
+
+        assert json_dict == {
+            'object': {
+                'mylist': [
+                    {'mytest': 0, 'myvar': 1, 'myvar2': 2},
+                    {'mytest': 3, 'myvar': 4, 'myvar2': 5},
+                    {'mytest': 6, 'myvar': 7, 'myvar2': 8},
+                ]
+            }
+        }
+
+    def test_if_comparator(self):
+        expressions = [
+            'if="a in b"',
+            '/if'
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'a': 1,
+            'b': [0, 1, 2],
+        })
+
+        assert json_dict == {
+            'a': 1,
+            'b': [0, 1, 2],
+        }
+
+    # Test function
+
+    def test_function_in_for(self):
+        expressions = [
+            'for="item in object.mylist"',
+            'format_date(item.date)',
+            '/for',
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'object': Mock(mylist=[
+                Mock(date='2015-12-13'),
+                Mock(date='2015-12-14'),
+                Mock(date='2015-12-15'),
+            ])
+        })
+
+        assert json_dict == {
+            'object': {
+                'mylist': [
+                    {'date': '2015-12-13'},
+                    {'date': '2015-12-14'},
+                    {'date': '2015-12-15'},
+                ]
+            }
+        }
+
+    def test_function_keywords(self):
+        expressions = [
+            'myfunc(object.var, k=object.k)',
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'object': Mock(var=0, k=1),
+        })
+
+        assert json_dict == {
+            'object': {'var': 0, 'k': 1}
+        }
+
+    def test_function_array(self):
+        expressions = [
+            'for="var in myarray"',
+            'myfunc(var)',
+            '/for'
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'myarray': [0, 1, 2, 3],
+        })
+
+        assert json_dict == {
+            'myarray': [0, 1, 2, 3],
+        }

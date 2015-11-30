@@ -76,14 +76,10 @@ class Py3oModule(Py3oObject):
                     "The key '%s' must be present"
                     " in your data dictionary" % key
                 )
-            # If the value is None, then we have a simple variable
-            if value is not None:
-                # Spread only the appropriate data to its children
-                val = value.render(data.get(key))
-                if val is not None:
-                    res[key] = val
-            else:
-                res[key] = data.get(key)
+            # Spread only the appropriate data to its children
+            val = value.render(data.get(key))
+            if val is not None:
+                res[key] = val
         return res
 
 
