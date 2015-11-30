@@ -193,7 +193,7 @@ class Py3oConvertor(ast.NodeVisitor):
         if isinstance(value, Py3oDummy):
             self.set_last_item(value, Py3oName({node.attr: Py3oName()}))
             return value
-        else:
+        else:  # pragma: no cover
             raise NotImplementedError
 
     # TODO: Manage Tuple in for loop (for i, j in enumerate(list))
@@ -232,7 +232,7 @@ class Py3oConvertor(ast.NodeVisitor):
                         local_context[key].direct_access = True
                 else:
                     local_context[PY3O_MODULE_KEY].rupdate(arg)
-        else:
+        else:  # pragma: no cover
             raise NotImplementedError
 
     def visit_call(self, node, local_context):
