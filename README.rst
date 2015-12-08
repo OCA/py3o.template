@@ -92,6 +92,18 @@ directory.
 Changelog
 =========
 
+0.9.7 Dec. 8 2015
+~~~~~~~~~~~~~~~~~
+
+  - This release focuses on the parser. If you
+    don't use the template parser you can skip this release as it does not
+    change anything else.
+  - Fix a bug where the body of the if blocks were not evaluated
+    by the parser
+  - Refactoring tests for clearer reading
+  - fix some missing/untested functions
+  - remove NotImplementedError from coverage
+
 0.9.6 Nov. 20 2015
 ~~~~~~~~~~~~~~~~~~
 
