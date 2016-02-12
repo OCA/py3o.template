@@ -14,6 +14,12 @@ from pyjon.utils import get_secure_filename
 from py3o.template.main import move_siblings, detect_keep_boundary, Template, \
     get_soft_breaks
 
+from py3o.template.data_struct import (
+    Py3oModule,
+    Py3oName,
+    Py3oArray,
+)
+
 if six.PY3:
     # noinspection PyUnresolvedReferences
     from unittest.mock import Mock
@@ -195,6 +201,44 @@ class TestHelpers(unittest.TestCase):
             'item.Currency',
             'item.InvoiceRef',
             'document.total',
+        ]
+        assert set(user_vars) == set(expected_vars)
+
+    def test_convertor(self):
+        source_odt_filename = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_if_parser.odt'
+        )
+        outfilename = get_secure_filename()
+
+        template = Template(source_odt_filename, outfilename)
+
+        user_vars = template.get_user_variables()
+        expressions = template.get_all_user_python_expression()
+        py_expression = template.convert_py3o_to_python_ast(expressions)
+        convertor = Py3oConvertor()
+        data_struct = convertor(py_expression)
+        print(data_struct)
+
+        assert 'objects' in data_struct
+        objs = data_struct['objects']
+        assert 'company_label' in objs
+        assert 'name' in objs
+        assert isinstance(objs['company_label'], Py3oName)
+        assert isinstance(objs['name'], Py3oName)
+#         assert data_struct == Py3oModule(
+#             {
+#                 'objects': Py3oArray(
+#                             {
+#                                 'company_label': Py3oName({}),
+#                                 'name': Py3oName({})
+#                             }
+#                 )
+#             }
+#         )
+        expected_vars = [
+            'registration.name',
+            'registration.company_label',
         ]
         assert set(user_vars) == set(expected_vars)
 
