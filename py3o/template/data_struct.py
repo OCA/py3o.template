@@ -127,9 +127,9 @@ class Py3oName(Py3oObject):
         to the user's data
         """
         if not self:
-            # We only send False values if the value is a number
+            # We only send False values if the value is a number (not a bool)
             # otherwise we convert the False into an empty string
-            if isinstance(data, Number):
+            if isinstance(data, Number) and not isinstance(data, bool):
                 return data
             return data or u""
         res = {}
