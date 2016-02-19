@@ -232,7 +232,7 @@ def format_date(date, format=ISO_DATE_FORMAT):
     :param date: datetime.datetime object or ISO formatted string
      ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S')
     """
-    if isinstance(date, str):
+    if isinstance(date, six.string_types):
         try:
             date = datetime.strptime(date, ISO_DATE_FORMAT)
         except ValueError:
