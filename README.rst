@@ -92,6 +92,12 @@ directory.
 Changelog
 =========
 
+0.9.7.1 Feb. 19 2016
+~~~~~~~~~~~~~~~~~~~~
+
+  - This release fix a bug in the formatting function format_date where
+    unicode date strings were not correctly managed.
+
 0.9.7 Dec. 8 2015
 ~~~~~~~~~~~~~~~~~
 
