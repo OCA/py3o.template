@@ -65,7 +65,7 @@ class Py3oObject(dict):
     def rget(self, other):
         """"""
         if not other:
-            return True, self, None
+            return True, self, other
         other_key = other.get_key()
         if other_key in self:
             return self[other_key].rget(other[other_key])
