@@ -1,4 +1,5 @@
 import ast
+import copy
 import pprint
 from textwrap import dedent
 from py3o.template.data_struct import (
@@ -70,7 +71,7 @@ class Py3oConvertor(ast.NodeVisitor):
         self._ast = ast.parse(dedented_source)
 
         # Call the recursive visit function
-        return self.visit(self._ast, {})
+        return self.visit(self._ast, Py3oDummy())
 
     @staticmethod
     def set_last_item(py3o_obj, inst):
@@ -107,9 +108,10 @@ class Py3oConvertor(ast.NodeVisitor):
         """
         # TODO: Implement some builtin decoding
 
-        new_context = context.copy()
+        new_context = copy.copy(context)
         iter_key = iterable.get_key()
         target_key = target.get_key()
+        found, rem_context, rem_iterable = new_context.rget(iterable)
 
         if iterable.get_size() == 1:
             if iter_key in context:
@@ -121,13 +123,16 @@ class Py3oConvertor(ast.NodeVisitor):
                 new_context[PY3O_MODULE_KEY].rupdate(
                     Py3oDummy({iter_key: new_context[target_key]})
                 )
+        elif found:
+            self.set_last_item(iterable, rem_context)
+            new_context[target_key] = rem_context
         else:
             # Replace the last item by a Py3oArray()
             new_array = Py3oArray()
-            self.set_last_item(iterable, new_array)
-            if iter_key in context:
+            self.set_last_item(rem_iterable, new_array)
+            if rem_context is not new_context:
                 # Update the related context with the new attribute access
-                new_context[iter_key].rupdate(iterable[iter_key])
+                rem_context.rupdate(rem_iterable)
                 new_context[target_key] = new_array
             else:
                 new_context[PY3O_MODULE_KEY].rupdate(

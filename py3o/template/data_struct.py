@@ -62,6 +62,16 @@ class Py3oObject(dict):
             else:
                 self[key] = value
 
+    def rget(self, other):
+        """"""
+        if not other:
+            return True, self, None
+        other_key = other.get_key()
+        if other_key in self:
+            return self[other_key].rget(other[other_key])
+        else:
+            return False, self, other
+
 
 class Py3oModule(Py3oObject):
     def render(self, data):
