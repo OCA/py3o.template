@@ -63,7 +63,43 @@ class Py3oObject(dict):
                 self[key] = value
 
     def rget(self, other):
-        """"""
+        """Get the value for the path described by the other Py3oObject.
+
+        Recursively checks that the values in other can be found in self.
+
+        The method returns the values of self and other at the point where
+        the search stopped.
+        If other is a leaf, the search stops sucessfully. The method returns
+        True, the value that corresponds to the path described by other, and
+        the leaf in question.
+        If other cannot be found in self, the search stops unsuccessfully.
+        The method returns False, the value that corresponds to the deepest
+        point reached in self, and the rest of the path.
+
+        Example:
+        self = Py3oObject({
+            'a': Py3oObject({}),
+            'b': Py3oObject({
+                'c': Py3oObject({}),
+            }),
+        })
+        other = Py3oObject({
+            'b': Py3oObject({
+                'd': Py3oObject({}),
+            }),
+        })
+        res = (
+            False,
+            Py3oObject({'c': Py3oObject({})}),  # is self['b']
+            Py3oObject({'d': Py3oObject({})}),  # is other['b']
+        )
+        if other['b'] was a leaf, res[0] would be True and res[2] the leaf.
+
+        :return: A triplet:
+          - True if the search was successful, False otherwise
+          - The active sub-element of self when the search stopped
+          - The active sub-element of other when the search stopped
+        """
         if not other:
             return True, self, other
         other_key = other.get_key()
