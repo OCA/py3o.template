@@ -8,6 +8,7 @@ import traceback
 import hashlib
 import six
 from base64 import b64decode
+import re
 
 import lxml.etree
 import zipfile
@@ -165,7 +166,9 @@ def get_all_python_expression(content_trees, namespaces):
     """
     xpath_expr = (
         "//text:a[starts-with(@xlink:href, 'py3o://')] | "
-        "//text:user-field-get[starts-with(@text:name, 'py3o.')]"
+        "//text:user-field-get[starts-with(@text:name, 'py3o.')] | "
+        "//table:table-cell/text:p[regexp:match(text(), '\${[^\${}]*}')] | "
+        "//table:table-cell[regexp:match(@table:formula, '\${[^\${}]*}')]"
     )
     res = []
     for content_tree in content_trees:
@@ -409,6 +412,7 @@ class Template(object):
         """
         # create needed namespaces
         self.namespaces = dict(
+            regexp="http://exslt.org/regular-expressions",
             text="urn:text",
             draw="urn:draw",
             table="urn:table",
@@ -435,6 +439,7 @@ class Template(object):
         """
         res = []
         text_nmspc = self.namespaces['text']
+        table_nmspc = self.namespaces['table']
         for e in get_all_python_expression(self.content_trees,
                                            self.namespaces):
             if e.tag == "{%s}user-field-get" % text_nmspc:
@@ -446,6 +451,12 @@ class Template(object):
                 # Remove the trailing 'py3o://'
                 # Also convert the url string into a classic string
                 res.append(urllib.parse.unquote(py_expr[7:]))
+            elif e.tag == "{%s}p" % text_nmspc:
+                if e.text:
+                    res.extend(re.findall(r'\${([^{}]*)}', e.text))
+            elif e.tag == "{%s}table-cell" % table_nmspc:
+                formula = e.get("{%s}formula" % table_nmspc)
+                res.extend(re.findall(r'\${([^{}]*)}', formula))
         return res
 
     def get_user_instructions(self):
