@@ -147,8 +147,11 @@ class Py3oConvertor(ast.NodeVisitor):
          and propagate the context
         """
         method = 'visit_' + node.__class__.__name__.lower()
-        visitor = getattr(self, method, self.generic_visit)
-        return visitor(node, local_context)
+        visitor = getattr(self, method, None)
+        if visitor:
+            return visitor(node, local_context)
+        else:
+            return self.generic_visit(node)
 
     def visit_module(self, node, local_context):
         """The main node, should be alone.
