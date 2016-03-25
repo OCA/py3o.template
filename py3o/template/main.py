@@ -43,6 +43,7 @@ log = logging.getLogger(__name__)
 XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 
 GENSHI_URI = 'http://genshi.edgewall.org/'
+REGEXP_URI = "http://exslt.org/regular-expressions"
 PY3O_URI = 'http://py3o.org/'
 
 
@@ -412,7 +413,6 @@ class Template(object):
         """
         # create needed namespaces
         self.namespaces = dict(
-            regexp="http://exslt.org/regular-expressions",
             text="urn:text",
             draw="urn:draw",
             table="urn:table",
@@ -431,6 +431,8 @@ class Template(object):
 
         # declare the genshi namespace
         self.namespaces['py'] = GENSHI_URI
+        # declare the regexp namespace
+        self.namespaces['regexp'] = REGEXP_URI
         # declare our own namespace
         self.namespaces['py3o'] = PY3O_URI
 
