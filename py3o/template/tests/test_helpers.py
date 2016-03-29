@@ -218,7 +218,6 @@ class TestHelpers(unittest.TestCase):
         py_expression = template.convert_py3o_to_python_ast(expressions)
         convertor = Py3oConvertor()
         data_struct = convertor(py_expression)
-        print(data_struct)
 
         assert 'objects' in data_struct
         objs = data_struct['objects']
@@ -715,12 +714,12 @@ class TestHelpers(unittest.TestCase):
             ]
         }
         json_dict = res.render(user_data)
-        assert json_dict == {
+        self.assertEqual(json_dict, {
             'varlist': [
                 {'var0': 42, 'var1': -42},
                 {'var0': 170, 'var1': -170},
             ]
-        }
+        })
 
     def test_false_value(self):
         py_expr = self.__load_and_convert_template(
@@ -789,6 +788,36 @@ class TestHelpers(unittest.TestCase):
     #     }
 
     # Tes if function
+
+    def test_double_for_loop_on_same_attribute(self):
+        expressions = [
+            'for="item in wtf.root.list"',
+            'item.var1',
+            '/for',
+            'for="item in wtf.root.list"',
+            'item.var0',
+            '/for',
+            '/for'
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {'wtf': Mock(
+            root=Mock(list=[
+                Mock(var0=42, var1=-42),
+                Mock(var0=170, var1=-170),
+            ]))
+        }
+        json_dict = res.render(user_data)
+        self.assertEqual(json_dict, {'wtf': {
+            'root': {
+                'list': [
+                    dict(var0=42, var1=-42),
+                    dict(var0=170, var1=-170),
+                ]
+            }
+        }})
 
     def test_if(self):
         expressions = [
@@ -894,6 +923,22 @@ class TestHelpers(unittest.TestCase):
             'a': 1,
             'b': [0, 1, 2],
         }
+
+    def test_if_comparator_literal(self):
+        expressions = [
+            'if="a == 1"',
+            '/if'
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        json_dict = res.render({
+            'a': 1,
+        })
+
+        self.assertEqual(json_dict, {
+            'a': 1,
+        })
 
     # Test function
 
