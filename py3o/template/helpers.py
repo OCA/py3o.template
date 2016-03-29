@@ -113,17 +113,7 @@ class Py3oConvertor(ast.NodeVisitor):
         target_key = target.get_key()
         found, rem_context, rem_iterable = new_context.rget(iterable)
 
-        if iterable.get_size() == 1:
-            if iter_key in context:
-                new_context[target_key] = new_context[iter_key]
-            elif iter_key in context[PY3O_MODULE_KEY]:
-                new_context[target_key] = context[PY3O_MODULE_KEY][iter_key]
-            else:
-                new_context[target_key] = Py3oArray()
-                new_context[PY3O_MODULE_KEY].rupdate(
-                    Py3oDummy({iter_key: new_context[target_key]})
-                )
-        elif found:
+        if found:
             self.set_last_item(iterable, rem_context)
             new_context[target_key] = rem_context
         else:
@@ -165,7 +155,9 @@ class Py3oConvertor(ast.NodeVisitor):
         local_context[PY3O_MODULE_KEY] = module
 
         for n in node.body:
-            self.visit(n, local_context)
+            res = self.visit(n, local_context)
+            if res:
+                local_context.rupdate(res)
 
         return module
 
@@ -174,15 +166,18 @@ class Py3oConvertor(ast.NodeVisitor):
          to the newly declared variable.
         """
 
+        iterable = self.visit(node.iter, local_context)
         # Bind iterable and target
         body_context = self.bind_target(
-            self.visit(node.iter, local_context),
+            iterable,
             self.visit(node.target, local_context),
             local_context,
         )
 
         for n in node.body:
             self.visit(n, body_context)
+
+        return iterable
 
     def visit_name(self, node, local_context):
         """Simply return Py3oDummy equivalent"""
