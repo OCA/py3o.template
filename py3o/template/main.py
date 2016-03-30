@@ -26,10 +26,10 @@ from genshi.filters.transform import Transformer
 
 from pyjon.utils import get_secure_filename
 
-if six.PY3:
+if six.PY3:  # pragma: no cover
     # in python 3 we want to emulate  binary files
     from six import BytesIO as StringIO
-else:
+else:  # pragma: no cover
     # in python 2 we want to try and use the c Implementation if available
     try:
         from cStringIO import StringIO
@@ -56,7 +56,7 @@ class TemplateException(ValueError):
         """
         self.message = message
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return self.message
 
 
@@ -222,7 +222,7 @@ def format_amount(amount, format="%f"):
     """Replace the thousands separator from '.' to ','
     """
     if isinstance(amount, float) or isinstance(amount, decimal.Decimal):
-        return (format % amount).replace('.', ',')
+        amount = (format % amount).replace('.', ',')
     return amount
 
 
@@ -743,7 +743,7 @@ class Template(object):
                     keep_start_boundary=keep_start_boundary,
                     keep_end_boundary=keep_end_boundary,
                 )
-            except ValueError:
+            except ValueError:  # pragma: no cover
                 excrepr = traceback.format_exc()
                 log.exception(excrepr)
                 raise TemplateException("Could not move siblings for '%s'" %
@@ -983,7 +983,7 @@ class Template(object):
         @type data: dictionary
         """
         for status in self.render_flow(data):
-            if not status:
+            if not status:  # pragma: no cover
                 raise TemplateException("unknown template error")
 
     def set_image_path(self, identifier, path):
