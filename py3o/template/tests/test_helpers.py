@@ -774,30 +774,34 @@ class TestHelpers(unittest.TestCase):
             'amount': 32.123,
         }
 
-    # def test_template_function_call_in_for_loop(self):
-    #     py_expr = self.__load_and_convert_template(
-    #         'tests/templates/py3o_template_function_call_in_for_loop.odt'
-    #     )
-    #     p = Py3oConvertor()
-    #     res = p(py_expr)
-    #     user_data = {
-    #         'var': 32.123,
-    #         'test': '2.3',
-    #     }
-    #     json_dict = res.render(user_data)
-    #     assert json_dict == {
-    #         'var': 32.123,
-    #         'test': '2.3',
-    #     }
-
-    # Tes if function
+    def test_template_function_call_in_for_loop(self):
+        expressions = [
+            'for="item in object.list"',
+            'item.test',
+            'format_number(item.var)',
+            '/for',
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        user_data = {'object': Mock(list=[
+            Mock(var=32.123, test='2.3'),
+            Mock(var=43.2, test='1.0')
+        ])}
+        json_dict = res.render(user_data)
+        self.assertEqual(json_dict, {'object': {
+            'list': [
+                {'var': 32.123, 'test': '2.3'},
+                {'var': 43.2, 'test': '1.0'},
+            ]
+        }})
 
     def test_double_for_loop_on_same_attribute(self):
         expressions = [
-            'for="item in wtf.root.list"',
+            'for="item in root.object.list"',
             'item.var1',
             '/for',
-            'for="item in wtf.root.list"',
+            'for="item in root.object.list"',
             'item.var0',
             '/for',
             '/for'
@@ -806,15 +810,15 @@ class TestHelpers(unittest.TestCase):
         p = Py3oConvertor()
         res = p(py_expr)
 
-        user_data = {'wtf': Mock(
-            root=Mock(list=[
+        user_data = {'root': Mock(
+            object=Mock(list=[
                 Mock(var0=42, var1=-42),
                 Mock(var0=170, var1=-170),
             ]))
         }
         json_dict = res.render(user_data)
-        self.assertEqual(json_dict, {'wtf': {
-            'root': {
+        self.assertEqual(json_dict, {'root': {
+            'object': {
                 'list': [
                     dict(var0=42, var1=-42),
                     dict(var0=170, var1=-170),
