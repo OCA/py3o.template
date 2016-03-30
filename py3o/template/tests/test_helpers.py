@@ -479,7 +479,10 @@ class TestHelpers(unittest.TestCase):
             'my4list': [0, 1, 2, 3],
         }
         json_str = res.render(user_data)
-        assert json_str == {'global_var': {'val': 1}}
+        self.assertEquals(json_str, {
+            'global_var': dict(val=1),
+            'my4list': [0, 1, 2, 3],
+        })
 
     def test_access_in_loop_variable(self):
         py_expr = self.__load_and_convert_template(

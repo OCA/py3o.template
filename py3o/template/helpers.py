@@ -177,6 +177,10 @@ class Py3oConvertor(ast.NodeVisitor):
         for n in node.body:
             self.visit(n, body_context)
 
+        if iterable.get_size() == 1:
+            iter_key = iterable.get_key()
+            iterable[iter_key].direct_access = True
+
         return iterable
 
     def visit_name(self, node, local_context):
