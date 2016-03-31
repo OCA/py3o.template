@@ -207,11 +207,12 @@ class Py3oCall(Py3oObject):
         - numeric keys are positional arguments oredered ascendently
         - string keys are keywords arguments
     """
-    def __init__(self, dict):
-        super(Py3oCall, self).__init__(dict)
-        self.name = None
 
     return_format = None
+
+    def __init__(self, name, dict):
+        super(Py3oCall, self).__init__(dict)
+        self.name = name
 
     def get_tuple(self):  # pragma: no cover
         raise SyntaxError(u"Can't assign to function call")

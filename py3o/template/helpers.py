@@ -253,6 +253,9 @@ class Py3oConvertor(ast.NodeVisitor):
     def visit_call(self, node, local_context):
         """Visit a function call.
         """
+        # Get the name of the function and obtain its class
+        name = self.visit(node.func, local_context)
+        py3o_class = Py3oCall
         # For now, we just gather the args/kwargs to send to the function
         # Get the args
         args = [self.visit(arg, local_context) for arg in node.args]
@@ -263,10 +266,8 @@ class Py3oConvertor(ast.NodeVisitor):
             # Keywords are tuple in the form (key, val)
             kwargs[cut_keyword[0]] = cut_keyword[1]
         # Create the Py3oCall coresponding to those value
-        call = Py3oCall({n: arg for n, arg in enumerate(args)})
+        call = py3o_class(name, {n: arg for n, arg in enumerate(args)})
         call.update({k: arg for k, arg in kwargs.items()})
-        # Set the name of the function
-        call.name = self.visit(node.func, local_context)
         return call
 
     def visit_keyword(self, node, local_context):
