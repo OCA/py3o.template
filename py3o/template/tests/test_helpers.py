@@ -758,6 +758,61 @@ class TestHelpers(unittest.TestCase):
             'mylist': [10, 9, 8, 7, 6],
         }
 
+    def test_enumerate_attribute_access(self):
+        """For loop on enumerate: only attributes used in body are extracted.
+        Since mylist is given as an argument to enumerate, a known builtin
+        function, Py3oConvertor should be able to recognize that val refers
+        to the elements of mylist.
+        """
+        expressions = [
+            'for="i, val in enumerate(mylist)"',
+            'i',
+            'val.var0',
+            'val.var2',
+            '/for'
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {'mylist': [
+            Mock(var0='0', var1=1, var2=2.0),
+            Mock(var0=0, var1=1.0, var2='2'),
+            Mock(var0=0.0, var1='1', var2=2),
+        ]}
+        json_dict = res.render(user_data)
+        self.assertEqual(json_dict, {'mylist': [
+            dict(var0='0', var2=2.0),
+            dict(var0=0, var2='2'),
+            dict(var0=0.0, var2=2),
+        ]})
+
+    def test_unknown_iterable_call(self):
+        """For loop on unknown function call: extract the entire object"""
+
+        expressions = [
+            'for="i, val in not_enumerate(mylist)"',
+            'i',
+            'val.var0',
+            'val.var2',
+            '/for'
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+
+        user_data = {'mylist': [
+            Mock(var0='0', var1=1, var2=2.0),
+            Mock(var0=0, var1=1.0, var2='2'),
+            Mock(var0=0.0, var1='1', var2=2),
+        ]}
+        json_dict = res.render(user_data)
+        self.assertEqual(json_dict, {'mylist': [
+            user_data['mylist'][0],
+            user_data['mylist'][1],
+            user_data['mylist'][2],
+        ]})
+
     def test_template_function_call(self):
         py_expr = self.__load_and_convert_template(
             'tests/templates/py3o_template_function_call.odt'
