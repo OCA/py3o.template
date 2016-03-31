@@ -295,6 +295,10 @@ class ImageInjector(object):
         incorrectly padded or if there are non-alphabet characters
         present in the data string.
         """
+
+        if not data:
+            return {}
+
         if isb64:
             # we need to decode the base64 data to obtain the raw data version
             data = b64decode(data)
@@ -693,7 +697,7 @@ class Template(object):
                 else None
             )
 
-        else:
+        else:  # pragma: no cover
             raise NotImplementedError(
                 "We handle urls in tables or text paragraph only"
             )

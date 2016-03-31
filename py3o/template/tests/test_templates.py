@@ -506,6 +506,7 @@ class TestTemplate(unittest.TestCase):
         assert result_a == result_e
 
     def test_image_injection(self):
+        """Test insertion of images from the data source into the template"""
 
         template_name = pkg_resources.resource_filename(
             'py3o.template',
@@ -582,3 +583,41 @@ class TestTemplate(unittest.TestCase):
         expected = expected.replace("\n", "").replace(" ", "")
 
         self.assertEqual(result, expected)
+
+    def test_ignore_undefined_variables_image_injection(self):
+        """Test ignore undefined variables for injected image"""
+
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_image_injection.odt'
+        )
+
+        outname = get_secure_filename()
+
+        data = {
+            'items': [],
+            'document': Mock(total=6),
+        }
+
+        template = Template(template_name, outname)
+        error = True
+        try:
+            template.render(data)
+            print("Error: template contains variables that must be "
+                  "replaced")
+        except TemplateError:
+            error = False
+
+        self.assertFalse(error)
+
+        template = Template(
+            template_name, outname, ignore_undefined_variables=True
+        )
+        error = False
+        try:
+            template.render(data)
+        except:
+            traceback.print_exc()
+            error = True
+
+        self.assertFalse(error)
