@@ -144,7 +144,7 @@ class Py3oModule(Py3oObject):
 
 
 class Py3oArray(Py3oObject):
-    """ A class representing an array.
+    """ A class representing an iterable value in the data structure.
     The attribute direct_access will tell if this class should be considered
      as a list of dict or a list of values.
     """
@@ -242,6 +242,26 @@ class Py3oCall(Py3oObject):
                 raise ValueError(u"Unpack Error")
 
         return res
+
+
+class Py3oEnumerate(Py3oCall):
+    """Represent an enumerate call"""
+    return_format = (None, 0)
+
+
+class Py3oContainer(Py3oObject):
+    """Represent a container defined in the template.
+    This container can be:
+    _ A literal list, tuple, set or dict definition
+    _ A tuple of variables that are the target of an unpack assignment
+    """
+    def __init__(self, values):
+        super(Py3oContainer, self).__init__()
+        self.values = values
+
+    def get_tuple(self):
+        """Return the container's values in a tuple"""
+        return tuple(self.values)
 
 
 class Py3oDummy(Py3oObject):

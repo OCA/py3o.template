@@ -6,7 +6,7 @@ from py3o.template.data_struct import (
     Py3oModule,
     Py3oName,
     Py3oArray,
-    Py3oObject,
+    Py3oContainer,
     Py3oCall,
     Py3oDummy,
 )
@@ -190,6 +190,13 @@ class Py3oConvertor(ast.NodeVisitor):
                 value.direct_access = True
 
         return iter_names
+
+    def visit_tuple(self, node, local_context):
+        values = [self.visit(elt, local_context) for elt in node.elts]
+        return Py3oContainer(values)
+
+    visit_list = visit_tuple
+    visit_set = visit_tuple
 
     def visit_name(self, node, local_context):
         """Simply return Py3oDummy equivalent"""
