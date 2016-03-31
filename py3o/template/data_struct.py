@@ -34,6 +34,20 @@ class Py3oObject(dict):
         """
         return next(iter(self.keys()))
 
+    def get_tuple(self):
+        """Return the value of the Py3oObject as a tuple.
+        As a default behavior, the object returns itself as a single.
+        """
+        return self,
+
+    def unpack(self, target):
+        self_tup = self.get_tuple()
+        target_tup = target.get_tuple()
+        diff = len(target_tup) - len(self_tup)
+        if diff != 0:  # pragma: no cover
+            raise ValueError(u"Unpack Error")
+        return zip(target_tup, self_tup)
+
     def rupdate(self, other):
         """Update recursively the Py3oObject self with the Py3oObject other.
         Example:
@@ -196,6 +210,37 @@ class Py3oCall(Py3oObject):
     def __init__(self, dict):
         super(Py3oCall, self).__init__(dict)
         self.name = None
+
+    return_format = None
+
+    def get_tuple(self):  # pragma: no cover
+        raise SyntaxError(u"Can't assign to function call")
+
+    def unpack(self, target):
+        target_tup = target.get_tuple()
+        args = set(self.keys())
+
+        if self.return_format is None:
+            res = [(target, None) for target in target_tup]
+            res += [(None, self[arg]) for arg in args]
+
+        else:
+            return_value = []
+            for return_var in self.return_format:
+                if return_var is None:
+                    return_value.append(Py3oDummy())
+                else:
+                    return_value.append(self.get(return_var, None))
+
+            if len(return_value) == len(target_tup):
+                res = zip(target_tup, return_value)
+            elif len(target_tup) == 1:
+                res = [(target_tup[0], Py3oContainer(return_value))]
+                res += [(self[arg], None) for arg in args]
+            else:  # pragma: no cover
+                raise ValueError(u"Unpack Error")
+
+        return res
 
 
 class Py3oDummy(Py3oObject):

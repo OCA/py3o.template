@@ -108,29 +108,29 @@ class Py3oConvertor(ast.NodeVisitor):
         """
         # TODO: Implement some builtin decoding
 
-        new_context = copy.copy(context)
         iter_key = iterable.get_key()
-        target_key = target.get_key()
-        found, rem_context, rem_iterable = new_context.rget(iterable)
+        found, rem_context, rem_iterable = context.rget(iterable)
 
         if found:
-            self.set_last_item(iterable, rem_context)
-            new_context[target_key] = rem_context
+            target_name = rem_context
+            self.set_last_item(iterable, target_name)
         else:
             # Replace the last item by a Py3oArray()
-            new_array = Py3oArray()
-            self.set_last_item(rem_iterable, new_array)
-            if rem_context is not new_context:
+            target_name = Py3oArray()
+            self.set_last_item(rem_iterable, target_name)
+            if rem_context is not context:
                 # Update the related context with the new attribute access
                 rem_context.rupdate(rem_iterable)
-                new_context[target_key] = new_array
             else:
-                new_context[PY3O_MODULE_KEY].rupdate(
+                context[PY3O_MODULE_KEY].rupdate(
                     {iter_key: iterable[iter_key]}
                 )
-                new_context[target_key] = new_array
 
-        return new_context
+        if target:
+            target_key = target.get_key()
+            context[target_key] = target_name
+
+        return context
 
     def visit(self, node, local_context=None):
         """Call the node-class specific visit function,
@@ -166,22 +166,30 @@ class Py3oConvertor(ast.NodeVisitor):
          to the newly declared variable.
         """
 
+        body_context = copy.copy(local_context)
         iterable = self.visit(node.iter, local_context)
-        # Bind iterable and target
-        body_context = self.bind_target(
-            iterable,
-            self.visit(node.target, local_context),
-            local_context,
-        )
+        target = self.visit(node.target, local_context)
+
+        # Bind iterable and target. Target variables are local to the loop ;
+        # only the iterable and the body should impact the parent context.
+        iter_names = Py3oDummy()
+        for target_name, iter_name in iterable.unpack(target):
+            if iter_name:
+                body_context = self.bind_target(
+                    iter_name, target_name, body_context,
+                )
+                iter_names.rupdate(iter_name)
+            elif target_name:
+                body_context[target_name.get_key()] = Py3oDummy()
 
         for n in node.body:
             self.visit(n, body_context)
 
-        if iterable.get_size() == 1:
-            iter_key = iterable.get_key()
-            iterable[iter_key].direct_access = True
+        for value in iter_names.values():
+            if value.get_size() == 0:
+                value.direct_access = True
 
-        return iterable
+        return iter_names
 
     def visit_name(self, node, local_context):
         """Simply return Py3oDummy equivalent"""
