@@ -5,9 +5,11 @@ import unittest
 import zipfile
 import traceback
 import copy
+import base64
 
 import lxml.etree
 import pkg_resources
+import six
 
 from io import BytesIO
 
@@ -15,6 +17,13 @@ from genshi.template import TemplateError
 from pyjon.utils import get_secure_filename
 
 from py3o.template.main import Template, TemplateException, XML_NS
+
+if six.PY3:
+    # noinspection PyUnresolvedReferences
+    from unittest.mock import Mock
+elif six.PY2:
+    # noinspection PyUnresolvedReferences
+    from mock import Mock
 
 
 class TestTemplate(unittest.TestCase):
@@ -495,3 +504,81 @@ class TestTemplate(unittest.TestCase):
         result_e = result_e.replace("\n", "").replace(" ", "")
 
         assert result_a == result_e
+
+    def test_image_injection(self):
+
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_image_injection.odt'
+        )
+        logo_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/images/new_logo.png'
+        )
+        image_names = [
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/images/image{i}.png'.format(i=i)
+            ) for i in range(1, 4)
+        ]
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+        logo = open(logo_name, 'rb').read()
+        images = [open(iname, 'rb').read() for iname in image_names]
+
+        data_dict = {
+            'items': [
+                Mock(val1=i, val3=i ** 2, image=base64.b64encode(image))
+                for i, image in enumerate(images, start=1)
+            ],
+            'document': Mock(total=6),
+            'logo': logo,
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+        namelist = outodt.namelist()
+
+        i = 0
+        nmspc = template.namespaces
+        table = content_list.find('//table:table', nmspc)
+        frame_path = 'table:table-cell/text:p/draw:frame'
+        for row in table.findall('table:table-row', nmspc):
+
+            frame_elem = row.find(frame_path, nmspc)
+            if frame_elem is None:
+                continue
+            image_elem = frame_elem.find('draw:image', nmspc)
+            self.assertIsNotNone(image_elem)
+
+            href = image_elem.get('{{{}}}href'.format(nmspc['xlink']))
+            self.assertTrue(href)
+            self.assertIn(href, namelist)
+            self.assertEqual(images[i], outodt.read(href))
+
+            frame_elem.remove(image_elem)
+            i += 1
+
+        self.assertEqual(i, 3, u"Images were not found in the output")
+
+        expected_xml = lxml.etree.parse(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/image_injection_result.xml'
+            )
+        )
+        result = lxml.etree.tostring(
+            content_list, pretty_print=True,
+        ).decode('utf-8')
+        expected = lxml.etree.tostring(
+            expected_xml, pretty_print=True,
+        ).decode('utf-8')
+        result = result.replace("\n", "").replace(" ", "")
+        expected = expected.replace("\n", "").replace(" ", "")
+
+        self.assertEqual(result, expected)
