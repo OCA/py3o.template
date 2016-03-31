@@ -843,8 +843,6 @@ class Template(object):
                             "set_image_path or set_image_data methods."
                             % image_id
                         )
-                    else:
-                        continue
 
                 # Replace the xlink:href attribute of the image to point to
                 # ours.
