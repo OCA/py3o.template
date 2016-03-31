@@ -743,22 +743,20 @@ class TestHelpers(unittest.TestCase):
             'false_value': u'',
         }
 
+    def test_enumerate(self):
+        py_expr = self.__load_and_convert_template(
+            'tests/templates/py3o_enumerate.odt'
+        )
+        p = Py3oConvertor()
+        res = p(py_expr)
 
-#    def test_enumerate(self):
-#        #TODO: Make this works
-#        py_expr = self.__load_and_convert_template(
-#            'tests/templates/py3o_enumerate.odt'
-#        )
-#        p = Py3oConvertor()
-#        res = p(py_expr)
-#
-#        user_data = {
-#            'mylist': [10, 9, 8, 7, 6],
-#        }
-#        json_dict = res.render(user_data)
-#        assert json_dict == {
-#            'mylist': [10, 9, 8, 7, 6],
-#        }
+        user_data = {
+            'mylist': [10, 9, 8, 7, 6],
+        }
+        json_dict = res.render(user_data)
+        assert json_dict == {
+            'mylist': [10, 9, 8, 7, 6],
+        }
 
     def test_template_function_call(self):
         py_expr = self.__load_and_convert_template(
