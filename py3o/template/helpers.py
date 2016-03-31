@@ -3,6 +3,7 @@ import copy
 import pprint
 from textwrap import dedent
 from py3o.template.data_struct import (
+    Py3oBuiltin,
     Py3oModule,
     Py3oName,
     Py3oArray,
@@ -262,7 +263,9 @@ class Py3oConvertor(ast.NodeVisitor):
         """
         # Get the name of the function and obtain its class
         name = self.visit(node.func, local_context)
-        py3o_class = Py3oCall
+        py3o_class = Py3oBuiltin.from_name(name)
+        if py3o_class is None or not issubclass(py3o_class, Py3oCall):
+            py3o_class = Py3oCall
         # For now, we just gather the args/kwargs to send to the function
         # Get the args
         args = [self.visit(arg, local_context) for arg in node.args]

@@ -158,7 +158,7 @@ class Py3oArray(Py3oObject):
         """
         if self.direct_access:
             return data
-        if not self:
+        if not self:  # pragma: no cover
             return None
         res = []
         for d in data:
@@ -168,12 +168,6 @@ class Py3oArray(Py3oObject):
                 tmp_dict[key] = value.render(getattr(d, key))
             res.append(tmp_dict)
         return res
-
-
-class Py3oBuiltin(Py3oObject):
-    """ This class holds information about builtins
-    """
-    pass
 
 
 class Py3oName(Py3oObject):
@@ -222,10 +216,12 @@ class Py3oCall(Py3oObject):
         args = set(self.keys())
 
         if self.return_format is None:
+            # Generic/unknown function, do not make assumptions about targets
             res = [(target, None) for target in target_tup]
             res += [(None, self[arg]) for arg in args]
 
         else:
+            # Bind targets to function arguments according to return_format
             return_value = []
             for return_var in self.return_format:
                 if return_var is None:
@@ -235,9 +231,12 @@ class Py3oCall(Py3oObject):
 
             if len(return_value) == len(target_tup):
                 res = zip(target_tup, return_value)
-            elif len(target_tup) == 1:
-                res = [(target_tup[0], Py3oContainer(return_value))]
-                res += [(self[arg], None) for arg in args]
+
+            # TODO: Manage Py3oContainer values inside for loop body
+            # elif len(target_tup) == 1:
+            #     res = [(target_tup[0], Py3oContainer(return_value))]
+            #     res += [(self[arg], None) for arg in args]
+
             else:  # pragma: no cover
                 raise ValueError(u"Unpack Error")
 
@@ -269,3 +268,30 @@ class Py3oDummy(Py3oObject):
      such as counters from enumerate()
     """
     pass
+
+
+class Py3oBuiltin(Py3oObject):
+    """ This class holds information about builtins
+    """
+
+    builtins = {
+        'enumerate': Py3oEnumerate
+    }
+
+    @classmethod
+    def from_name(cls, name=None):
+        """Return the Py3oObject subclass for the given built-in name
+        Return None if the name does not correspond to a builtin.
+
+        :param name: A Py3oObject instance that represent a name/attribute path
+        :return: A Py3oObject subclass or None
+        """
+        name_key = name.get_key()
+        builtin = cls.builtins.get(name_key)
+        # TODO: uncomment to implement standard modules in cls.builtins
+        # if builtin and name.get_size() > 1:
+        #     if isinstance(builtin, Py3oBuiltin):
+        #         builtin = builtin.from_name(name[name_key])
+        #     else:
+        #     builtin = None
+        return builtin
