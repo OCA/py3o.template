@@ -1050,3 +1050,17 @@ class TestHelpers(unittest.TestCase):
         assert json_dict == {
             'myarray': [0, 1, 2, 3],
         }
+
+    def test_empty_for_loop(self):
+        u"""Test ast extraction on for loops whose body do not use any data"""
+        expressions = [
+            'for="var in myarray"',
+            '/for',
+        ]
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        self.assertEqual(py_expr.strip(), 'for var in myarray:\n pass')
+        p = Py3oConvertor()
+        res = p(py_expr)
+        data = {'myarray': [0, 1, 2, 3]}
+        json_dict = res.render(data)
+        self.assertEqual(json_dict, data)
