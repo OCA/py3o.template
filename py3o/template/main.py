@@ -622,7 +622,7 @@ class Template(object):
         # new open office version
         elif len(link):
             if not link[0].text == py3o_base:
-                msg = "url and text do not match in '%s'" % link.text
+                msg = "url and text do not match in '%s'" % link[0].text
                 raise TemplateException(msg)
         else:
             raise TemplateException("Link text not found")
