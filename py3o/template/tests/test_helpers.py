@@ -262,6 +262,44 @@ class TestHelpers(unittest.TestCase):
         ]
         assert set(user_instructions) == set(expected_vars)
 
+    def test_calc(self):
+        """Test date source extraction in ods files"""
+        source_ods_filename = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_simple_calc.ods'
+        )
+        outfilename = get_secure_filename()
+
+        template = Template(source_ods_filename, outfilename)
+
+        expressions = template.get_all_user_python_expression()
+        expected_expressions = [
+            'for="item in items"',
+            'item.col1',
+            'item.col2',
+            'item.col3',
+            'item.col4',
+            '/for',
+        ]
+        self.assertEqual(expressions, expected_expressions)
+
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        user_data = {'items': [
+            Mock(col0='0', col1=1, col2=2.0, col3='?', col4='!'),
+            Mock(col0=0, col1=1.0, col2='2', col3='?', col4='!'),
+            Mock(col0=0.0, col1='1', col2=2, col3='?', col4='!'),
+        ]}
+
+        json_dict = res.render(user_data)
+        self.assertEqual(json_dict, {'items': [
+            dict(col1=1, col2=2.0, col3='?', col4='!'),
+            dict(col1=1.0, col2='2', col3='?', col4='!'),
+            dict(col1='1', col2=2, col3='?', col4='!'),
+        ]})
+
+
     def test_detect_boundary_false(self):
         """boundary detection should say no!!"""
 
