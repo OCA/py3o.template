@@ -16,7 +16,8 @@ from io import BytesIO
 from genshi.template import TemplateError
 from pyjon.utils import get_secure_filename
 
-from py3o.template.main import Template, TemplateException, XML_NS
+from py3o.template import Template, TextTemplate, TemplateException
+from py3o.template.main import XML_NS
 
 if six.PY3:
     # noinspection PyUnresolvedReferences
@@ -616,6 +617,68 @@ class TestTemplate(unittest.TestCase):
         error = False
         try:
             template.render(data)
+        except:
+            traceback.print_exc()
+            error = True
+
+        self.assertFalse(error)
+
+    def test_text_template(self):
+
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_text_template'
+        )
+
+        user_data = {'mylist': [
+            Mock(var0=1, var1='1', var2=1.0),
+            Mock(var0=2, var1='2', var2=2.0),
+            Mock(var0=3, var1='3', var2=3.0),
+        ]}
+
+        outname = get_secure_filename()
+
+        template = TextTemplate(template_name, outname)
+        template.render(user_data)
+        result = open(outname, 'rb').read()
+
+        expected = u''.join(
+            u'{} {} {}\n'.format(line.var0, line.var1, line.var2)
+            for line in user_data['mylist']
+        ).encode('utf-8')
+
+        self.assertEqual(result, expected)
+
+    def test_ignore_undefined_variables_text_template(self):
+
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_text_template'
+        )
+
+        user_data = {}
+
+        outname = get_secure_filename()
+
+        result = open(outname, 'rb').read()
+
+        template = TextTemplate(template_name, outname)
+        error = True
+        try:
+            template.render(user_data)
+            print("Error: template contains variables that must be "
+                  "replaced")
+        except TemplateError:
+            error = False
+
+        self.assertFalse(error)
+
+        template = TextTemplate(
+            template_name, outname, ignore_undefined_variables=True
+        )
+        error = False
+        try:
+            template.render(user_data)
         except:
             traceback.print_exc()
             error = True
