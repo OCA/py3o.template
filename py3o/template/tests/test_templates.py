@@ -798,6 +798,25 @@ class TestTemplate(unittest.TestCase):
             'items': [
                 Mock(val1=i, val2=range(i), val3=i ** 2)
                 for i in range(1, 4)
+                ],
+            'document': Mock(total=6),
+        }
+
+        template.render(data_dict)
+
+    def test_table_cell_for_loop(self):
+        u"""Test for loop inside ODT table cells"""
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_table_cell_for_loop.odt'
+        )
+        outname = get_secure_filename()
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'items': [
+                Mock(val1=i, val2=range(i), val3=i ** 2)
+                for i in range(1, 4)
             ],
             'document': Mock(total=6),
         }
