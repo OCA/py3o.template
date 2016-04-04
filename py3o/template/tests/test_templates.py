@@ -767,3 +767,20 @@ class TestTemplate(unittest.TestCase):
         ]})
         soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
         assert len(soft_breaks) == 0
+
+    def test_invalid_links(self):
+        u"""Check that exceptions are raised on link url and text mismatch"""
+
+        templates = [
+            ('py3o_invalid_link.odt', 'url and text do not match.*'),
+            ('py3o_invalid_link_old.odt', 'url and text do not match.*'),
+            ('py3o_invalid_link_none.odt', 'Link text not found'),
+        ]
+
+        for template, error in templates:
+            template_fname = pkg_resources.resource_filename(
+                'py3o.template', 'tests/templates/{}'.format(template)
+            )
+            t = Template(template_fname, get_secure_filename())
+            with self.assertRaisesRegexp(TemplateException, error):
+                t.render({'amount': 0.0})
