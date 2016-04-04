@@ -17,7 +17,7 @@ from genshi.template import TemplateError
 from pyjon.utils import get_secure_filename
 
 from py3o.template import Template, TextTemplate, TemplateException
-from py3o.template.main import XML_NS
+from py3o.template.main import XML_NS, get_soft_breaks
 
 if six.PY3:
     # noinspection PyUnresolvedReferences
@@ -660,8 +660,6 @@ class TestTemplate(unittest.TestCase):
 
         outname = get_secure_filename()
 
-        result = open(outname, 'rb').read()
-
         template = TextTemplate(template_name, outname)
         error = True
         try:
@@ -684,3 +682,88 @@ class TestTemplate(unittest.TestCase):
             error = True
 
         self.assertFalse(error)
+
+    def test_remove_soft_page_breaks(self):
+        template_xml = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_soft_page_break.odt'
+        )
+        outname = get_secure_filename()
+
+        template = Template(template_xml, outname)
+        soft_breaks = get_soft_breaks(
+            template.content_trees[0], template.namespaces
+        )
+        self.assertEqual(len(soft_breaks), 2)
+
+        template.remove_soft_breaks()
+        soft_breaks = get_soft_breaks(
+            template.content_trees[0], template.namespaces
+        )
+        self.assertEqual(len(soft_breaks), 0)
+
+        template = Template(template_xml, outname)
+        soft_breaks = get_soft_breaks(
+            template.content_trees[0], template.namespaces
+        )
+        self.assertEqual(len(soft_breaks), 2)
+
+        template.render(data={"list1": [1, 2, 3]})
+        soft_breaks = get_soft_breaks(
+            template.content_trees[0], template.namespaces
+        )
+        self.assertEqual(len(soft_breaks), 0)
+
+        outodt = zipfile.ZipFile(outname, 'r')
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        nmspc = template.namespaces
+        paragraphs = content_list.findall('//text:p', nmspc)
+        bottom_break_paragraphs, middle_break_paragraphs = 0, 0
+        for p in paragraphs:
+            if not p.text:
+                continue
+            text = p.text.strip()
+            if text == (
+                u"This is a text with a margin at the bottom and a "
+                u"soft-page-break"
+            ):
+                bottom_break_paragraphs += 1
+            elif text == (
+                u"This is a paragraph that is cut in half by a "
+                u"soft-page-break. This text should not remain cut "
+                u"in half after rendering."
+            ):
+                middle_break_paragraphs += 1
+            else:
+                self.fail(u"Unidentified text in result: {}".format(text))
+
+        self.assertEqual(bottom_break_paragraphs, 3)
+        self.assertEqual(middle_break_paragraphs, 3)
+
+    def test_remove_soft_breaks_without_tail(self):
+        template_xml = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_page_break_without_tail.odt'
+        )
+        t = Template(template_xml, get_secure_filename())
+        soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
+        assert len(soft_breaks) > 0
+
+        t.remove_soft_breaks()
+        soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
+        assert len(soft_breaks) == 0
+
+        t = Template(template_xml, get_secure_filename())
+        soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
+        assert len(soft_breaks) > 0
+
+        t.render(data={"items": [
+            {'Amount': 3, 'Currency': 'D'},
+            {'Amount': 2, 'Currency': 'E'},
+            {'Amount': 1, 'Currency': 'C'},
+        ]})
+        soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
+        assert len(soft_breaks) == 0
