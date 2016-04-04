@@ -784,3 +784,22 @@ class TestTemplate(unittest.TestCase):
             t = Template(template_fname, get_secure_filename())
             with self.assertRaisesRegexp(TemplateException, error):
                 t.render({'amount': 0.0})
+
+    def test_table_cell_function_call(self):
+        u"""Test function calls inside ODT table cells"""
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_table_cell_function_call.odt'
+        )
+        outname = get_secure_filename()
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'items': [
+                Mock(val1=i, val2=range(i), val3=i ** 2)
+                for i in range(1, 4)
+            ],
+            'document': Mock(total=6),
+        }
+
+        template.render(data_dict)
