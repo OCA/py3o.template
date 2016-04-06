@@ -18,6 +18,8 @@ PY3O_MODULE_KEY = '__py3o_module__'
 
 
 class Py3oConvertor(ast.NodeVisitor):
+    """Provide the data extraction functionality."""
+
     def __call__(self, source):
         """
         When called, this class will unfold the ast, and for each node,

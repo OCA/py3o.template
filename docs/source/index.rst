@@ -13,6 +13,7 @@ Contents:
 
    pythoncode.rst
    templating.rst
+   autodoc.rst
 
 
 

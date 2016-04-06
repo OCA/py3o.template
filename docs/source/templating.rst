@@ -102,6 +102,62 @@ The Python code has to call set_image_path or set_image_data to let py3o know ab
     t = Template("py3o_example_template.odt", "py3o_example_output.odt")
     t.set_image_path('staticimage.logo', 'images/new_logo.png')
 
+Insert images from the data dictionary
+--------------------------------------
+
+Images can also be injected into the template from the data dictionary. This method should be used in case you have to deal with multiple objects in a for loop, each with their own image.
+Insert an empty frame as a placeholder (Insert > Frame). Then open its properties and call the py3o.image function in the Name field.
+
+  .. image:: images/image_injection.png
+
+data (required)
+    the variable name for the image in the data dictionary.
+mime_type (required)
+    the image's file type.
+height (optional)
+    the desired height for the image.
+width (optional)
+    The desired width for the image.
+isb64 (optional)
+    Whether the image data should be interpreted as base64-encoded bytes instead of raw bytes.
+
+Use format functions
+~~~~~~~~~~~~~~~~~~~~
+
+.. Warning::
+    Format functions are considered to be deprecated. They are meant to be replaced by py3o.types and native ODF formatting capabilities.
+
+Some functions can be called from inside the template in order to format the
+data. To use a format function, insert a hyperlink as you would to start a
+loop or condition block::
+
+    Target:    py3o://function="format_function_name(data, format_arguments)"
+    Text:      function="format_function_name(data, format_arguments)"
+
+Number Formatting
+-----------------
+::
+
+    format_amount(amount, format)
+
+amount
+    A float or Decimal value.
+format (optional)
+    The desired number format. See the Python format documentation. Periods in the result are always replace with commas.
+
+Date Formatting
+---------------
+::
+
+    format_date(date, format)
+
+date
+    A date or datetime object, or the ISO-8601 string representation of a date.
+format
+    The desired output format
+
+
+
 Example document
 ~~~~~~~~~~~~~~~~
 

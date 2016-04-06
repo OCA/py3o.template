@@ -378,6 +378,8 @@ class TextTemplate(object):
 
 
 class Template(object):
+    """The default template to be used to output ODF content."""
+
     templated_files = ['content.xml', 'styles.xml', 'META-INF/manifest.xml']
 
     def __init__(self, template, outfile, ignore_undefined_variables=False):
@@ -517,6 +519,20 @@ class Template(object):
 
     @staticmethod
     def convert_py3o_to_python_ast(expressions):
+        """Convert py3o expressions to parsable Python code.
+
+        The py3o expressions can be extracted from a Template object using
+        the :meth:`get_all_user_python_expression` method.
+        The result can then be parsed by :class:`Py3oConvertor` in order to
+        obtain the data structure expected by the template.
+
+        :param list expressions:
+          A list of strings that represent expressions in the template.
+
+        :returns:
+          The expressions in the form of Python code that can be parsed by AST.
+        :rtype: str
+        """
         python_src = ''
         indent = 0
 
