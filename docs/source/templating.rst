@@ -1,5 +1,5 @@
 Templating with LibreOffice
-==============================
+===========================
 
 If you have read the Python code above you have seen that we pushed
 a dictionary to our template.render() method.
