@@ -212,6 +212,7 @@ By order of contribution date:
   - `Anael Lorimier`_
   - `Björn Ricks`_
   - `Agix`_
+  - `Jérémie Gavrel`_
 
 .. _Florent Aide: https://bitbucket.org/faide
 .. _Emmanuel Cazenave: https://bitbucket.org/cazino
@@ -224,6 +225,7 @@ By order of contribution date:
 .. _Anael Lorimier: https://bitbucket.org/alorimier
 .. _Björn Ricks: https://bitbucket.org/bjoernricks
 .. _Agix: https://bitbucket.org/agix
+.. _Jérémie Gavrel: https://bitbucket.org/gavrelj
 
 .. _py3o.renderserver: https://bitbucket.org/faide/py3o.renderserver/
 .. _provide a documentation: http://py3otemplate.readthedocs.org
