@@ -92,6 +92,27 @@ directory.
 Changelog
 =========
 
+0.9.9 Apr. 13 2016
+------------------
+
+  - Template parser: fix multiple loops on the same list of objects
+  - Template parser: fix multiple for loops on a variable that corresponds to a
+    name (and not an attribute) in the data source.
+  - Template parser: when parsing for loops, extract the iterator even when the
+    assigned variables are not used anywhere in the body.
+  - Template parser: now works with ODS templates.
+  - Template parser: fix a bug when parsing an unknown ast expression.
+  - Template parser: manage tuple, list and set literals.
+  - Template parser: improve the parsing of loops where the iterator is a
+    function.
+  - Template parser: implement specific iteration behavior for enumerate.
+    The second unpacked variable is linked to the function argument, as if
+    the latter was used as the iterable object for the loop.
+  - Image injection: fix an exception that was raided when the image is
+    not present in the data dictionary, even when it shouldn't
+    (template initialized with ignore_undefined_variables=True)
+  - 100 % coverage, with many new unit tests and fixes on the old ones.
+
 0.9.7.1 Feb. 19 2016
 ~~~~~~~~~~~~~~~~~~~~
 
