@@ -813,10 +813,40 @@ class Template(object):
                 value = userfield.attrib[
                     '{%s}name' % self.namespaces['text']
                 ][5:]
+                style_attr = '{%s}data-style-name' % self.namespaces['style']
+                style = userfield.attrib.get(style_attr)
 
                 attribs = dict()
                 attribs['{%s}strip' % GENSHI_URI] = 'True'
                 attribs['{%s}content' % GENSHI_URI] = value
+
+                if style is not None:
+                    if_attr = '{%s}if' % self.namespaces['py']
+                    node_tag = '{%s}expression' % self.namespaces['text']
+
+                    formula = "ooow:${{getattr({val}, '{key}', '')}}".format(
+                        val=value, key='odt_value'
+                    )
+                    vtype = "${{getattr({val}, '{key}', '{default}')}}".format(
+                        val=value, key='odt_type', default='string'
+                    )
+                    if_condition = "hasattr({val}, '{key}')".format(
+                        val=value, key='odt_value'
+                    )
+
+                    formula_attribs = {
+                        '{%s}content' % GENSHI_URI: value,
+                        style_attr: style,
+                        if_attr: if_condition,
+                        '{%s}formula' % self.namespaces['text']: formula,
+                        '{%s}value-type' % self.namespaces['office']: vtype,
+                    }
+                    formula_node = lxml.etree.Element(
+                        node_tag, attrib=formula_attribs, nsmap=self.namespaces
+                    )
+                    userfield.addprevious(formula_node)
+
+                    attribs[if_attr] = "not {cond}".format(cond=if_condition)
 
                 genshi_node = lxml.etree.Element(
                     'span',
