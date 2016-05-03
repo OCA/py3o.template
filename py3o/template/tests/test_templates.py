@@ -863,6 +863,3 @@ class TestTemplate(unittest.TestCase):
         expected = expected.replace("\n", "").replace(" ", "")
 
         self.assertEqual(result, expected)
-
-if __name__ == '__main__':
-    unittest.main()
