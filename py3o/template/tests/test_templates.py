@@ -822,3 +822,47 @@ class TestTemplate(unittest.TestCase):
         }
 
         template.render(data_dict)
+
+    def test_odt_value_styles(self):
+        u"""Test odt_value attribute and ODF styles"""
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_odt_value_styles.odt'
+        )
+        outname = get_secure_filename()
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'string_date': '1999-12-30',
+            'odt_value_date': Mock(
+                __str__=lambda s: '2009-07-06',
+                odt_value=40000,
+                odt_type='date',
+            )
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        expected_xml = lxml.etree.parse(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/odt_value_styles_result.xml'
+            )
+        )
+        result = lxml.etree.tostring(
+            content_list, pretty_print=True,
+        ).decode('utf-8')
+        expected = lxml.etree.tostring(
+            expected_xml, pretty_print=True,
+        ).decode('utf-8')
+        result = result.replace("\n", "").replace(" ", "")
+        expected = expected.replace("\n", "").replace(" ", "")
+
+        self.assertEqual(result, expected)
+
+if __name__ == '__main__':
+    unittest.main()
