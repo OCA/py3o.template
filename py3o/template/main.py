@@ -824,9 +824,9 @@ class Template(object):
                     if_attr = '{%s}if' % self.namespaces['py']
                     node_tag = '{%s}expression' % self.namespaces['text']
 
-                    formula = "ooow:${{getattr({val}, '{key}', '')}}".format(
-                        val=value, key='odt_value'
-                    )
+                    formula = (
+                        "ooow:VALUE(\"${{getattr({val}, '{key}', '')}}\")"
+                    ).format(val=value, key='odt_value')
                     vtype = "${{getattr({val}, '{key}', '{default}')}}".format(
                         val=value, key='odt_type', default='string'
                     )
