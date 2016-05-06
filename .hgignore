@@ -28,3 +28,4 @@ storage/*
 .idea
 *.db
 .~*
+wheelhouse/
