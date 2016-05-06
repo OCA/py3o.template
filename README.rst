@@ -165,7 +165,7 @@ Changelog
 ~~~~~~~~~~~~~~~~~~
 
   - WARNING: if you used the old image replacement system, you
-   need to update your code to set static image from this::
+    need to update your code to set static image from this::
 
       # old way
       t.set_image_path('logo', 'images/new_logo.png')
