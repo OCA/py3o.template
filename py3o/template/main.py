@@ -796,6 +796,43 @@ class Template(object):
                     'value_datastyle_name': value_datastyle_name,
                 }
 
+    def __prepare_calc_formulas(self):
+        """Prepare simple Genshi expressions used inside ODS cell formulas.
+
+        This method searches inside formulas for every Genshi expression that
+        only consists of a name or attribute access. Any such expression
+        ``my_odf_value`` will be replaced in the formula with::
+
+            VALUE(${getattr(my_odf_value, "odt_value", odf_value)})
+
+        Note that any double quote placed immediately before or after the
+        Genshi expression will be automatically removed.
+
+        Therefore, the preferred way to render a piece of data using the
+        formatting defined for the ODS cell is simply::
+
+            ="${my_ODF_value}"
+        """
+
+        field_expr = (
+            "//table:table-cell[regexp:match(@table:formula, '\${[^\${}]*}')]"
+        )
+
+        for content_tree in self.content_trees:
+
+            for userfield in content_tree.xpath(
+                field_expr,
+                namespaces=self.namespaces
+            ):
+                parent = userfield.getparent()
+                formula_attr = '{%s}formula' % self.namespaces['table']
+                value = userfield.attrib[formula_attr]
+                userfield.attrib[formula_attr] = re.sub(
+                    r'\"?\${([\w.]*?)(?<!odt_value)}\"?',
+                    r'VALUE(${getattr(\1, "odt_value", \1)})',
+                    value
+                )
+
     def __prepare_usertexts(self):
         """Replace user-type text fields that start with "py3o." with genshi
         instructions.
@@ -981,6 +1018,7 @@ class Template(object):
 
         self.__prepare_userfield_decl()
         self.__prepare_usertexts()
+        self.__prepare_calc_formulas()
 
         self.__replace_image_links()
 
