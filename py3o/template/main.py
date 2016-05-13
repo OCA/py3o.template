@@ -803,7 +803,7 @@ class Template(object):
         only consists of a name or attribute access. Any such expression
         ``my_odf_value`` will be replaced in the formula with::
 
-            VALUE(${getattr(my_odf_value, "odt_value", odf_value)})
+            VALUE(${getattr(my_odf_value, "odf_value", odf_value)})
 
         Note that any double quote placed immediately before or after the
         Genshi expression will be automatically removed.
@@ -828,8 +828,8 @@ class Template(object):
                 formula_attr = '{%s}formula' % self.namespaces['table']
                 value = userfield.attrib[formula_attr]
                 userfield.attrib[formula_attr] = re.sub(
-                    r'\"?\${([\w.]*?)(?<!odt_value)}\"?',
-                    r'VALUE(${getattr(\1, "odt_value", \1)})',
+                    r'\"?\${([\w.]*?)(?<!odf_value)}\"?',
+                    r'VALUE(${getattr(\1, "odf_value", "\"{}\"".format(\1))})',
                     value
                 )
 
@@ -863,12 +863,12 @@ class Template(object):
 
                     formula = (
                         "ooow:VALUE(\"${{getattr({val}, '{key}', '')}}\")"
-                    ).format(val=value, key='odt_value')
+                    ).format(val=value, key='odf_value')
                     vtype = "${{getattr({val}, '{key}', '{default}')}}".format(
-                        val=value, key='odt_type', default='string'
+                        val=value, key='odf_type', default='string'
                     )
                     if_condition = "hasattr({val}, '{key}')".format(
-                        val=value, key='odt_value'
+                        val=value, key='odf_value'
                     )
 
                     formula_attribs = {
