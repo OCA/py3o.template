@@ -824,7 +824,7 @@ class TestTemplate(unittest.TestCase):
         template.render(data_dict)
 
     def test_odt_value_styles(self):
-        u"""Test odt_value attribute and ODF styles"""
+        u"""Test odf_value attribute and ODT styles"""
         template_name = pkg_resources.resource_filename(
             'py3o.template',
             'tests/templates/py3o_odt_value_styles.odt'
@@ -836,8 +836,8 @@ class TestTemplate(unittest.TestCase):
             'string_date': '1999-12-30',
             'odt_value_date': Mock(
                 __str__=lambda s: '2009-07-06',
-                odt_value=40000,
-                odt_type='date',
+                odf_value=40000,
+                odf_type='date',
             )
         }
 
