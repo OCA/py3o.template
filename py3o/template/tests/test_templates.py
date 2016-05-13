@@ -863,3 +863,44 @@ class TestTemplate(unittest.TestCase):
         expected = expected.replace("\n", "").replace(" ", "")
 
         self.assertEqual(result, expected)
+
+    def test_ods_value_styles(self):
+        u"""Test odf_value attribute and ODS styles"""
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_ods_value_styles.ods'
+        )
+        outname = get_secure_filename()
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'string_date': '1999-12-30',
+            'odf_value_date': Mock(
+                __str__=lambda s: '2009-07-06',
+                odf_value=40000,
+                odf_type='date',
+            )
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        expected_xml = lxml.etree.parse(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/ods_value_styles_result.xml'
+            )
+        )
+        result = lxml.etree.tostring(
+            content_list, pretty_print=True,
+        ).decode('utf-8')
+        expected = lxml.etree.tostring(
+            expected_xml, pretty_print=True,
+        ).decode('utf-8')
+        result = result.replace("\n", "").replace(" ", "")
+        expected = expected.replace("\n", "").replace(" ", "")
+
+        self.assertEqual(result, expected)
