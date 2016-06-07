@@ -1064,3 +1064,28 @@ class TestHelpers(unittest.TestCase):
         data = {'myarray': [0, 1, 2, 3]}
         json_dict = res.render(data)
         self.assertEqual(json_dict, data)
+
+    def test_unpack_fron_data_source(self):
+
+        expressions = [
+            'for="a, b in myarray"',
+            'a',
+            'b.c',
+            '/for'
+        ]
+
+        py_expr = Template.convert_py3o_to_python_ast(expressions)
+        p = Py3oConvertor()
+        res = p(py_expr)
+        data = {'myarray': [
+            (1, Mock(c=2, d=3)),
+            (4, Mock(c=5, d=6)),
+        ]}
+        json_dict = res.render(data)
+        # self.assertEqual(json_dict, {'myarray': [
+        #     [1, {'c': 2}],
+        #     [4, {'c': 5}],
+        # ]})
+
+if __name__ == '__main__':
+    unittest.main()

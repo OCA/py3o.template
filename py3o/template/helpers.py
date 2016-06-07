@@ -92,7 +92,7 @@ class Py3oConvertor(ast.NodeVisitor):
             tmp, keys = next_tmp, next_keys
         tmp[next(iter(keys))] = inst
 
-    def bind_target(self, iterable, target, context):
+    def bind_target(self, iterable, target, context, iterated=True):
         """Helper function to the For node.
         This function fill the context according to the iterable and
          target and return a new_context to pass through the for body
@@ -118,8 +118,7 @@ class Py3oConvertor(ast.NodeVisitor):
             target_name = rem_context
             self.set_last_item(iterable, target_name)
         else:
-            # Replace the last item by a Py3oArray()
-            target_name = Py3oArray()
+            target_name = Py3oArray() if iterated else Py3oName()
             self.set_last_item(rem_iterable, target_name)
             if rem_context is not context:
                 # Update the related context with the new attribute access
@@ -176,13 +175,19 @@ class Py3oConvertor(ast.NodeVisitor):
         # Bind iterable and target. Target variables are local to the loop ;
         # only the iterable and the body should impact the parent context.
         iter_names = Py3oDummy()
+        escaped = []
         for target_name, iter_name in iterable.unpack(target):
             if iter_name:
+                iterated = not any(
+                    iter_name.rget(prev_iter)[0] for prev_iter in escaped
+                )
                 body_context = self.bind_target(
-                    iter_name, target_name, body_context,
+                    iter_name, target_name, body_context, iterated=iterated
                 )
                 iter_names.rupdate(iter_name)
-            elif target_name:
+                if target_name is None:
+                    escaped.append(iter_name)
+            elif target_name is not None:
                 body_context[target_name.get_key()] = Py3oDummy()
 
         for n in node.body:

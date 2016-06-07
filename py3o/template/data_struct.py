@@ -11,6 +11,9 @@ class Py3oDataError(Exception):
 class Py3oObject(dict):
     """ Base class to be inherited.
     """
+
+    is_list = False
+
     def render(self, data):  # pragma: no cover
         raise NotImplementedError("This function should be overriden")
 
@@ -36,17 +39,30 @@ class Py3oObject(dict):
 
     def get_tuple(self):
         """Return the value of the Py3oObject as a tuple.
-        As a default behavior, the object returns itself as a single.
+        As a default behavior, the object returns None.
         """
-        return self,
+        return None
 
     def unpack(self, target):
         self_tup = self.get_tuple()
         target_tup = target.get_tuple()
-        diff = len(target_tup) - len(self_tup)
-        if diff != 0:  # pragma: no cover
-            raise ValueError(u"Unpack Error")
-        return zip(target_tup, self_tup)
+        if target_tup is None:
+            yield (target, self)
+        elif self_tup is None:
+            yield (None, self)
+            array = self[self.get_key()]
+            array.is_list = True
+            for i, target_elem in enumerate(target_tup):
+                self[self.get_key()] = tmpname = Py3oName({i: Py3oName()})
+                yield (target_elem, self)
+                array[i] = tmpname[i]
+            self[self.get_key()] = array
+        else:
+            diff = len(target_tup) - len(self_tup)
+            if diff != 0:  # pragma: no cover
+                raise ValueError(u"Unpack Error {} {}".format(target_tup, self_tup))
+            for t in zip(target_tup, self_tup):
+                yield t
 
     def rupdate(self, other):
         """Update recursively the Py3oObject self with the Py3oObject other.
@@ -198,7 +214,7 @@ class Py3oCall(Py3oObject):
     """This class holds information of function call.
     'name' holds the name of function as a Py3oName
     The keys are the arguments as:
-        - numeric keys are positional arguments oredered ascendently
+        - numeric keys are positional arguments ordered ascendently
         - string keys are keywords arguments
     """
 
@@ -220,7 +236,7 @@ class Py3oCall(Py3oObject):
             res = [(target, None) for target in target_tup]
             res += [(None, self[arg]) for arg in args]
 
-        else:
+        elif isinstance(self.return_format, tuple):
             # Bind targets to function arguments according to return_format
             return_value = []
             for return_var in self.return_format:
@@ -240,7 +256,12 @@ class Py3oCall(Py3oObject):
             else:  # pragma: no cover
                 raise ValueError(u"Unpack Error")
 
-        return res
+        else:
+            # Single return value is bound to one of the arguments.
+            res = [(target, self.get(self.return_format, None))]
+
+        for tup in res:
+            yield tup
 
 
 class Py3oEnumerate(Py3oCall):
