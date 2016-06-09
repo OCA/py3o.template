@@ -30,9 +30,9 @@ setup(
     zip_safe=True,
     install_requires=[
         'setuptools',
-        'six >= 1.4',
+        'six >= 1.9',
         'lxml',
-        # 'genshi >= 0.7',
+        'genshi >= 0.7',
         'pyjon.utils > 0.6',
     ],
     entry_points="""
