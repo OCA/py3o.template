@@ -1065,7 +1065,7 @@ class TestHelpers(unittest.TestCase):
         json_dict = res.render(data)
         self.assertEqual(json_dict, data)
 
-    def test_unpack_fron_data_source(self):
+    def test_unpack_from_data_source(self):
 
         expressions = [
             'for="a, b in myarray"',

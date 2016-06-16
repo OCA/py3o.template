@@ -60,7 +60,9 @@ class Py3oObject(dict):
         else:
             diff = len(target_tup) - len(self_tup)
             if diff != 0:  # pragma: no cover
-                raise ValueError(u"Unpack Error {} {}".format(target_tup, self_tup))
+                raise ValueError(u"Unpack Error: {} != {}".format(
+                    target_tup, self_tup
+                ))
             for t in zip(target_tup, self_tup):
                 yield t
 
@@ -125,7 +127,7 @@ class Py3oObject(dict):
         )
         if other['b'] was a leaf, res[0] would be True and res[2] the leaf.
 
-        :return: A triplet:
+        :return: A triple:
           - True if the search was successful, False otherwise
           - The active sub-element of self when the search stopped
           - The active sub-element of other when the search stopped
@@ -137,6 +139,16 @@ class Py3oObject(dict):
             return self[other_key].rget(other[other_key])
         else:
             return False, self, other
+
+    def render_children(self, data):
+        if self.is_list:
+            res = [self[i].render(item) for i, item in enumerate(data)]
+        else:
+            res = {
+                key: value.render(getattr(data, key))
+                for key, value in self.items()
+            }
+        return res
 
 
 class Py3oModule(Py3oObject):
@@ -173,16 +185,11 @@ class Py3oArray(Py3oObject):
         to the user's data
         """
         if self.direct_access:
-            return data
-        if not self:  # pragma: no cover
-            return None
-        res = []
-        for d in data:
-            tmp_dict = {}
-            for key, value in self.items():
-                # Spread only the appropriate data to its children
-                tmp_dict[key] = value.render(getattr(d, key))
-            res.append(tmp_dict)
+            res = data
+        elif not self:  # pragma: no cover
+            res = None
+        else:
+            res = [self.render_children(d) for d in data]
         return res
 
 
@@ -199,14 +206,9 @@ class Py3oName(Py3oObject):
         if not self:
             # We only send False values if the value is a number
             # otherwise we convert the False into an empty string
-            if isinstance(data, Number):
-                return data
-            return data or u""
-        res = {}
-
-        for key, value in self.items():
-            # Spread only the appropriate data to its children
-            res[key] = value.render(getattr(data, key))
+            res = data if data or isinstance(data, Number) else u""
+        else:
+            res = self.render_children(data)
         return res
 
 
