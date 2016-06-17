@@ -7,7 +7,7 @@ build:
         commands:
                 - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq subversion python3-dev
                 - pip install setuptools --upgrade
-                - python setup.py install
+                # - python setup.py install # do not install to avoid having wrong version of genshi
                 - pip install tox
                 - tox
 
