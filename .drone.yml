@@ -5,6 +5,7 @@ clone:
 build:
         image: xcgd/dronebase
         commands:
+                - DEBIAN_FRONTEND=noninteractive apt-get install -yq subversion
                 - pip install setuptools --upgrade
                 - python setup.py install
                 - pip install tox
