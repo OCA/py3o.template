@@ -1082,10 +1082,7 @@ class TestHelpers(unittest.TestCase):
             (4, Mock(c=5, d=6)),
         ]}
         json_dict = res.render(data)
-        # self.assertEqual(json_dict, {'myarray': [
-        #     [1, {'c': 2}],
-        #     [4, {'c': 5}],
-        # ]})
-
-if __name__ == '__main__':
-    unittest.main()
+        self.assertEqual(json_dict, {'myarray': [
+            [1, {'c': 2}],
+            [4, {'c': 5}],
+        ]})
