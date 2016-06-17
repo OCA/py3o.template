@@ -12,6 +12,6 @@ build:
 
 notify:
   slack:
-    webhook_url: $$mattermost
+    webhook_url: $$mattermost_token
     channel: Dev
     username: drone
