@@ -7,8 +7,8 @@ build:
         commands:
                 - pip install setuptools --upgrade
                 - python setup.py install
-                - pip install nose
-                - python setup.py test
+                - pip install tox
+                - tox
 
 notify:
   slack:
