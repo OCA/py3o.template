@@ -100,6 +100,14 @@ directory.
 Changelog
 =========
 
+0.9.10 Oct. 3 2016
+------------------
+
+  - Fixed a packaging issue (genshi requirement was unintentionally
+    dropped in last release)
+  - Added more tests
+  - Added more support for types formatting
+
 0.9.9 Apr. 13 2016
 ------------------
 
