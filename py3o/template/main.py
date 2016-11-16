@@ -382,7 +382,8 @@ class Template(object):
 
     templated_files = ['content.xml', 'styles.xml', 'META-INF/manifest.xml']
 
-    def __init__(self, template, outfile, ignore_undefined_variables=False):
+    def __init__(self, template, outfile, ignore_undefined_variables=False,
+                 escape_false=False):
         """A template object exposes the API to render it to an OpenOffice
         document.
 
@@ -395,6 +396,10 @@ class Template(object):
         @type outfile: a string representing the full filename for output
 
         @param ignore_undefined_variables: Not defined variables are replaced
+        with an empty string during template rendering if True
+        @type ignore_undefined_variables: boolean. Default is False
+
+        @param escape false value: Values evaluated as False are replaced
         with an empty string during template rendering if True
         @type ignore_undefined_variables: boolean. Default is False
         """
@@ -413,6 +418,7 @@ class Template(object):
         self.images = {}
         self.output_streams = []
         self.ignore_undefined_variables = ignore_undefined_variables
+        self.escape_false = escape_false
 
     def __prepare_namespaces(self):
         """create proper namespaces for our document
@@ -852,13 +858,16 @@ class Template(object):
                 ][5:]
                 style_attr = '{%s}data-style-name' % self.namespaces['style']
                 style = userfield.attrib.get(style_attr)
+                if_attr = '{%s}if' % self.namespaces['py']
 
                 attribs = dict()
                 attribs['{%s}strip' % GENSHI_URI] = 'True'
                 attribs['{%s}content' % GENSHI_URI] = value
 
+                if self.escape_false:
+                    attribs[if_attr] = value
+
                 if style is not None:
-                    if_attr = '{%s}if' % self.namespaces['py']
                     node_tag = '{%s}expression' % self.namespaces['text']
 
                     formula = (

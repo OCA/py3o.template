@@ -303,6 +303,66 @@ class TestTemplate(unittest.TestCase):
 
         assert error is False
 
+    def test_escape_false_template(self):
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/test_false_value.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+        template.render({'false_value': False})
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/template_test_false_value_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        self.assertEqual(result_a, result_e)
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname, escape_false=True)
+        template.render({'false_value': False})
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/template_test_escape_false_value_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        self.assertEqual(result_a, result_e)
+
     def test_invalid_template_1(self):
         """a template should not try to define a /for and a for on the same
         paragraph
