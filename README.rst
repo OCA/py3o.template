@@ -100,6 +100,15 @@ directory.
 Changelog
 =========
 
+0.9.11 unreleased
+-----------------
+
+  - Added support for escaping False values. Values evaluated as False are
+    replaced with an empty string during template rendering. This
+    functionality is disabled by default and can be enabled with a new
+    parameter on the Template object.
+
+
 0.9.10 Oct. 3 2016
 ------------------
 
@@ -250,6 +259,7 @@ By order of contribution date:
   - `Björn Ricks`_
   - `Agix`_
   - `Jérémie Gavrel`_
+  - `Laurent Mignon`_
 
 .. _Florent Aide: https://bitbucket.org/faide
 .. _Emmanuel Cazenave: https://bitbucket.org/cazino
@@ -263,6 +273,7 @@ By order of contribution date:
 .. _Björn Ricks: https://bitbucket.org/bjoernricks
 .. _Agix: https://bitbucket.org/agix
 .. _Jérémie Gavrel: https://bitbucket.org/gavrelj
+.. _Laurent Mignon: https://bitbucket.org/lmi
 
 .. _py3o.renderserver: https://bitbucket.org/faide/py3o.renderserver/
 .. _provide a documentation: http://py3otemplate.readthedocs.org
