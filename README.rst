@@ -100,6 +100,12 @@ directory.
 Changelog
 =========
 
+0.9.12 Unreleased yet
+---------------------
+
+  - Better error reporting for cases when the link is not positionned
+    on its own line.
+
 0.9.11 Dec. 16 2016
 -------------------
 
@@ -260,6 +266,7 @@ By order of contribution date:
   - `Agix`_
   - `Jérémie Gavrel`_
   - `Laurent Mignon`_
+  - `Alexis de Lattre`_
 
 .. _Florent Aide: https://bitbucket.org/faide
 .. _Emmanuel Cazenave: https://bitbucket.org/cazino
@@ -274,6 +281,7 @@ By order of contribution date:
 .. _Agix: https://bitbucket.org/agix
 .. _Jérémie Gavrel: https://bitbucket.org/gavrelj
 .. _Laurent Mignon: https://bitbucket.org/lmi
+.. _Alexis de Lattre: https://github.com/alexis-via
 
 .. _py3o.renderserver: https://bitbucket.org/faide/py3o.renderserver/
 .. _provide a documentation: http://py3otemplate.readthedocs.org
