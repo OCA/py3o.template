@@ -100,8 +100,8 @@ directory.
 Changelog
 =========
 
-0.9.11 unreleased
------------------
+0.9.11 Dec. 16 2016
+-------------------
 
   - Added support for escaping False values. Values evaluated as False are
     replaced with an empty string during template rendering. This
