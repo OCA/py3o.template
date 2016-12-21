@@ -999,16 +999,18 @@ class Template(object):
             self.content_trees,
             self.namespaces
         )
-        parents = []
+        parent2tag = {}  # key = parent ; value = tag
         for tag in starting_tags:
             parent = tag[0].getparent()
-            if parent in parents:
+            if parent in parent2tag:
                 raise TemplateException(
                     "Every py3o link instruction should be on its own line. "
-                    "Faulty py3o link instruction: %s" % tag[1]
+                    "Two py3o link instructions are on the same line: "
+                    "<%s> and <%s>" % (tag[1], parent2tag[parent][1])
                 )
             else:
-                parents.append(parent)
+                parent2tag[parent] = tag
+        parents = parent2tag.keys()
 
         for link, py3o_base in starting_tags:
             self.handle_link(
