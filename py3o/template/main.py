@@ -647,7 +647,8 @@ class Template(object):
                 msg = "url and text do not match in '%s'" % link[0].text
                 raise TemplateException(msg)
         else:
-            raise TemplateException("Link text not found")
+            msg = "Text not found for link '%s'" % link.attrib
+            raise TemplateException(msg)
 
     def handle_draw_frame(self, frame, py3o_base):
         """remove a draw:frame content and inject a draw:image with
