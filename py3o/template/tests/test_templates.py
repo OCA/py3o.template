@@ -834,7 +834,7 @@ class TestTemplate(unittest.TestCase):
         templates = [
             ('py3o_invalid_link.odt', 'url and text do not match.*'),
             ('py3o_invalid_link_old.odt', 'url and text do not match.*'),
-            ('py3o_invalid_link_none.odt', 'Link text not found'),
+            ('py3o_invalid_link_none.odt', 'Text not found for link.*'),
         ]
 
         for template, error in templates:
