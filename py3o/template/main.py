@@ -726,7 +726,11 @@ class Template(object):
             )
 
         # max split is one
-        instruction, instruction_value = py3o_base.split("=", 1)
+        try:
+            instruction, instruction_value = py3o_base.split("=", 1)
+        except:
+            raise TemplateException(
+                "Missing '=' in instruction '%s'" % py3o_base)
         instruction_value = instruction_value.strip('"')
 
         # Handle function call
