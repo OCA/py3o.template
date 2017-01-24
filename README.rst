@@ -105,6 +105,8 @@ Changelog
 
   - Better error reporting for cases when the link is not positionned
     on its own line.
+  - Better error reporting for cases when an instruction link does not contain
+    the equal sign.
 
 0.9.11 Dec. 16 2016
 -------------------
@@ -165,7 +167,7 @@ Changelog
 0.9.6 Nov. 20 2015
 ~~~~~~~~~~~~~~~~~~
 
-  - Fixed formatting function 
+  - Fixed formatting function
   - Fixed if="" functionality that was not correctly parsed
   - Display empty string instead of "False" when browsing relational field
   - Code formatting in the ast parser

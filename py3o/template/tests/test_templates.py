@@ -91,6 +91,43 @@ class TestTemplate(unittest.TestCase):
 
         assert error is False
 
+    def test_link_validation_missing_equal(self):
+        """test a missing equal sign in a link raises a template error"""
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_missing_eq_in_link.odt'
+        )
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        class Item(object):
+            def __init__(self, val):
+                self.val = val
+        data_dict = {
+            "items": [Item(1), Item(2), Item(3), Item(4)]
+        }
+
+        template.set_image_path(
+            'staticimage.logo',
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/images/new_logo.png'
+            )
+        )
+        except_occured = False
+        error_text = ""
+        try:
+            template.render(data_dict)
+        except TemplateException as e:
+            except_occured = True
+            error_text = "{}".format(e)
+
+        assert except_occured is True
+        assert error_text == (
+            "Missing '=' in instruction 'for \"item in items\"'"
+        )
+
     def test_list_duplicate(self):
         """test duplicated listed get a unique id"""
         template_name = pkg_resources.resource_filename(
