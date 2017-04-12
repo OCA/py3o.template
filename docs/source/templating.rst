@@ -197,9 +197,9 @@ format
 Example document
 ~~~~~~~~~~~~~~~~
 
-You can find an example template in `our source tree`_
+You can find several example templates (ODT and ODS) in `our source tree`_
 
-.. _our source tree: https://bitbucket.org/faide/py3o.template/src/889d8bc11290d3300f5da12f44ac98b7a6af9399/example/py3o_example_template.odt?at=default
+.. _our source tree: https://bitbucket.org/faide/py3o.template/src/default/example/
 
 Here is a screenshot to show you some control structures (for and if)
 in action. As you can see you can use these control structures
