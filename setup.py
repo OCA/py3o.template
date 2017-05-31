@@ -7,7 +7,7 @@ version = '0.9.12'
 setup(
     name='py3o.template',
     version=version,
-    description="An easy solution to design reports using OpenOffice",
+    description="An easy solution to design reports using LibreOffice",
     long_description=codecs.open(
         "README.rst", mode='r', encoding="utf-8"
     ).read(),
@@ -34,6 +34,7 @@ setup(
         'lxml',
         'genshi >= 0.7',
         'pyjon.utils > 0.6',
+        'Pillow',
     ],
     entry_points="""
     # -*- Entry points: -*-

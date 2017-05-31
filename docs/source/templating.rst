@@ -148,11 +148,13 @@ data (required)
 mime_type (required)
     the image's file type.
 height (optional)
-    the desired height for the image.
+    the desired height for the image (e.g. '1.3cm').
 width (optional)
-    The desired width for the image.
+    The desired width for the image (e.g. '2.55cm').
 isb64 (optional)
     Whether the image data should be interpreted as base64-encoded bytes instead of raw bytes.
+keep_ratio (optional)
+    Whether the aspect ratio of the image should be kept. If you use keep_ratio=True (which is the default), you should use either the option 'height' or 'width' (using both doesn't make sense in this case).
 
 Use format functions
 ~~~~~~~~~~~~~~~~~~~~
