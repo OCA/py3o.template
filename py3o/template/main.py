@@ -12,6 +12,7 @@ import re
 
 import lxml.etree
 import zipfile
+from PIL import Image
 
 from copy import copy
 from io import BytesIO
@@ -248,20 +249,21 @@ def format_date(date, format=ISO_DATE_FORMAT):
     return res
 
 
-class ImageInjector(object):
+class FrameInjector(object):
 
     def __init__(self, template):
-        """Inject an image data into the template manifest when called back
-        from genshi template rendering
+        """Inject a proper <draw:frame/> attributes into the template manifest
+        when called back from genshi template rendering
         :param template: the py3o.template.Template instance this injector
         must work with
         :type template: py3o.template.Template instance
         """
         self.template = template
 
-    def __call__(self, data, mime_type, width=None, height=None, isb64=False):
+    def __call__(
+            self, data, mime_type, width=None, height=None, isb64=False,
+            keep_ratio=True, origin_attrib={}):
         """this will be called by genshi when rendering its template
-        We only register our image data with a unique identifier
 
         :param data: the image data, either as a base64 encoded string or
         as the raw binary data directly from a file.read()
@@ -270,16 +272,10 @@ class ImageInjector(object):
         :param mime_type: the mime type of your image (ie: 'png', 'jpg')
         :type mime_type: string
 
-        :param width: the desired width of your image. It is recommended to set
-        this param to the real width of your image file (and eventually resize
-        your image with Pillow) because at the moment we only 'forward' this to
-        LibreOffice.
+        :param width: the desired width of your image.
         :type width: string
 
-        :param height: the desired height of your image. It is recommended
-        to set this param to the real height of your image file
-        (and eventually resize your image with Pillow) because at the moment
-        we only 'forward' this to LibreOffice.
+        :param height: the desired height of your image. (e.g. '1.4cm')
         :type height: string
 
         :param isb64: a flag to tell the engine your image data is not in raw
@@ -288,6 +284,16 @@ class ImageInjector(object):
         LibreOffice.
         Default value is False.
         :type isb64: Boolean
+
+        :param keep_ratio: keep the aspect ratio of the image. Must be used
+        with either the height or the width argument (using both doesn't
+        make sense)
+        Default value is True.
+        :type keep_ratio: Boolean
+
+        :param origin_attrib: attributes of the <draw:frame/> node in the
+        template file.
+        :type origin_attrib: dict
 
         :returns: a dict of attributes that can be set on the node that is
         being treated by Genshi.
@@ -302,7 +308,88 @@ class ImageInjector(object):
         if isb64:
             # we need to decode the base64 data to obtain the raw data version
             data = b64decode(data)
+        if keep_ratio and (width or height):
+            ifile = StringIO(data)
+            ifile.seek(0)
+            pil_img = Image.open(ifile)
+            # img_ratio = width / height
+            if pil_img.size[0] and pil_img.size[1]:
+                img_ratio = pil_img.size[0] / float(pil_img.size[1])
+                if height:
+                    height_float = float(re.sub('[a-zA-Z]+', '', height))
+                    uom = re.sub('[\d\.]+', '', height)
+                    width_float = height_float * img_ratio
+                    width = '%.3f%s' % (width_float, uom)
+                elif width:
+                    width_float = float(re.sub('[a-zA-Z]+', '', width))
+                    uom = re.sub('[\d\.]+', '', width)
+                    height_float = width_float / img_ratio
+                    height = '%.3f%s' % (height_float, uom)
+        if width:
+            origin_attrib['{%s}width' % self.template.namespaces['svg']]\
+                = width
 
+        if height:
+            origin_attrib['{%s}height' % self.template.namespaces['svg']] =\
+                height
+        return origin_attrib
+
+
+class ImageInjector(object):
+
+    def __init__(self, template):
+        """Inject an image data into the template manifest when called back
+        from genshi template rendering
+        :param template: the py3o.template.Template instance this injector
+        must work with
+        :type template: py3o.template.Template instance
+        """
+        self.template = template
+
+    def __call__(
+            self, data, mime_type, width=None, height=None, isb64=False,
+            keep_ratio=True):
+        """this will be called by genshi when rendering its template
+        We only register our image data with a unique identifier
+
+        :param data: the image data, either as a base64 encoded string or
+        as the raw binary data directly from a file.read()
+        :type data: string or binary data
+
+        :param mime_type: the mime type of your image (ie: 'png', 'jpg')
+        :type mime_type: string
+
+        :param width: the desired width of your image.
+        :type width: string
+
+        :param height: the desired height of your image (e.g. '1.4cm').
+        :type height: string
+
+        :param isb64: a flag to tell the engine your image data is not in raw
+        format but an b64encode()ed version. If set to True, the engine will
+        try to b64decode() your data before saving it to a file for
+        LibreOffice.
+        Default value is False.
+        :type isb64: Boolean
+
+        :param keep_ratio: keep the aspect ratio of the image. Must be used
+        with either the height or the width argument (using both doesn't
+        make sense)
+        Default value is True.
+        :type keep_ratio: Boolean
+
+        :returns: a dict of attributes that can be set on the node that is
+        being treated by Genshi.
+        :raises: TypeError if your set the isb64 flag but your data were
+        incorrectly padded or if there are non-alphabet characters
+        present in the data string.
+        """
+        if not data:
+            return {}
+
+        if isb64:
+            # we need to decode the base64 data to obtain the raw data version
+            data = b64decode(data)
         identifier = hashlib.sha256(data).hexdigest()
         self.template.set_image_data(identifier, data, mime_type=mime_type)
 
@@ -312,12 +399,6 @@ class ImageInjector(object):
                 "py3o: %s" % identifier
             ),
         }
-        if width:
-            attrs['{%s}width' % self.template.namespaces['svg']] = width
-
-        if height:
-            attrs['{%s}height' % self.template.namespaces['svg']] = height
-
         return attrs
 
 
@@ -657,18 +738,24 @@ class Template(object):
         dictionary to be called back from inside the template
         """
         image_inserter = "__py3o_image(%s)" % py3o_base
-
-        drawimage = lxml.etree.Element(
-            '{%s}image' % self.namespaces['draw'],
-            attrib={'{%s}attrs' % self.namespaces['py']: image_inserter},
-            nsmap={
-                'draw': self.namespaces['draw'],
-                'py': GENSHI_URI
+        frame_args = py3o_base + u', origin_attrib=' + unicode(frame.attrib)
+        frame_inserter = "__py3o_frame(%s)" % frame_args
+        attrib_image = {'{%s}attrs' % self.namespaces['py']: image_inserter}
+        attrib_frame = {'{%s}attrs' % self.namespaces['py']: frame_inserter}
+        nsmap = {
+            'draw': self.namespaces['draw'],
+            'py': GENSHI_URI,
             }
-        )
+        drawframe = lxml.etree.Element(
+            '{%s}frame' % self.namespaces['draw'],
+            attrib=attrib_frame, nsmap=nsmap)
+        lxml.etree.SubElement(
+            drawframe,
+            '{%s}image' % self.namespaces['draw'],
+            attrib=attrib_image, nsmap=nsmap)
         # first child in the frame (ie: draw:text-box or equivalent), will be
         # removed and replaced by our new draw:image node we created
-        frame.replace(frame[0], drawimage)
+        frame.getparent().replace(frame, drawframe)
 
     def handle_link(self, link, py3o_base, closing_link):
         """transform a py3o link into a proper Genshi statement
@@ -983,6 +1070,7 @@ class Template(object):
             "format_amount": format_amount,
             "format_date": format_date,
             "__py3o_image": ImageInjector(self),
+            "__py3o_frame": FrameInjector(self),
         }
 
     def render_tree(self, data):
