@@ -148,13 +148,15 @@ data (required)
 mime_type (required)
     the image's file type.
 height (optional)
-    the desired height for the image (e.g. '1.3cm').
+    the desired height for the image with the unit of measure (e.g. '1.3cm').
 width (optional)
-    The desired width for the image (e.g. '2.55cm').
+    The desired width for the image with the unit of measure (e.g. '2.55cm').
 isb64 (optional)
     Whether the image data should be interpreted as base64-encoded bytes instead of raw bytes.
 keep_ratio (optional)
     Whether the aspect ratio of the image should be kept. If you use keep_ratio=True (which is the default), you should use either the option 'height' or 'width' (using both doesn't make sense in this case).
+
+Possible unit of measures: **cm**, **mm**, **in**, **pt**, **pc**, **px** and **em** (the OpenDocument format uses the unit of measures defined in the section §5.9.13 of the `XSL specifications <https://www.w3.org/TR/2001/REC-xsl-20011015/slice5.html#section-N8185-Definitions-of-Units-of-Measure>`_).
 
 Use format functions
 ~~~~~~~~~~~~~~~~~~~~
