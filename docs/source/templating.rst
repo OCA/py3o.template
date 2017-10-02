@@ -15,7 +15,10 @@ At the moment "for" and "if" controls are available.
 In our example python code we have a dataset that contains a list of items.
 This list itself is named "items" and we want to iterate on all the items.
 
-We should add a for loop using an hyperlink.
+We should add a for loop using an hyperlink or an input field.
+
+Hyperlink method
+----------------
 
 Every control structure must be added to you document using a specially
 formatted hyperlink::
@@ -42,6 +45,28 @@ In our case we must insert a "/for" hyperlink::
 Defined in the user interface as such:
 
   .. image:: images/for_loop_close_definition.png
+
+Input field method
+------------------
+
+Every control structure must be added to you document using an input field::
+
+    reference = py3o://for="item in items"
+    name = for="item in items"
+
+Here is an example setup:
+
+  .. image:: images/for_loop_definition_input_field.png
+
+Every control structure must be closed by a corresponding closing tag.
+In our case we must insert a "/for" input field::
+
+    reference = py3o:///for
+    name = /for
+
+Defined in the user interface as such:
+
+  .. image:: images/for_loop_close_definition_input_field.png
 
 Define variables
 ~~~~~~~~~~~~~~~~
@@ -166,12 +191,18 @@ Use format functions
     They are meant to be replaced by py3o.types and native
     ODF formatting capabilities.
 
-Some functions can be called from inside the template in order to format the
-data. To use a format function, insert a hyperlink as you would to start a
-loop or condition block::
+Some functions can be called from inside the template in order to
+format the data. To use a format function, insert a hyperlink as you
+would to start a loop or condition block::
 
     Target:    py3o://function="format_function_name(data, format_arguments)"
     Text:      function="format_function_name(data, format_arguments)"
+
+or an input field::
+
+    reference: py3o://function="format_function_name(data, format_arguments)"
+    name:      function="format_function_name(data, format_arguments)"
+    
 
 Number Formatting
 -----------------

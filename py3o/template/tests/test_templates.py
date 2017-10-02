@@ -1002,7 +1002,7 @@ class TestTemplate(unittest.TestCase):
 
         self.assertEqual(result, expected)
 
-    def test_input_fields_syntax(self):
+    def test_input_fields_with_function(self):
         template_name = pkg_resources.resource_filename(
             'py3o.template',
             'tests/templates/py3o_template_input_fields_for_function.odt'
@@ -1031,7 +1031,45 @@ class TestTemplate(unittest.TestCase):
         result_e = open(
             pkg_resources.resource_filename(
                 'py3o.template',
-                'tests/templates/input_fields_result.xml'
+                'tests/templates/input_fields_function_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        assert result_a == result_e
+
+    def test_input_fields_with_control(self):
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_template_for_loop_input_field.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'items': ['one', 'two', 'three']
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/input_fields_for_loop_result.xml'
             )
         ).read()
 
