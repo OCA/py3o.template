@@ -168,6 +168,7 @@ def get_all_python_expression(content_trees, namespaces):
     """
     xpath_expr = (
         "//text:a[starts-with(@xlink:href, 'py3o://')] | "
+        "//text:text-input[starts-with(@text:description, 'py3o://')] | "
         "//text:user-field-get[starts-with(@text:name, 'py3o.')] | "
         "//table:table-cell/text:p[regexp:match(text(), '\${[^\${}]*}')] | "
         "//table:table-cell[regexp:match(@table:formula, '\${[^\${}]*}')]"
@@ -196,7 +197,10 @@ def get_image_frames(content_tree, namespaces):
 def get_instructions(content_tree, namespaces):
     """find all text links that have a py3o
     """
-    xpath_expr = "//text:a[starts-with(@xlink:href, 'py3o://')]"
+    xpath_expr = (
+        "//text:a[starts-with(@xlink:href, 'py3o://')] | "
+        "//text:text-input[starts-with(@text:description, 'py3o://')]"
+    )
     return content_tree.xpath(
         xpath_expr,
         namespaces=namespaces
@@ -684,11 +688,21 @@ class Template(object):
         starting_tags = list()
         closing_tags = dict()
 
+        attrib_xlink = '{%s}href' % namespaces['xlink']
+        attrib_text = '{%s}description' % namespaces['text']
+
         for content_tree in content_trees:
             for link in get_instructions(content_tree, namespaces):
-                py3o_statement = urllib.parse.unquote(
-                    link.attrib['{%s}href' % namespaces['xlink']]
-                )
+                if attrib_xlink in link.attrib:
+                    py3o_statement = urllib.parse.unquote(
+                        link.attrib[attrib_xlink]
+                    )
+                elif attrib_text in link.attrib:
+                    py3o_statement = urllib.parse.unquote(
+                        link.attrib[attrib_text]
+                    )
+                else:
+                    raise NotImplementedError
                 # remove the py3o://
                 py3o_base = py3o_statement[7:]
 
@@ -716,6 +730,9 @@ class Template(object):
         :returns: nothing
         :raises: TemplateException
         """
+        # Don't enfoce on text-input fields
+        if link.tag.endswith('text-input'):
+            return
         # OLD open office version
         if link.text is not None and link.text.strip():
             if not link.text == py3o_base:
