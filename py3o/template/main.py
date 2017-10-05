@@ -253,9 +253,9 @@ def format_date(date, format=ISO_DATE_FORMAT):
     return res
 
 
-def get_var_type(var):
+def get_var_corresponding_ods_type(var):
     """Check variable type and return the corresponding ODS value."""
-    if type(var) in (int, float):
+    if isinstance(var, (int, float)):
         return "float"
     return "string"
 
@@ -739,7 +739,7 @@ class Template(object):
                 varname = re.findall(r'\${([^{}]*)}', e.text)[0]
                 for ns in ('office', 'calcext'):
                     parent.attrib['{%s}value-type' % namespaces[ns]] = (
-                        '${get_var_type(%s)}' % varname)
+                        '${get_var_corresponding_ods_type(%s)}' % varname)
                 parent.attrib['{%s}value' % namespaces['office']] = (
                     '${%s}' % varname)
 
@@ -1111,7 +1111,7 @@ class Template(object):
             "format_date": format_date,
             "__py3o_image": ImageInjector(self),
             "__py3o_frame": FrameInjector(self),
-            "get_var_type": get_var_type,
+            "get_var_corresponding_ods_type": get_var_corresponding_ods_type,
         }
 
     def render_tree(self, data):
