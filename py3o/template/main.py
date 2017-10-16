@@ -253,6 +253,13 @@ def format_date(date, format=ISO_DATE_FORMAT):
     return res
 
 
+def get_var_corresponding_ods_type(var):
+    """Check variable type and return the corresponding ODS value."""
+    if isinstance(var, (int, float)):
+        return "float"
+    return "string"
+
+
 class FrameInjector(object):
 
     def __init__(self, template):
@@ -720,6 +727,22 @@ class Template(object):
 
         return starting_tags, closing_tags
 
+    def apply_variable_type_in_cells(self, content_trees, namespaces):
+        """Replace default 'string' type by a function call."""
+        text_nmspc = namespaces['text']
+        table_nmspc = namespaces['table']
+        for e in get_all_python_expression(content_trees, namespaces):
+            if e.tag == '{%s}p' % text_nmspc:
+                if not e.text:
+                    continue
+                parent = e.getparent()
+                varname = re.findall(r'\${([^{}]*)}', e.text)[0]
+                for ns in ('office', 'calcext'):
+                    parent.attrib['{%s}value-type' % namespaces[ns]] = (
+                        '${get_var_corresponding_ods_type(%s)}' % varname)
+                parent.attrib['{%s}value' % namespaces['office']] = (
+                    '${%s}' % varname)
+
     @staticmethod
     def validate_link(link, py3o_base):
         """this method will ensure a link is valide or raise a TemplateException
@@ -1088,6 +1111,7 @@ class Template(object):
             "format_date": format_date,
             "__py3o_image": ImageInjector(self),
             "__py3o_frame": FrameInjector(self),
+            "get_var_corresponding_ods_type": get_var_corresponding_ods_type,
         }
 
     def render_tree(self, data):
@@ -1139,6 +1163,9 @@ class Template(object):
                 frame,
                 py3o_base,
             )
+
+        # check variable types and apply them to the resulting doc
+        self.apply_variable_type_in_cells(self.content_trees, self.namespaces)
 
         self.__prepare_userfield_decl()
         self.__prepare_usertexts()

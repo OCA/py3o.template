@@ -268,6 +268,8 @@ By order of contribution date:
   - `Jérémie Gavrel`_
   - `Laurent Mignon`_
   - `Alexis de Lattre`_
+  - `JosDeGraeve`_
+  - `Antoine Nguyen`_
 
 .. _Florent Aide: https://bitbucket.org/faide
 .. _Emmanuel Cazenave: https://bitbucket.org/cazino
@@ -283,6 +285,8 @@ By order of contribution date:
 .. _Jérémie Gavrel: https://bitbucket.org/gavrelj
 .. _Laurent Mignon: https://bitbucket.org/lmi
 .. _Alexis de Lattre: https://github.com/alexis-via
+.. _JosDeGraeve: https://bitbucket.org/JosDeGraeve
+.. _Antoine Nguyen: https://github.com/tonioo
 
 .. _py3o.renderserver: https://bitbucket.org/faide/py3o.renderserver/
 .. _provide a documentation: http://py3otemplate.readthedocs.org

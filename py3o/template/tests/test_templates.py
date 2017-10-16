@@ -1077,3 +1077,44 @@ class TestTemplate(unittest.TestCase):
         result_e = result_e.replace("\n", "").replace(" ", "")
 
         assert result_a == result_e
+
+    def test_variable_type_checking(self):
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_ods_variable_type.ods'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'items': [
+                Mock(val1=10, val2='toto'),
+                Mock(val1=50.12, val2='titi'),
+            ]
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/py3o_ods_variable_type_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        assert result_a == result_e
