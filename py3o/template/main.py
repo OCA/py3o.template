@@ -273,7 +273,7 @@ class FrameInjector(object):
 
     def __call__(
             self, data, mime_type, width=None, height=None, isb64=False,
-            keep_ratio=True, origin_attrib={}):
+            keep_ratio=True, origin_attrib={}, order=None):
         """this will be called by genshi when rendering its template
 
         :param data: the image data, either as a base64 encoded string or
@@ -359,7 +359,7 @@ class ImageInjector(object):
 
     def __call__(
             self, data, mime_type, width=None, height=None, isb64=False,
-            keep_ratio=True):
+            keep_ratio=True, order=None):
         """this will be called by genshi when rendering its template
         We only register our image data with a unique identifier
 
