@@ -406,6 +406,7 @@ class ImageInjector(object):
 
         attrs = {
             '{%s}href' % self.template.namespaces['xlink']: identifier,
+            '{%s}type' % self.template.namespaces['xlink']: 'simple',
             '{%s}name' % self.template.namespaces['draw']: (
                 "py3o: %s" % identifier
             ),
