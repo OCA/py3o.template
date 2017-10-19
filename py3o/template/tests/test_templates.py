@@ -665,22 +665,62 @@ class TestTemplate(unittest.TestCase):
 
         self.assertEqual(i, 3, u"Images were not found in the output")
 
-        expected_xml = lxml.etree.parse(
+    def test_image_injection_twice(self):
+        """
+        Test insertion of the same image from the data source
+        at least twice into the template
+        """
+
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_image_injection_twice.odt'
+        )
+        logo_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/images/new_logo.png'
+        )
+        image_names = [
             pkg_resources.resource_filename(
                 'py3o.template',
-                'tests/templates/image_injection_result.xml'
-            )
-        )
-        result = lxml.etree.tostring(
-            content_list, pretty_print=True,
-        ).decode('utf-8')
-        expected = lxml.etree.tostring(
-            expected_xml, pretty_print=True,
-        ).decode('utf-8')
-        result = result.replace("\n", "").replace(" ", "")
-        expected = expected.replace("\n", "").replace(" ", "")
+                'tests/templates/images/image{i}.png'.format(i=i)
+            ) for i in range(1, 4)
+        ]
+        outname = get_secure_filename()
 
-        self.assertEqual(result, expected)
+        template = Template(template_name, outname)
+        logo = open(logo_name, 'rb').read()
+        images = [open(iname, 'rb').read() for iname in image_names]
+
+        data_dict = {
+            'items': [
+                Mock(val1=i, val3=i ** 2, image=base64.b64encode(image))
+                for i, image in enumerate(images, start=1)
+            ],
+            'document': Mock(total=6),
+            'logo': logo,
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        list_expr = '//draw:frame'
+        list_items = content_list.xpath(
+            list_expr,
+            namespaces=template.namespaces
+        )
+        ids = []
+        for list_item in list_items:
+            ids.append(
+                list_item.get(
+                    '{}id'.format(XML_NS)
+                )
+            )
+        assert ids, "this list of ids should not be empty"
+        assert len(ids) == len(set(ids)), "all ids should have been unique"
 
     def test_ignore_undefined_variables_image_injection(self):
         """Test ignore undefined variables for injected image"""
