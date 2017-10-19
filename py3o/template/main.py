@@ -273,7 +273,7 @@ class FrameInjector(object):
 
     def __call__(
             self, data, mime_type, width=None, height=None, isb64=False,
-            keep_ratio=True, origin_attrib={}, order=None):
+            keep_ratio=True, origin_attrib={}, dummy=None):
         """this will be called by genshi when rendering its template
 
         :param data: the image data, either as a base64 encoded string or
@@ -305,6 +305,10 @@ class FrameInjector(object):
         :param origin_attrib: attributes of the <draw:frame/> node in the
         template file.
         :type origin_attrib: dict
+
+        :param dummy: allows for a different name for the frame, when using
+        the same image data is needed at different points on the same document.
+        :type dummy: int
 
         :returns: a dict of attributes that can be set on the node that is
         being treated by Genshi.
@@ -359,7 +363,7 @@ class ImageInjector(object):
 
     def __call__(
             self, data, mime_type, width=None, height=None, isb64=False,
-            keep_ratio=True, order=None):
+            keep_ratio=True, dummy=None):
         """this will be called by genshi when rendering its template
         We only register our image data with a unique identifier
 
@@ -388,6 +392,10 @@ class ImageInjector(object):
         make sense)
         Default value is True.
         :type keep_ratio: Boolean
+
+        :param dummy: allows for a different name for the frame, when using
+        the same image data is needed at different points on the same document.
+        :type dummy: int
 
         :returns: a dict of attributes that can be set on the node that is
         being treated by Genshi.
