@@ -17,7 +17,7 @@ from genshi.template import TemplateError
 from pyjon.utils import get_secure_filename
 
 from py3o.template import Template, TextTemplate, TemplateException
-from py3o.template.main import XML_NS, get_soft_breaks
+from py3o.template.main import XML_NS, get_soft_breaks, MANIFEST
 
 if six.PY3:
     # noinspection PyUnresolvedReferences
@@ -647,6 +647,7 @@ class TestTemplate(unittest.TestCase):
         nmspc = template.namespaces
         table = content_list.find('//table:table', nmspc)
         frame_path = 'table:table-cell/text:p/draw:frame'
+        images_hrefs = set()
         for row in table.findall('table:table-row', nmspc):
 
             frame_elem = row.find(frame_path, nmspc)
@@ -661,9 +662,22 @@ class TestTemplate(unittest.TestCase):
             self.assertEqual(images[i], outodt.read(href))
 
             frame_elem.remove(image_elem)
+            images_hrefs.add(href)
             i += 1
 
         self.assertEqual(i, 3, u"Images were not found in the output")
+
+        # check if images are into the manifest
+        manifest_el =  lxml.etree.parse(
+            BytesIO(outodt.read(MANIFEST))
+        )
+        file_entries = manifest_el.findall('//manifest:file-entry', nmspc)
+        for entry in file_entries:
+            path = entry.get('{{{}}}full-path'.format(nmspc['manifest']))
+            if path in images_hrefs:
+                images_hrefs.remove(path)
+        self.assertFalse(
+            images_hrefs, "All images should be into the manifest")
 
     def test_image_injection_twice(self):
         """

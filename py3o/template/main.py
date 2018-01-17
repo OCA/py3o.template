@@ -46,6 +46,7 @@ XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 GENSHI_URI = 'http://genshi.edgewall.org/'
 REGEXP_URI = "http://exslt.org/regular-expressions"
 PY3O_URI = 'http://py3o.org/'
+MANIFEST = 'META-INF/manifest.xml'
 
 
 class TemplateException(ValueError):
@@ -481,7 +482,7 @@ class TextTemplate(object):
 class Template(object):
     """The default template to be used to output ODF content."""
 
-    templated_files = ['content.xml', 'styles.xml', 'META-INF/manifest.xml']
+    templated_files = ['content.xml', 'styles.xml', MANIFEST]
 
     def __init__(self, template, outfile, ignore_undefined_variables=False,
                  escape_false=False):
@@ -1269,34 +1270,30 @@ class Template(object):
         """
         out = zipfile.ZipFile(self.outputfilename, 'w', allowZip64=True)
 
+        manifest_info = None
         for info_zip in self.infile.infolist():
+            if "manifest.xml" in info_zip.filename:
+                manifest_info = info_zip
+                continue
 
             if info_zip.filename in self.templated_files:
                 # get a temp file
                 streamout = open(get_secure_filename(), "w+b")
 
                 # Template file - we have edited these.
-                if "manifest.xml" in info_zip.filename:
-                    fname, _ = self.output_streams[
-                        self.templated_files.index(info_zip.filename)
-                    ]
-                    manifest_e = self.__add_images_to_manifest()
-                    streamout.write(lxml.etree.tostring(manifest_e))
+                fname, output_stream = self.output_streams[
+                    self.templated_files.index(info_zip.filename)
+                ]
 
-                else:
-                    fname, output_stream = self.output_streams[
-                        self.templated_files.index(info_zip.filename)
-                    ]
+                transformer = get_list_transformer(self.namespaces)
+                nstream = output_stream | transformer
 
-                    transformer = get_list_transformer(self.namespaces)
-                    nstream = output_stream | transformer
+                # write the whole stream to it
+                for chunk in nstream.serialize():
+                    streamout.write(chunk.encode('utf-8'))
+                    yield True
 
-                    # write the whole stream to it
-                    for chunk in nstream.serialize():
-                        streamout.write(chunk.encode('utf-8'))
-                        yield True
-
-                    streamout.seek(0)
+                streamout.seek(0)
 
                 # close the temp file to flush all data and make sure we get
                 # it back when writing to the zip archive.
@@ -1311,6 +1308,12 @@ class Template(object):
             else:
                 # Copy other files straight from the source archive.
                 out.writestr(info_zip, self.infile.read(info_zip.filename))
+
+        # the manifest must be processed at the end since its content
+        # depends on the processing of others files (ie: content.xml)
+        if manifest_info:
+            manifest_e = self.__add_images_to_manifest()
+            out.writestr(manifest_info, lxml.etree.tostring(manifest_e))
 
         # Save images in the "Pictures" sub-directory of the archive.
         for identifier, im_struct in self.images.items():
