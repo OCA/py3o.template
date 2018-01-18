@@ -668,7 +668,7 @@ class TestTemplate(unittest.TestCase):
         self.assertEqual(i, 3, u"Images were not found in the output")
 
         # check if images are into the manifest
-        manifest_el =  lxml.etree.parse(
+        manifest_el = lxml.etree.parse(
             BytesIO(outodt.read(MANIFEST))
         )
         file_entries = manifest_el.findall('//manifest:file-entry', nmspc)
