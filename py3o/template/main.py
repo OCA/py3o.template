@@ -844,7 +844,9 @@ class Template(object):
             else:
                 opening_row = opening_paragraph
 
-        elif parent.tag == "{%s}p" % self.namespaces['text']:
+        elif (     parent.tag == "{%s}p" % self.namespaces['text']
+                or parent.tag == "{%s}span" % self.namespaces['text']
+             ):
             # if we are using text we want to keep start/end nodes
             keep_start_boundary, keep_end_boundary = detect_keep_boundary(
                 link, closing_link, self.namespaces
