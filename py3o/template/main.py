@@ -256,17 +256,16 @@ def format_date(date, format=ISO_DATE_FORMAT):
     res = date.strftime(format)
     return res
 
+
 def format_multiline(value):
     """
-    Allow line breaks in input data.
-    Original code by tonthon tonthon, ref https://bitbucket.org/faide/py3o.template/issues/7/documentation-about-datas-formatting
-
-    * Escape invalid xml characters
-    * Handle linebreaks
+    Allow line breaks in input data with a format function.
+    Escape and replace code originally by tonthon tonthon.
     """
     value = escape(value)
     value = value.replace(u'\n', u'<text:line-break/>')
     return Markup(value)
+
 
 def get_var_corresponding_ods_type(var):
     """Check variable type and return the corresponding ODS value."""
