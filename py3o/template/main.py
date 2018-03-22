@@ -297,9 +297,7 @@ class FrameInjector(object):
         Default value is False.
         :type isb64: Boolean
 
-        :param keep_ratio: keep the aspect ratio of the image. Must be used
-        with either the height or the width argument (using both doesn't
-        make sense)
+        :param keep_ratio: keep the aspect ratio of the image.
         Default value is True.
         :type keep_ratio: Boolean
 
@@ -324,13 +322,28 @@ class FrameInjector(object):
         if isb64:
             # we need to decode the base64 data to obtain the raw data version
             data = b64decode(data)
-        if keep_ratio and (width or height):
+        if keep_ratio:
             ifile = StringIO(data)
             ifile.seek(0)
             pil_img = Image.open(ifile)
             # img_ratio = width / height
             if pil_img.size[0] and pil_img.size[1]:
                 img_ratio = pil_img.size[0] / float(pil_img.size[1])
+                if not (height or width):
+                    # set either height or width in order to fit image to frame
+                    frame_height = origin_attrib[
+                        '{%s}width' % self.template.namespaces['svg']]
+                    frame_width = origin_attrib[
+                        '{%s}height' % self.template.namespaces['svg']]
+                    # assume same unit for height and width. It doesn't seem
+                    # possible to give different units with LibreOffice.
+                    height_float = float(re.sub('[a-zA-Z]+', '', frame_height))
+                    width_float = float(re.sub('[a-zA-Z]+', '', frame_width))
+                    frame_ratio = width_float / height_float
+                    if frame_ratio > img_ratio:
+                        height = frame_height
+                    else:
+                        width = frame_width
                 if height:
                     height_float = float(re.sub('[a-zA-Z]+', '', height))
                     uom = re.sub('[\d\.]+', '', height)
