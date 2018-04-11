@@ -99,13 +99,15 @@ directory.
 Changelog
 =========
 
-0.9.12 Unreleased yet
----------------------
+0.9.12 2018-04-11
+-----------------
 
   - Better error reporting for cases when the link is not positionned
     on its own line.
   - Better error reporting for cases when an instruction link does not contain
     the equal sign.
+  - Correct handling of images in odf 1.2 (thanks to Ari Caldeira)
+  - Now support text:span in functions (thanks to John Asplin)
 
 0.9.11 Dec. 16 2016
 -------------------
@@ -270,6 +272,8 @@ By order of contribution date:
   - `Alexis de Lattre`_
   - `JosDeGraeve`_
   - `Antoine Nguyen`_
+  - `Ari Caldeira`_
+  - `John Asplin`_
 
 .. _Florent Aide: https://bitbucket.org/faide
 .. _Emmanuel Cazenave: https://bitbucket.org/cazino
@@ -287,6 +291,8 @@ By order of contribution date:
 .. _Alexis de Lattre: https://github.com/alexis-via
 .. _JosDeGraeve: https://bitbucket.org/JosDeGraeve
 .. _Antoine Nguyen: https://github.com/tonioo
+.. _Ari Caldeira: https://bitbucket.org/ari_tauga
+.. _John Asplin: https://bitbucket.org/asplinsolutions
 
 .. _py3o.renderserver: https://bitbucket.org/faide/py3o.renderserver/
 .. _provide a documentation: http://py3otemplate.readthedocs.org
