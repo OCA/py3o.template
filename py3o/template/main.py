@@ -788,7 +788,8 @@ class Template(object):
         dictionary to be called back from inside the template
         """
         image_inserter = "__py3o_image(%s)" % py3o_base
-        frame_args = py3o_base + u', origin_attrib=' + unicode(frame.attrib)
+        frame_args = py3o_base + six.u(', origin_attrib=') + six.text_type(
+            frame.attrib)
         frame_inserter = "__py3o_frame(%s)" % frame_args
         attrib_image = {'{%s}attrs' % self.namespaces['py']: image_inserter}
         attrib_frame = {'{%s}attrs' % self.namespaces['py']: frame_inserter}
