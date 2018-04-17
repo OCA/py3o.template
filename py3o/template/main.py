@@ -501,9 +501,9 @@ class Template(object):
         with an empty string during template rendering if True
         @type ignore_undefined_variables: boolean. Default is False
 
-        @param escape false value: Values evaluated as False are replaced
+        @param escape_false: Values evaluated as False are replaced
         with an empty string during template rendering if True
-        @type ignore_undefined_variables: boolean. Default is False
+        @type escape_false: boolean. Default is False
         """
         self.template = template
         self.outputfilename = outfile
