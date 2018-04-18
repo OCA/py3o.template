@@ -332,9 +332,9 @@ class FrameInjector(object):
                 if not (height or width):
                     # set either height or width in order to fit image to frame
                     frame_height = origin_attrib[
-                        '{%s}width' % self.template.namespaces['svg']]
-                    frame_width = origin_attrib[
                         '{%s}height' % self.template.namespaces['svg']]
+                    frame_width = origin_attrib[
+                        '{%s}width' % self.template.namespaces['svg']]
                     # assume same unit for height and width. It doesn't seem
                     # possible to give different units with LibreOffice.
                     height_float = float(re.sub('[a-zA-Z]+', '', frame_height))
