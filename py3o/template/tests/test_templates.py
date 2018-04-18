@@ -840,7 +840,6 @@ class TestTemplate(unittest.TestCase):
                 self.assertLessEqual(height, theight)
                 self.assertLessEqual(width, twidth)
 
-
     def test_text_template(self):
 
         template_name = pkg_resources.resource_filename(
