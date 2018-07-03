@@ -179,7 +179,7 @@ width (optional)
 isb64 (optional)
     Whether the image data should be interpreted as base64-encoded bytes instead of raw bytes.
 keep_ratio (optional)
-    Whether the aspect ratio of the image should be kept. If you use keep_ratio=True (which is the default), you should use either the option 'height' or 'width' (using both doesn't make sense in this case).
+    Whether the aspect ratio of the image should be kept. If you use keep_ratio=True (which is the default), you should use either the option 'height' or 'width' (using both doesn't make sense in this case). In case you give neither 'height' nor 'width', the image is scaled as to fit into the placeholder frame.
 
 Possible unit of measures: **cm**, **mm**, **in**, **pt**, **pc**, **px** and **em** (the OpenDocument format uses the unit of measures defined in the section §5.9.13 of the `XSL specifications <https://www.w3.org/TR/2001/REC-xsl-20011015/slice5.html#section-N8185-Definitions-of-Units-of-Measure>`_).
 

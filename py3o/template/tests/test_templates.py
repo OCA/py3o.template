@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import datetime
 import os
+import re
 import unittest
 import zipfile
 import traceback
@@ -14,10 +15,12 @@ import six
 from io import BytesIO
 
 from genshi.template import TemplateError
+from PIL import Image
 from pyjon.utils import get_secure_filename
 
 from py3o.template import Template, TextTemplate, TemplateException
-from py3o.template.main import XML_NS, get_soft_breaks, MANIFEST
+from py3o.template.main import (
+    XML_NS, get_image_frames, get_soft_breaks, MANIFEST)
 
 if six.PY3:
     # noinspection PyUnresolvedReferences
@@ -773,6 +776,69 @@ class TestTemplate(unittest.TestCase):
             error = True
 
         self.assertFalse(error)
+
+    def test_image_keep_ratio(self):
+        """Test keep_ratio parameter with insertion of images"""
+
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_image_keep_ratio.odt'
+        )
+
+        image_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/images/new_logo.png'
+        )
+        image = open(image_name, 'rb').read()
+        pil_img = Image.open(BytesIO(image))
+        img_ratio = pil_img.size[0] / float(pil_img.size[1])
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+        nmspc = template.namespaces
+        image_frames = {
+            elem.get('{%s}name' % nmspc['draw']):
+            elem for elem in get_image_frames(template.content_trees[0], nmspc)
+        }
+
+        data_dict = {
+            'image': base64.b64encode(image)
+        }
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+        image_entries = get_image_frames(
+            lxml.etree.parse(
+                BytesIO(outodt.read(template.templated_files[0]))),
+            nmspc
+        )
+
+        for frame in image_entries:
+            name = frame.get('{%s}name' % nmspc['draw'])
+            tframe = image_frames[name]
+            if 'keep_ratio=False' in name:
+                # result dimension should equal template
+                for dim in ['width', 'height']:
+                    self.assertEqual(
+                        frame.get('{%s}%s' % (nmspc['svg'], dim)),
+                        tframe.get('{%s}%s' % (nmspc['svg'], dim)),
+                    )
+            else:
+                # Compare frame aspect ratio with that of image and check that
+                # frame dimensions do not exceed those of the placeholders
+                height = float(re.sub(
+                    '[a-zA-Z]+', '', frame.get('{%s}height' % nmspc['svg'])))
+                width = float(re.sub(
+                    '[a-zA-Z]+', '', frame.get('{%s}width' % nmspc['svg'])))
+                frame_ratio = width / height
+                self.assertAlmostEqual(frame_ratio, img_ratio)
+
+                theight = float(re.sub(
+                    '[a-zA-Z]+', '', tframe.get('{%s}height' % nmspc['svg'])))
+                twidth = float(re.sub(
+                    '[a-zA-Z]+', '', tframe.get('{%s}width' % nmspc['svg'])))
+                self.assertLessEqual(height, theight)
+                self.assertLessEqual(width, twidth)
 
     def test_text_template(self):
 
