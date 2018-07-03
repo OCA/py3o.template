@@ -274,6 +274,8 @@ By order of contribution date:
   - `Antoine Nguyen`_
   - `Ari Caldeira`_
   - `John Asplin`_
+  - `Zakaria Makrelouf`_
+  - `Tom Gottfried`_
 
 .. _Florent Aide: https://bitbucket.org/faide
 .. _Emmanuel Cazenave: https://bitbucket.org/cazino
@@ -293,6 +295,8 @@ By order of contribution date:
 .. _Antoine Nguyen: https://github.com/tonioo
 .. _Ari Caldeira: https://bitbucket.org/ari_tauga
 .. _John Asplin: https://bitbucket.org/asplinsolutions
+.. _Zakaria Makrelouf https://bitbucket.org/z_makrelouf/
+.. _Tom Gottfried https://bitbucket.org/tfried/
 
 .. _py3o.renderserver: https://bitbucket.org/faide/py3o.renderserver/
 .. _provide a documentation: http://py3otemplate.readthedocs.org
