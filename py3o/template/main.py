@@ -1,33 +1,29 @@
 # -*- encoding: utf-8 -*-
-import decimal
-import logging
-import warnings
-from datetime import datetime
-import os
-import traceback
-import hashlib
-import six
 from base64 import b64decode
+import codecs
+from copy import copy
+from datetime import datetime
+import decimal
+import hashlib
+from io import BytesIO
+import logging
+import locale
+import os
 import re
+import six
+from six.moves import urllib
+import traceback
+from uuid import uuid4
+import warnings
+from xml.sax.saxutils import escape
+import zipfile
 
 import lxml.etree
-import zipfile
 from PIL import Image
-
-from copy import copy
-from io import BytesIO
-from uuid import uuid4
-import codecs
-
-from six.moves import urllib
-
 from genshi.template import MarkupTemplate
 from genshi.template.text import NewTextTemplate as GenshiTextTemplate
 from genshi.filters.transform import Transformer
 from genshi.core import Markup
-
-from xml.sax.saxutils import escape
-
 from pyjon.utils import get_secure_filename
 
 if six.PY3:  # pragma: no cover
@@ -230,9 +226,22 @@ def get_soft_breaks(content_tree, namespaces):
 def format_amount(amount, format="%f"):
     """Replace the thousands separator from '.' to ','
     """
+    warnings.warn("the format_amount function is marked for deprecation "
+                  "in 2019, please use format_locale instead",
+                  DeprecationWarning)
+
     if isinstance(amount, float) or isinstance(amount, decimal.Decimal):
         amount = (format % amount).replace('.', ',')
     return amount
+
+
+def format_locale(amount, format_, locale_, grouping=True):
+    """format the given amount using the format and a locale
+    example: format_locale(10000.33, "%.02f", "fr_FR.UTF-8")
+    will give you: "10 000,33"
+    """
+    locale.setlocale(locale.LC_ALL, locale_)
+    return locale.format(format_, amount, grouping)
 
 
 ISO_DATE_FORMAT = '%Y-%m-%d'
@@ -240,8 +249,7 @@ ISO_DATETIME_FORMAT = ISO_DATE_FORMAT + ' %H:%M:%S'
 
 
 def format_date(date, format=ISO_DATE_FORMAT):
-    """
-    Format the date according to format string
+    """Format the date according to format string
     :param date: datetime.datetime object or ISO formatted string
      ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S')
     """
@@ -258,8 +266,7 @@ def format_date(date, format=ISO_DATE_FORMAT):
 
 
 def format_multiline(value):
-    """
-    Allow line breaks in input data with a format function.
+    """Allow line breaks in input data with a format function.
     Escape and replace code originally by tonthon tonthon.
     """
     value = escape(value)
@@ -1148,6 +1155,7 @@ class Template(object):
         return {
             "decimal": decimal,
             "format_amount": format_amount,
+            "format_locale": format_locale,
             "format_date": format_date,
             "format_multiline": format_multiline,
             "__py3o_image": ImageInjector(self),

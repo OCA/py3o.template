@@ -99,6 +99,22 @@ directory.
 Changelog
 =========
 
+0.9.13 2018-07-03
+-----------------
+  - Added a new format_locale function to supersed the format_amount
+  - Keep aspect ratio of image if no width or height is given (thanks to
+    Tom Gottfried)
+  - fix generated VALUE formula, If the Genshi expressions generates a number
+    value (float or integer), the generated formula will be `=VALUE("1.1")`
+    which is problematic if the user machine is configured to use a decimal
+    separator different than the `.`. With this fix the generated formula will
+    be `=VALUE(1.1)` (without the quotes) which is correctly handled with
+    by the `.ods` format. (thanks to Zakaria Makrelouf)
+  - Improve error message 'We handle urls in tables or text paragraph only'
+    (thanks to Alexis de Lattre)
+  - Add format_multiline for support of new lines (thanks to John Asplin)
+
+
 0.9.12 2018-04-11
 -----------------
 
