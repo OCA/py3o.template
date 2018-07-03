@@ -875,8 +875,8 @@ class Template(object):
 
         else:  # pragma: no cover
             raise NotImplementedError(
-                "We handle urls in tables or text paragraph only"
-            )
+                "We handle urls in tables or text paragraph only "
+                "(url: %s)" % py3o_base)
 
         # max split is one
         try:
