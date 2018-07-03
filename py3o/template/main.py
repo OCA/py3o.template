@@ -993,7 +993,8 @@ class Template(object):
                 value = userfield.attrib[formula_attr]
                 userfield.attrib[formula_attr] = re.sub(
                     r'\"?\${([\w.]*?)(?<!odf_value)}\"?',
-                    r'VALUE(${getattr(\1, "odf_value", "\"{}\"".format(\1))})',
+                    r'VALUE(${\1 if isinstance(\1, (int, float)) '
+                    r'else getattr(\1, "odf_value", "\"{}\"".format(\1))})',
                     value
                 )
 
