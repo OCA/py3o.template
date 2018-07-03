@@ -24,6 +24,9 @@ from six.moves import urllib
 from genshi.template import MarkupTemplate
 from genshi.template.text import NewTextTemplate as GenshiTextTemplate
 from genshi.filters.transform import Transformer
+from genshi.core import Markup
+
+from xml.sax.saxutils import escape
 
 from pyjon.utils import get_secure_filename
 
@@ -252,6 +255,16 @@ def format_date(date, format=ISO_DATE_FORMAT):
                 raise TemplateException(e)
     res = date.strftime(format)
     return res
+
+
+def format_multiline(value):
+    """
+    Allow line breaks in input data with a format function.
+    Escape and replace code originally by tonthon tonthon.
+    """
+    value = escape(value)
+    value = value.replace(u'\n', u'<text:line-break/>')
+    return Markup(value)
 
 
 def get_var_corresponding_ods_type(var):
@@ -1122,6 +1135,7 @@ class Template(object):
             "decimal": decimal,
             "format_amount": format_amount,
             "format_date": format_date,
+            "format_multiline": format_multiline,
             "__py3o_image": ImageInjector(self),
             "__py3o_frame": FrameInjector(self),
             "get_var_corresponding_ods_type": get_var_corresponding_ods_type,

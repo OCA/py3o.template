@@ -1172,3 +1172,41 @@ class TestTemplate(unittest.TestCase):
         result_e = result_e.replace("\n", "").replace(" ", "")
 
         assert result_a == result_e
+
+    def test_template_with_function_call_multiline(self):
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_template_function_call_multiline.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'multilinestring': 'this\nis\na\nmulti\nline\nstring',
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/template_function_call_multiline_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        assert result_a == result_e
