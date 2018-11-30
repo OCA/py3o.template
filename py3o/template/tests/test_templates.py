@@ -497,6 +497,51 @@ class TestTemplate(unittest.TestCase):
 
         assert result_a == result_e
 
+    def test_format_currency(self):
+        """Test py3o.template.main.format_currency which relies on babel.
+        """
+
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_template_format_currency.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'zero': 0,
+            'zero_float': 0.0,
+            'one': 1,
+            'poor': 42.42,
+            'rich': 123456789.4242,
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/template_format_currency_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        self.assertEqual(result_a, result_e)
+
     def test_format_date(self):
         template_name = pkg_resources.resource_filename(
             'py3o.template',

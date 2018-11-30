@@ -204,17 +204,55 @@ or an input field::
     name:      function="format_function_name(data, format_arguments)"
     
 
-Number Formatting
------------------
+Currency Formatting
+-------------------
 ::
 
-    format_amount(amount, format)
+    format_currency(number, currency, format=None, locale='en_US_POSIX',
+                    currency_digits=True, format_type='standard',
+                    decimal_quantization=True)
 
-amount
-    A float or Decimal value.
-format (optional)
-    The desired number format. See the Python format documentation.
-    Periods in the result are always replace with commas.
+Relies on ``babel.numbers.format_currency``.
+
+Online docs:
+* <http://babel.pocoo.org/en/latest/numbers.html#pattern-syntax>
+* <http://babel.pocoo.org/en/latest/api/numbers.html#babel.numbers.format_currency>
+
+Changes we provide here:
+* Make the 2nd argument (currency) optional. When not displaying the
+  currency symbol, no need to provide a currency.
+
+Their parameter docstring has been copied below.
+
+number
+    the number to format
+
+currency:
+    the currency code, optional unless displaying the currency
+
+format
+    the format string to use
+
+locale
+    locale identifier
+
+currency_digits
+    use the currency's natural number of decimal digits
+
+format_type
+    the currency format type to use
+
+decimal_quantization
+    Truncate and round high-precision numbers to the format pattern. Defaults
+    to ``True``.
+
+Examples used in tests::
+
+    function="format_currency(0, format='#')" -> 0
+    function="format_currency(1, 'USD')" -> $1.00
+    function="format_currency(42.42, 'EUR')" -> €42.42
+    function="format_currency(123456789.4242, 'EUR')" -> €123,456,789.42
+    function="format_currency(123456789.4242, 'EUR', locale='fr_FR')" -> 123 456 789,42 €
 
 Date Formatting
 ---------------

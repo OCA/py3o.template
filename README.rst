@@ -112,6 +112,12 @@ NEXT
         function="format_datetime('2015-08-02 17:05:06', format='full', locale='fr_FR')"
             -> dimanche 2 août 2015 à 17:05:06 Temps universel coordonné
 
+    -> ``format_amount`` & ``format_locale`` have been deprecated in favor of
+       the new ``format_currency``. Example (more in the "templating" doc)::
+
+        function="format_currency(123456789.4242, 'EUR', locale='fr_FR')"
+            -> 123 456 789,42 €
+
 
 0.9.13 2018-07-03
 -----------------

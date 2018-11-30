@@ -1,5 +1,6 @@
 # -*- encoding: utf-8 -*-
 import babel.dates
+import babel.numbers
 from base64 import b64decode
 import codecs
 from copy import copy
@@ -227,9 +228,12 @@ def get_soft_breaks(content_tree, namespaces):
 def format_amount(amount, format="%f"):
     """Replace the thousands separator from '.' to ','
     """
-    warnings.warn("the format_amount function is marked for deprecation "
-                  "in 2019, please use format_locale instead",
-                  DeprecationWarning)
+
+    warnings.warn(
+        "The format_locale function is marked for deprecation in 2019, please "
+        "use format_currency instead.",
+        DeprecationWarning,
+    )
 
     if isinstance(amount, float) or isinstance(amount, decimal.Decimal):
         amount = (format % amount).replace('.', ',')
@@ -241,8 +245,54 @@ def format_locale(amount, format_, locale_, grouping=True):
     example: format_locale(10000.33, "%.02f", "fr_FR.UTF-8")
     will give you: "10 000,33"
     """
+
+    warnings.warn(
+        "The format_locale function is marked for deprecation in 2019, please "
+        "use format_currency instead.",
+        DeprecationWarning,
+    )
+
+    # pragma: nocover
+    # Not including this into tests as this was short-lived and now deprecated.
+
     locale.setlocale(locale.LC_ALL, locale_)
     return locale.format(format_, amount, grouping)
+
+
+def format_currency(*args, **kwargs):
+    """Format the specified amount according to a format string & a currency.
+
+    Relies on babel.numbers.format_currency.
+
+    Online docs:
+    * <http://babel.pocoo.org/en/latest/numbers.html#pattern-syntax>
+    * <http://babel.pocoo.org/en/latest/api/numbers.html
+       #babel.numbers.format_currency>
+
+    Changes we provide here:
+    * Make the 2nd argument (currency) optional. When not displaying the
+      currency symbol, no need to provide a currency.
+
+    Their parameter docstring has been copied below.
+
+    :param number: the number to format
+    :param currency: the currency code, optional unless displaying the currency
+    :param format: the format string to use
+    :param locale: locale identifier
+    :param currency_digits: use the currency's natural number of decimal digits
+    :param format_type: the currency format type to use
+    :param decimal_quantization: Truncate and round high-precision numbers to
+                                 the format pattern. Defaults to ``True``.
+
+    :rtype: String.
+    """
+
+    # Make the 2nd argument (currency) optional. When not displaying the
+    # currency symbol, no need to provide a currency.
+    if len(args) < 2:
+        args += ('',)  # empty "currency" arg
+
+    return babel.numbers.format_currency(*args, **kwargs)
 
 
 ISO_DATE_FORMAT = '%Y-%m-%d'
@@ -1222,9 +1272,10 @@ class Template(object):
     def add_base_data_to_template(self):
         return {
             "decimal": decimal,
-            "format_amount": format_amount,
-            "format_locale": format_locale,
-            "format_date": format_date,
+            "format_amount": format_amount,  # deprecated -> format_currency
+            "format_currency": format_currency,
+            "format_locale": format_locale,  # deprecated -> format_currency
+            "format_date": format_date,  # deprecated -> format_datetime
             "format_datetime": format_datetime,
             "format_multiline": format_multiline,
             "__py3o_image": ImageInjector(self),
