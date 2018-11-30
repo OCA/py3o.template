@@ -541,6 +541,53 @@ class TestTemplate(unittest.TestCase):
 
         assert result_a == result_e
 
+    def test_format_datetime(self):
+        """Test py3o.template.main.format_datetime which relies on babel.
+        """
+
+        template_name = pkg_resources.resource_filename(
+            'py3o.template',
+            'tests/templates/py3o_template_format_datetime.odt'
+        )
+
+        outname = get_secure_filename()
+
+        template = Template(template_name, outname)
+
+        data_dict = {
+            'datestring': '2015-08-02',
+            'datetimestring': '2015-08-02 17:05:06',
+            'datestring2': '2015-10-15',
+            'datetime_obj': datetime.datetime.strptime(
+                '2015-11-13 17:00:20',
+                '%Y-%m-%d %H:%M:%S'
+            ),
+        }
+
+        template.render(data_dict)
+        outodt = zipfile.ZipFile(outname, 'r')
+
+        content_list = lxml.etree.parse(
+            BytesIO(outodt.read(template.templated_files[0]))
+        )
+
+        result_a = lxml.etree.tostring(
+            content_list,
+            pretty_print=True,
+        ).decode('utf-8')
+
+        result_e = open(
+            pkg_resources.resource_filename(
+                'py3o.template',
+                'tests/templates/template_format_datetime_result.xml'
+            )
+        ).read()
+
+        result_a = result_a.replace("\n", "").replace(" ", "")
+        result_e = result_e.replace("\n", "").replace(" ", "")
+
+        self.assertEqual(result_a, result_e)
+
     def test_format_date_exception(self):
         template_name = pkg_resources.resource_filename(
             'py3o.template',
@@ -552,7 +599,7 @@ class TestTemplate(unittest.TestCase):
         template = Template(template_name, outname)
 
         data_dict = {
-            'date': '2015/08/02',
+            'date_obj': '2015/08/02',
         }
 
         # this will raise a TemplateException... or the test will fail

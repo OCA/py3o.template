@@ -31,6 +31,7 @@ setup(
     install_requires=[
         'setuptools',
         'six >= 1.9',
+        'babel',
         'lxml',
         'genshi >= 0.7',
         'pyjon.utils > 0.6',

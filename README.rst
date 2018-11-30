@@ -99,6 +99,20 @@ directory.
 Changelog
 =========
 
+
+NEXT
+----
+
+  - Rely on `babel`_ to format dates & numbers from now on.
+
+    -> ``format_date`` has been deprecated in favor of the new
+       ``format_datetime``. Format specifiers change as well; see the
+       "templating" doc. Example (more in docs)::
+
+        function="format_datetime('2015-08-02 17:05:06', format='full', locale='fr_FR')"
+            -> dimanche 2 août 2015 à 17:05:06 Temps universel coordonné
+
+
 0.9.13 2018-07-03
 -----------------
   - Added a new format_locale function to supersed the format_amount
@@ -321,3 +335,4 @@ By order of contribution date:
 .. _py3o.fusion: https://bitbucket.org/faide/py3o.fusion
 .. _docker image: https://registry.hub.docker.com/u/xcgd/py3o.fusion
 .. _relatorio: http://relatorio.tryton.org/
+.. _babel: http://babel.pocoo.org

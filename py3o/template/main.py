@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import babel.dates
 from base64 import b64decode
 import codecs
 from copy import copy
@@ -249,20 +250,87 @@ ISO_DATETIME_FORMAT = ISO_DATE_FORMAT + ' %H:%M:%S'
 
 
 def format_date(date, format=ISO_DATE_FORMAT):
-    """Format the date according to format string
-    :param date: datetime.datetime object or ISO formatted string
-     ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S')
+    """Format the date according to format string.
+
+    :param date: One of: datetime.date object, datetime.datetime object, ISO
+    formatted string ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S').
     """
+
+    warnings.warn(
+        "The format_date function is marked for deprecation in 2019, please "
+        "use format_datetime instead. Note format specifiers will change (see "
+        "<http://babel.pocoo.org/en/latest/dates.html#pattern-syntax>).",
+        DeprecationWarning,
+    )
+
+    # Deserialize when we got a string.
     if isinstance(date, six.string_types):
         try:
             date = datetime.strptime(date, ISO_DATE_FORMAT)
         except ValueError:
             try:
                 date = datetime.strptime(date, ISO_DATETIME_FORMAT)
-            except ValueError as e:
+            except ValueError as e:  # pragma: nocover
+                # Exclude from code coverage as deprecated; the same code in
+                # format_datetime below is covered though.
                 raise TemplateException(e)
+
     res = date.strftime(format)
     return res
+
+
+def format_datetime(date_obj, format=None, locale=None):
+    """Format the specified date / date-time according to a format string.
+
+    :param date: One of: datetime.date object, datetime.datetime object, ISO
+    formatted string ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S').
+
+    :param format: How the date should be formatted. We use babel to format;
+    see <http://babel.pocoo.org/en/latest/dates.html#pattern-syntax>. Optional;
+    when left as is, the default format is:
+    * 'YYYY-MM-dd' for datetime.date objects.
+    * 'YYYY-MM-dd HH:mm:ss' for datetime.datetime objects.
+    :type format: String.
+
+    :param locale: Locale identifier used during babel formatting. Optional.
+    :type locale: String.
+
+    :rtype: String.
+    """
+
+    # This is the default value in format_* functions called below.
+    if locale is None:
+        locale = babel.dates.LC_TIME
+
+    # Deserialize when we got a string.
+    if isinstance(date_obj, six.string_types):
+
+        try:
+            date_obj = datetime.strptime(date_obj, ISO_DATE_FORMAT)
+            is_datetime = False  # This is a date (not a datetime).
+
+        except ValueError:
+            try:
+                date_obj = datetime.strptime(date_obj, ISO_DATETIME_FORMAT)
+                is_datetime = True  # This is a datetime (not a date).
+            except ValueError as e:
+                raise TemplateException(e)
+
+    else:
+        # Not a string: Find out whether we got a date or datetime.
+        is_datetime = isinstance(date_obj, datetime)
+
+    if is_datetime:
+        # This is a datetime (not a date).
+        if format is None:
+            format = 'YYYY-MM-dd HH:mm:ss'
+        return babel.dates.format_datetime(datetime=date_obj, format=format,
+                                           locale=locale)
+
+    # This is a date (not a datetime).
+    if format is None:
+        format = 'YYYY-MM-dd'
+    return babel.dates.format_date(date=date_obj, format=format, locale=locale)
 
 
 def format_multiline(value):
@@ -375,11 +443,11 @@ class FrameInjector(object):
                     height_float = width_float / img_ratio
                     height = '%.3f%s' % (height_float, uom)
         if width:
-            origin_attrib['{%s}width' % self.template.namespaces['svg']]\
-                = width
+            origin_attrib['{%s}width' % self.template.namespaces['svg']] = \
+                width
 
         if height:
-            origin_attrib['{%s}height' % self.template.namespaces['svg']] =\
+            origin_attrib['{%s}height' % self.template.namespaces['svg']] = \
                 height
         return origin_attrib
 
@@ -1157,6 +1225,7 @@ class Template(object):
             "format_amount": format_amount,
             "format_locale": format_locale,
             "format_date": format_date,
+            "format_datetime": format_datetime,
             "format_multiline": format_multiline,
             "__py3o_image": ImageInjector(self),
             "__py3o_frame": FrameInjector(self),

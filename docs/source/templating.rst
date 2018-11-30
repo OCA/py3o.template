@@ -220,17 +220,32 @@ Date Formatting
 ---------------
 ::
 
-    format_date(date, format)
+    format_datetime(date_obj, format)
 
-date
-    A date or datetime object, or the ISO-8601 string representation of a date.
-format
-    The desired output format
+date_obj
+    One of: datetime.date object, datetime.datetime object, ISO
+    formatted string ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S').
 
+format (string)
+    How the date should be formatted. We use babel to format;
+    see <http://babel.pocoo.org/en/latest/dates.html#pattern-syntax>. Optional;
+    when left as is, the default format is:
+    * 'YYYY-MM-dd' for datetime.date objects.
+    * 'YYYY-MM-dd HH:mm:ss' for datetime.datetime objects.
 
+Examples used in tests::
 
-Example document
-~~~~~~~~~~~~~~~~
+    function="format_datetime('2015-08-02', format='dd/MM/YYYY')"
+        -> 02/08/2015
+    function="format_datetime('2015-10-15')"
+        -> 2015-10-15
+    function="format_datetime('2015-08-02 17:05:06', format='dd/MM/YYYY HH.mm.ss')"
+        -> 02/08/2015 17.05.06
+    function="format_datetime('2015-08-02 17:05:06', format='full', locale='fr_FR')"
+        -> dimanche 2 août 2015 à 17:05:06 Temps universel coordonné
+
+Example documents
+~~~~~~~~~~~~~~~~~
 
 You can find several example templates (ODT and ODS) in `our source tree`_
 
