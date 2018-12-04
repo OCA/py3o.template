@@ -262,7 +262,7 @@ class TestTemplate(unittest.TestCase):
         error = False
         try:
             template.render(data)
-        except:
+        except Exception:
             traceback.print_exc()
             error = True
 
@@ -297,7 +297,7 @@ class TestTemplate(unittest.TestCase):
         error = False
         try:
             template.render(data)
-        except:
+        except Exception:
             traceback.print_exc()
             error = True
 
@@ -863,7 +863,7 @@ class TestTemplate(unittest.TestCase):
         error = False
         try:
             template.render(data)
-        except:
+        except Exception:
             traceback.print_exc()
             error = True
 
@@ -986,7 +986,7 @@ class TestTemplate(unittest.TestCase):
         error = False
         try:
             template.render(user_data)
-        except:
+        except Exception:
             traceback.print_exc()
             error = True
 

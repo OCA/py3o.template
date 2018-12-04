@@ -9,8 +9,8 @@ build:
                 - pip install setuptools --upgrade
                 # - python setup.py install # do not install to avoid having wrong version of genshi
                 - pip install tox
-                # tox only pep8 & py27 because python3 requires a genshi trunk from svn...  
-                - tox -e pep8,py27
+                # tox only pycodestyle & py27 because python3 requires a genshi trunk from svn...  
+                - tox -e pycodestyle,py27
 
 notify:
   slack:

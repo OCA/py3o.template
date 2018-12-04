@@ -169,11 +169,11 @@ def get_all_python_expression(content_trees, namespaces):
     """Return all the python expressions found in the whole document
     """
     xpath_expr = (
-        "//text:a[starts-with(@xlink:href, 'py3o://')] | "
-        "//text:text-input[starts-with(@text:description, 'py3o://')] | "
-        "//text:user-field-get[starts-with(@text:name, 'py3o.')] | "
-        "//table:table-cell/text:p[regexp:match(text(), '\${[^\${}]*}')] | "
-        "//table:table-cell[regexp:match(@table:formula, '\${[^\${}]*}')]"
+        r"//text:a[starts-with(@xlink:href, 'py3o://')] | "
+        r"//text:text-input[starts-with(@text:description, 'py3o://')] | "
+        r"//text:user-field-get[starts-with(@text:name, 'py3o.')] | "
+        r"//table:table-cell/text:p[regexp:match(text(), '\${[^\${}]*}')] | "
+        r"//table:table-cell[regexp:match(@table:formula, '\${[^\${}]*}')]"
     )
     res = []
     for content_tree in content_trees:
@@ -210,7 +210,7 @@ def get_instructions(content_tree, namespaces):
 
 
 def get_user_fields(content_tree, namespaces):
-    field_expr = "//text:user-field-decl[starts-with(@text:name, 'py3o.')]"
+    field_expr = r"//text:user-field-decl[starts-with(@text:name, 'py3o.')]"
     return content_tree.xpath(
         field_expr,
         namespaces=namespaces
@@ -475,21 +475,22 @@ class FrameInjector(object):
                         '{%s}width' % self.template.namespaces['svg']]
                     # assume same unit for height and width. It doesn't seem
                     # possible to give different units with LibreOffice.
-                    height_float = float(re.sub('[a-zA-Z]+', '', frame_height))
-                    width_float = float(re.sub('[a-zA-Z]+', '', frame_width))
+                    height_float = float(re.sub(r'[a-zA-Z]+', '',
+                                         frame_height))
+                    width_float = float(re.sub(r'[a-zA-Z]+', '', frame_width))
                     frame_ratio = width_float / height_float
                     if frame_ratio > img_ratio:
                         height = frame_height
                     else:
                         width = frame_width
                 if height:
-                    height_float = float(re.sub('[a-zA-Z]+', '', height))
-                    uom = re.sub('[\d\.]+', '', height)
+                    height_float = float(re.sub(r'[a-zA-Z]+', '', height))
+                    uom = re.sub(r'[\d\.]+', '', height)
                     width_float = height_float * img_ratio
                     width = '%.3f%s' % (width_float, uom)
                 elif width:
-                    width_float = float(re.sub('[a-zA-Z]+', '', width))
-                    uom = re.sub('[\d\.]+', '', width)
+                    width_float = float(re.sub(r'[a-zA-Z]+', '', width))
+                    uom = re.sub(r'[\d\.]+', '', width)
                     height_float = width_float / img_ratio
                     height = '%.3f%s' % (height_float, uom)
         if width:
@@ -906,7 +907,7 @@ class Template(object):
 
     @staticmethod
     def validate_link(link, py3o_base):
-        """this method will ensure a link is valide or raise a TemplateException
+        """this method will ensure a link is valid or raise a TemplateException
 
         :param link: a link node found in the tree
         :type link: lxml.Element
@@ -1019,7 +1020,7 @@ class Template(object):
         # max split is one
         try:
             instruction, instruction_value = py3o_base.split("=", 1)
-        except:
+        except Exception:
             raise TemplateException(
                 "Missing '=' in instruction '%s'" % py3o_base)
         instruction_value = instruction_value.strip('"')
@@ -1117,7 +1118,7 @@ class Template(object):
         """
 
         field_expr = (
-            "//table:table-cell[regexp:match(@table:formula, '\${[^\${}]*}')]"
+            r"//table:table-cell[regexp:match(@table:formula, '\${[^\${}]*}')]"
         )
 
         for content_tree in self.content_trees:
@@ -1141,7 +1142,7 @@ class Template(object):
         instructions.
         """
 
-        field_expr = "//text:user-field-get[starts-with(@text:name, 'py3o.')]"
+        field_expr = r"//text:user-field-get[starts-with(@text:name, 'py3o.')]"
 
         for content_tree in self.content_trees:
 
