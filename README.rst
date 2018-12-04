@@ -51,6 +51,9 @@ Full Documentation
 We `provide a documentation`_ for this package. If anything is not correctly
 explained, please! create a ticket `in our ticketing system`_
 
+Docs also contain a "Hacking" part for contributors (how tests are run, code
+style...).
+
 Example Usage
 =============
 
