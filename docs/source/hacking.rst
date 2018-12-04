@@ -18,4 +18,9 @@ Tests reside in ``py3o/tests``. To add one:
 Code style
 ----------
 
-TODO
+We let ``black`` <https://pypi.org/project/black/> take care of everything
+here.
+
+Follow its install guide to get it (requires Python 3.6).
+Alternatively, the <https://hub.docker.com/r/houzefaabba/python3-black/> Docker
+image contains Python 3.6 with ``black`` installed inside.

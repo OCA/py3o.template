@@ -22,6 +22,13 @@ pipeline:
       # tox only pycodestyle & py27 because python3 requires a genshi trunk from svn...
       - tox -e pycodestyle,py27
 
+  black:
+    image: houzefaabba/python3-black
+    pull: true
+    commands:
+      # Ensure our code is black-valid <https://pypi.org/project/black/>.
+      - black --check .
+
   notify:
     image: plugins/slack
     channel: dev
