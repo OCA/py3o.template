@@ -1,8 +1,8 @@
 py3o.template
 *************
 
-.. image:: https://drone.xcg.io/api/badges/faide/py3o.template/status.svg
-  :target: https://drone.xcg.io/faide/py3o.template
+.. image:: https://drone-ci.xcg.io/api/badges/faide/py3o.template/status.svg
+  :target: https://drone-ci.xcg.io/faide/py3o.template
   :alt: Build Status
 
 Introduction

@@ -1,19 +1,31 @@
+# vim: set shiftwidth=2 softtabstop=2:
+
 clone:
-        image: hg
-        path: bitbucket.org/faide/py3o.template
+  hg:
+    image: plugins/hg
 
-build:
-        image: xcgd/dronebase
-        commands:
-                - apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq subversion python3-dev
-                - pip install setuptools --upgrade
-                # - python setup.py install # do not install to avoid having wrong version of genshi
-                - pip install tox
-                # tox only pycodestyle & py27 because python3 requires a genshi trunk from svn...  
-                - tox -e pycodestyle,py27
+pipeline:
 
-notify:
-  slack:
-    webhook_url: $$mattermost_token
+  test:
+    # TODO babel currency formatting change when using python:3 as base image;
+    # "test_format_currency" then fails.
+    image: xcgd/dronebase
+    pull: true
+    commands:
+
+      # The following won't be needed once we switch to python:3 as base image.
+      - apt  -qq update
+      - DEBIAN_FRONTEND=noninteractive apt -qq -y install python3-dev
+      - pip install setuptools --upgrade
+
+      - pip install tox
+      # tox only pycodestyle & py27 because python3 requires a genshi trunk from svn...
+      - tox -e pycodestyle,py27
+
+  notify:
+    image: plugins/slack
     channel: dev
     username: drone
+    secrets: [slack_webhook]
+    when:
+      status: [failure, success]
