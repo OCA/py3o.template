@@ -234,7 +234,7 @@ class Py3oCall(Py3oObject):
 
         if self.return_format is None:
             # Generic/unknown function, do not make assumptions about targets
-            res = [(target, None) for target in target_tup]
+            res = [(target_it, None) for target_it in target_tup]
             res += [(None, self[arg]) for arg in args]
 
         elif isinstance(self.return_format, tuple):

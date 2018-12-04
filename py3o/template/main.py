@@ -898,7 +898,6 @@ class Template(object):
     def apply_variable_type_in_cells(self, content_trees, namespaces):
         """Replace default 'string' type by a function call."""
         text_nmspc = namespaces["text"]
-        table_nmspc = namespaces["table"]
         for e in get_all_python_expression(content_trees, namespaces):
             if e.tag == "{%s}p" % text_nmspc:
                 if not e.text:
@@ -1138,7 +1137,6 @@ class Template(object):
             for userfield in content_tree.xpath(
                 field_expr, namespaces=self.namespaces
             ):
-                parent = userfield.getparent()
                 formula_attr = "{%s}formula" % self.namespaces["table"]
                 value = userfield.attrib[formula_attr]
                 userfield.attrib[formula_attr] = re.sub(
@@ -1317,7 +1315,6 @@ class Template(object):
                 )
             else:
                 parent2tag[parent] = tag
-        parents = parent2tag.keys()
 
         for link, py3o_base in starting_tags:
             self.handle_link(link, py3o_base, closing_tags.get(id(link), None))

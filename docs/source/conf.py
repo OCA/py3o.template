@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# flake8: noqa
 #
 # py3o.template documentation build configuration file, created by
 # sphinx-quickstart on Wed Dec  4 15:14:05 2013.

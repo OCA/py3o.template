@@ -88,7 +88,7 @@ class TestTemplate(unittest.TestCase):
         error = False
         try:
             template.render(data)
-        except ValueError as e:
+        except ValueError:
             print("The template did not render properly...")
             traceback.print_exc()
             error = True
@@ -622,7 +622,7 @@ class TestTemplate(unittest.TestCase):
         try:
             template.render(data_dict)
 
-        except TemplateException as e:
+        except TemplateException:
             error_occured = True
 
         # and make sure we raised
