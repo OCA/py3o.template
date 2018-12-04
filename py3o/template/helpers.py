@@ -14,7 +14,7 @@ from py3o.template.data_struct import (
 
 
 # This is used as global context key in the convertor
-PY3O_MODULE_KEY = '__py3o_module__'
+PY3O_MODULE_KEY = "__py3o_module__"
 
 
 class Py3oConvertor(ast.NodeVisitor):
@@ -138,7 +138,7 @@ class Py3oConvertor(ast.NodeVisitor):
         """Call the node-class specific visit function,
          and propagate the context
         """
-        method = 'visit_' + node.__class__.__name__.lower()
+        method = "visit_" + node.__class__.__name__.lower()
         visitor = getattr(self, method, None)
         if visitor:
             return visitor(node, local_context)
@@ -330,12 +330,13 @@ class Py3oConvertor(ast.NodeVisitor):
 def ast2tree(node, include_attrs=True):  # pragma: no cover
     def _transform(node):
         if isinstance(node, ast.AST):
-            fields = ((a, _transform(b))
-                      for a, b in ast.iter_fields(node))
+            fields = ((a, _transform(b)) for a, b in ast.iter_fields(node))
             if include_attrs:
-                attrs = ((a, _transform(getattr(node, a)))
-                         for a in node._attributes
-                         if hasattr(node, a))
+                attrs = (
+                    (a, _transform(getattr(node, a)))
+                    for a in node._attributes
+                    if hasattr(node, a)
+                )
                 return node.__class__.__name__, dict(fields), dict(attrs)
             return node.__class__.__name__, dict(fields)
         elif isinstance(node, list):
@@ -343,8 +344,9 @@ def ast2tree(node, include_attrs=True):  # pragma: no cover
         elif isinstance(node, str):
             return repr(node)
         return node
+
     if not isinstance(node, ast.AST):
-        raise TypeError('expected AST, got %r' % node.__class__.__name__)
+        raise TypeError("expected AST, got %r" % node.__class__.__name__)
     return _transform(node)
 
 

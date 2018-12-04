@@ -44,16 +44,17 @@ log = logging.getLogger(__name__)
 # expressed in clark notation: http://www.jclark.com/xml/xmlns.htm
 XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 
-GENSHI_URI = 'http://genshi.edgewall.org/'
+GENSHI_URI = "http://genshi.edgewall.org/"
 REGEXP_URI = "http://exslt.org/regular-expressions"
-PY3O_URI = 'http://py3o.org/'
-MANIFEST = 'META-INF/manifest.xml'
+PY3O_URI = "http://py3o.org/"
+MANIFEST = "META-INF/manifest.xml"
 
 
 class TemplateException(ValueError):
     """some client code is used to catching ValueErrors, let's keep the old
     codebase happy
     """
+
     def __init__(self, message):
         """define the __init__ to handle message... for python3's sake
         """
@@ -69,14 +70,14 @@ def detect_keep_boundary(start, end, namespaces):
     result_start, result_end = False, False
     parent_start = start.getparent()
 
-    if parent_start.tag == "{%s}p" % namespaces['text']:
+    if parent_start.tag == "{%s}p" % namespaces["text"]:
         # more than one child in the containing paragraph ?
         # we keep the boundary
         result_start = len(parent_start.getchildren()) > 1
 
     if end is not None:
         parent_end = end.getparent()
-        if parent_end.tag == "{%s}p" % namespaces['text']:
+        if parent_end.tag == "{%s}p" % namespaces["text"]:
             # more than one child in the containing paragraph ?
             # we keep the boundary
             result_end = len(parent_end.getchildren()) > 1
@@ -85,9 +86,7 @@ def detect_keep_boundary(start, end, namespaces):
 
 
 def move_siblings(
-        start, end, new_,
-        keep_start_boundary=False,
-        keep_end_boundary=False
+    start, end, new_, keep_start_boundary=False, keep_end_boundary=False
 ):
     """a helper function that will replace a start/end node pair
     by a new containing element, effectively moving all in-between siblings
@@ -156,13 +155,8 @@ def get_list_transformer(namespaces):
      silently, but lxml.etree.parse will bork on such duplicated lists
     """
     return Transformer(
-        '//list[namespace-uri()="%s"]' % namespaces.get(
-            'text'
-        )
-    ).attr(
-        '{0}id'.format(XML_NS),
-        lambda *args: "list{0}".format(uuid4().hex)
-    )
+        '//list[namespace-uri()="%s"]' % namespaces.get("text")
+    ).attr("{0}id".format(XML_NS), lambda *args: "list{0}".format(uuid4().hex))
 
 
 def get_all_python_expression(content_trees, namespaces):
@@ -177,12 +171,7 @@ def get_all_python_expression(content_trees, namespaces):
     )
     res = []
     for content_tree in content_trees:
-        res.extend(
-            content_tree.xpath(
-                xpath_expr,
-                namespaces=namespaces,
-            )
-        )
+        res.extend(content_tree.xpath(xpath_expr, namespaces=namespaces))
     return res
 
 
@@ -190,10 +179,7 @@ def get_image_frames(content_tree, namespaces):
     """find all draw frames that must be converted to draw:image
     """
     xpath_expr = "//draw:frame[starts-with(@draw:name, 'py3o.image')]"
-    return content_tree.xpath(
-        xpath_expr,
-        namespaces=namespaces
-    )
+    return content_tree.xpath(xpath_expr, namespaces=namespaces)
 
 
 def get_instructions(content_tree, namespaces):
@@ -203,26 +189,17 @@ def get_instructions(content_tree, namespaces):
         "//text:a[starts-with(@xlink:href, 'py3o://')] | "
         "//text:text-input[starts-with(@text:description, 'py3o://')]"
     )
-    return content_tree.xpath(
-        xpath_expr,
-        namespaces=namespaces
-    )
+    return content_tree.xpath(xpath_expr, namespaces=namespaces)
 
 
 def get_user_fields(content_tree, namespaces):
     field_expr = r"//text:user-field-decl[starts-with(@text:name, 'py3o.')]"
-    return content_tree.xpath(
-        field_expr,
-        namespaces=namespaces
-    )
+    return content_tree.xpath(field_expr, namespaces=namespaces)
 
 
 def get_soft_breaks(content_tree, namespaces):
     xpath_expr = "//text:soft-page-break"
-    return content_tree.xpath(
-        xpath_expr,
-        namespaces=namespaces
-    )
+    return content_tree.xpath(xpath_expr, namespaces=namespaces)
 
 
 def format_amount(amount, format="%f"):
@@ -236,7 +213,7 @@ def format_amount(amount, format="%f"):
     )
 
     if isinstance(amount, float) or isinstance(amount, decimal.Decimal):
-        amount = (format % amount).replace('.', ',')
+        amount = (format % amount).replace(".", ",")
     return amount
 
 
@@ -290,13 +267,13 @@ def format_currency(*args, **kwargs):
     # Make the 2nd argument (currency) optional. When not displaying the
     # currency symbol, no need to provide a currency.
     if len(args) < 2:
-        args += ('',)  # empty "currency" arg
+        args += ("",)  # empty "currency" arg
 
     return babel.numbers.format_currency(*args, **kwargs)
 
 
-ISO_DATE_FORMAT = '%Y-%m-%d'
-ISO_DATETIME_FORMAT = ISO_DATE_FORMAT + ' %H:%M:%S'
+ISO_DATE_FORMAT = "%Y-%m-%d"
+ISO_DATETIME_FORMAT = ISO_DATE_FORMAT + " %H:%M:%S"
 
 
 def format_date(date, format=ISO_DATE_FORMAT):
@@ -373,13 +350,14 @@ def format_datetime(date_obj, format=None, locale=None):
     if is_datetime:
         # This is a datetime (not a date).
         if format is None:
-            format = 'YYYY-MM-dd HH:mm:ss'
-        return babel.dates.format_datetime(datetime=date_obj, format=format,
-                                           locale=locale)
+            format = "YYYY-MM-dd HH:mm:ss"
+        return babel.dates.format_datetime(
+            datetime=date_obj, format=format, locale=locale
+        )
 
     # This is a date (not a datetime).
     if format is None:
-        format = 'YYYY-MM-dd'
+        format = "YYYY-MM-dd"
     return babel.dates.format_date(date=date_obj, format=format, locale=locale)
 
 
@@ -388,7 +366,7 @@ def format_multiline(value):
     Escape and replace code originally by tonthon tonthon.
     """
     value = escape(value)
-    value = value.replace(u'\n', u'<text:line-break/>')
+    value = value.replace(u"\n", u"<text:line-break/>")
     return Markup(value)
 
 
@@ -400,7 +378,6 @@ def get_var_corresponding_ods_type(var):
 
 
 class FrameInjector(object):
-
     def __init__(self, template):
         """Inject a proper <draw:frame/> attributes into the template manifest
         when called back from genshi template rendering
@@ -411,8 +388,16 @@ class FrameInjector(object):
         self.template = template
 
     def __call__(
-            self, data, mime_type, width=None, height=None, isb64=False,
-            keep_ratio=True, origin_attrib={}, dummy=None):
+        self,
+        data,
+        mime_type,
+        width=None,
+        height=None,
+        isb64=False,
+        keep_ratio=True,
+        origin_attrib={},
+        dummy=None,
+    ):
         """this will be called by genshi when rendering its template
 
         :param data: the image data, either as a base64 encoded string or
@@ -470,41 +455,45 @@ class FrameInjector(object):
                 if not (height or width):
                     # set either height or width in order to fit image to frame
                     frame_height = origin_attrib[
-                        '{%s}height' % self.template.namespaces['svg']]
+                        "{%s}height" % self.template.namespaces["svg"]
+                    ]
                     frame_width = origin_attrib[
-                        '{%s}width' % self.template.namespaces['svg']]
+                        "{%s}width" % self.template.namespaces["svg"]
+                    ]
                     # assume same unit for height and width. It doesn't seem
                     # possible to give different units with LibreOffice.
-                    height_float = float(re.sub(r'[a-zA-Z]+', '',
-                                         frame_height))
-                    width_float = float(re.sub(r'[a-zA-Z]+', '', frame_width))
+                    height_float = float(
+                        re.sub(r"[a-zA-Z]+", "", frame_height)
+                    )
+                    width_float = float(re.sub(r"[a-zA-Z]+", "", frame_width))
                     frame_ratio = width_float / height_float
                     if frame_ratio > img_ratio:
                         height = frame_height
                     else:
                         width = frame_width
                 if height:
-                    height_float = float(re.sub(r'[a-zA-Z]+', '', height))
-                    uom = re.sub(r'[\d\.]+', '', height)
+                    height_float = float(re.sub(r"[a-zA-Z]+", "", height))
+                    uom = re.sub(r"[\d\.]+", "", height)
                     width_float = height_float * img_ratio
-                    width = '%.3f%s' % (width_float, uom)
+                    width = "%.3f%s" % (width_float, uom)
                 elif width:
-                    width_float = float(re.sub(r'[a-zA-Z]+', '', width))
-                    uom = re.sub(r'[\d\.]+', '', width)
+                    width_float = float(re.sub(r"[a-zA-Z]+", "", width))
+                    uom = re.sub(r"[\d\.]+", "", width)
                     height_float = width_float / img_ratio
-                    height = '%.3f%s' % (height_float, uom)
+                    height = "%.3f%s" % (height_float, uom)
         if width:
-            origin_attrib['{%s}width' % self.template.namespaces['svg']] = \
-                width
+            origin_attrib[
+                "{%s}width" % self.template.namespaces["svg"]
+            ] = width
 
         if height:
-            origin_attrib['{%s}height' % self.template.namespaces['svg']] = \
-                height
+            origin_attrib[
+                "{%s}height" % self.template.namespaces["svg"]
+            ] = height
         return origin_attrib
 
 
 class ImageInjector(object):
-
     def __init__(self, template):
         """Inject an image data into the template manifest when called back
         from genshi template rendering
@@ -515,8 +504,15 @@ class ImageInjector(object):
         self.template = template
 
     def __call__(
-            self, data, mime_type, width=None, height=None, isb64=False,
-            keep_ratio=True, dummy=None):
+        self,
+        data,
+        mime_type,
+        width=None,
+        height=None,
+        isb64=False,
+        keep_ratio=True,
+        dummy=None,
+    ):
         """this will be called by genshi when rendering its template
         We only register our image data with a unique identifier
 
@@ -566,11 +562,10 @@ class ImageInjector(object):
         self.template.set_image_data(identifier, data, mime_type=mime_type)
 
         attrs = {
-            '{%s}href' % self.template.namespaces['xlink']: identifier,
-            '{%s}type' % self.template.namespaces['xlink']: 'simple',
-            '{%s}name' % self.template.namespaces['draw']: (
-                "py3o: %s" % identifier
-            ),
+            "{%s}href" % self.template.namespaces["xlink"]: identifier,
+            "{%s}type" % self.template.namespaces["xlink"]: "simple",
+            "{%s}name"
+            % self.template.namespaces["draw"]: ("py3o: %s" % identifier),
         }
         return attrs
 
@@ -583,8 +578,11 @@ class TextTemplate(object):
     """
 
     def __init__(
-        self, template, outfile,
-        encoding='utf-8', ignore_undefined_variables=False
+        self,
+        template,
+        outfile,
+        encoding="utf-8",
+        ignore_undefined_variables=False,
     ):
         """
         :param template: a genshi text template. For more information you can
@@ -609,10 +607,10 @@ class TextTemplate(object):
         self.outputfilename = outfile
         self.encoding = encoding
 
-        content = codecs.open(template, 'rb', encoding='utf-8').read()
+        content = codecs.open(template, "rb", encoding="utf-8").read()
 
         if ignore_undefined_variables:
-            self.template = GenshiTextTemplate(content, lookup='lenient')
+            self.template = GenshiTextTemplate(content, lookup="lenient")
         else:
             self.template = GenshiTextTemplate(content)
 
@@ -624,7 +622,7 @@ class TextTemplate(object):
         :return: Nothing
         """
         with codecs.open(
-                self.outputfilename, 'wb+', encoding=self.encoding
+            self.outputfilename, "wb+", encoding=self.encoding
         ) as outfile:
 
             for kind, data, pos in self.template.generate(**data):
@@ -634,10 +632,15 @@ class TextTemplate(object):
 class Template(object):
     """The default template to be used to output ODF content."""
 
-    templated_files = ['content.xml', 'styles.xml', MANIFEST]
+    templated_files = ["content.xml", "styles.xml", MANIFEST]
 
-    def __init__(self, template, outfile, ignore_undefined_variables=False,
-                 escape_false=False):
+    def __init__(
+        self,
+        template,
+        outfile,
+        ignore_undefined_variables=False,
+        escape_false=False,
+    ):
         """A template object exposes the API to render it to an OpenOffice
         document.
 
@@ -659,7 +662,7 @@ class Template(object):
         """
         self.template = template
         self.outputfilename = outfile
-        self.infile = zipfile.ZipFile(self.template, 'r')
+        self.infile = zipfile.ZipFile(self.template, "r")
 
         self.content_trees = [
             lxml.etree.parse(BytesIO(self.infile.read(filename)))
@@ -696,35 +699,36 @@ class Template(object):
         self.namespaces.pop(None, None)
 
         # declare the genshi namespace
-        self.namespaces['py'] = GENSHI_URI
+        self.namespaces["py"] = GENSHI_URI
         # declare the regexp namespace
-        self.namespaces['regexp'] = REGEXP_URI
+        self.namespaces["regexp"] = REGEXP_URI
         # declare our own namespace
-        self.namespaces['py3o'] = PY3O_URI
+        self.namespaces["py3o"] = PY3O_URI
 
     def get_all_user_python_expression(self):
         """  Public method to get all python expression
         """
         res = []
-        text_nmspc = self.namespaces['text']
-        table_nmspc = self.namespaces['table']
-        for e in get_all_python_expression(self.content_trees,
-                                           self.namespaces):
+        text_nmspc = self.namespaces["text"]
+        table_nmspc = self.namespaces["table"]
+        for e in get_all_python_expression(
+            self.content_trees, self.namespaces
+        ):
             if e.tag == "{%s}user-field-get" % text_nmspc:
                 py_expr = e.get("{%s}name" % text_nmspc)
                 # Remove the trailing 'py3o.'
                 res.append(py_expr[5:])
             elif e.tag == "{%s}a" % text_nmspc:
-                py_expr = e.get("{%s}href" % self.namespaces['xlink'])
+                py_expr = e.get("{%s}href" % self.namespaces["xlink"])
                 # Remove the trailing 'py3o://'
                 # Also convert the url string into a classic string
                 res.append(urllib.parse.unquote(py_expr[7:]))
             elif e.tag == "{%s}p" % text_nmspc:
                 if e.text:
-                    res.extend(re.findall(r'\${([^{}]*)}', e.text))
+                    res.extend(re.findall(r"\${([^{}]*)}", e.text))
             elif e.tag == "{%s}table-cell" % table_nmspc:
                 formula = e.get("{%s}formula" % table_nmspc)
-                res.extend(re.findall(r'\${([^{}]*)}', formula))
+                res.extend(re.findall(r"\${([^{}]*)}", formula))
         return res
 
     def get_user_instructions(self):
@@ -762,13 +766,14 @@ class Template(object):
             DeprecationWarning,
         )
         return [
-            e.get('{%s}name' % e.nsmap.get('text'))[5:]
+            e.get("{%s}name" % e.nsmap.get("text"))[5:]
             for e in get_user_fields(self.content_trees[0], self.namespaces)
         ]
 
     def remove_soft_breaks(self):
         for soft_break in get_soft_breaks(
-                self.content_trees[0], self.namespaces):
+            self.content_trees[0], self.namespaces
+        ):
             parent = soft_break.getparent()
             if soft_break.tail:
                 if parent.text:
@@ -793,41 +798,41 @@ class Template(object):
           The expressions in the form of Python code that can be parsed by AST.
         :rtype: str
         """
-        python_src = ''
+        python_src = ""
         indent = 0
 
         def pindent():
             # Easily add indentation
-            return indent * ' '
+            return indent * " "
 
         for expression in expressions:
-            if expression.startswith('for='):
+            if expression.startswith("for="):
                 # For loop
                 # We construct a python for loop with the py3o one
-                python_src += '{}for {}:\n'.format(pindent(), expression[5:-1])
+                python_src += "{}for {}:\n".format(pindent(), expression[5:-1])
                 indent += 1
                 # Care of empty loop statement
-                if expressions[expressions.index(expression) + 1] == '/for':
-                    python_src += '{}pass\n'.format(pindent())
-            elif expression == '/for':
+                if expressions[expressions.index(expression) + 1] == "/for":
+                    python_src += "{}pass\n".format(pindent())
+            elif expression == "/for":
                 # End of for loop
                 indent -= 1
-            elif expression.startswith('if='):
+            elif expression.startswith("if="):
                 # Construct an if statement
-                python_src += '{}if {}:\n'.format(pindent(), expression[4:-1])
+                python_src += "{}if {}:\n".format(pindent(), expression[4:-1])
                 indent += 1
                 # Care of empty if statement
-                if expressions[expressions.index(expression) + 1] == '/if':
-                    python_src += '{}pass\n'.format(pindent())
-            elif expression == '/if':
+                if expressions[expressions.index(expression) + 1] == "/if":
+                    python_src += "{}pass\n".format(pindent())
+            elif expression == "/if":
                 # End of if
                 indent -= 1
-            elif expression.startswith('function='):
+            elif expression.startswith("function="):
                 # Convert to a function call
-                python_src += '{}{}\n'.format(pindent(), expression[10:-1])
+                python_src += "{}{}\n".format(pindent(), expression[10:-1])
             else:
                 # Variable access
-                python_src += '{}{}\n'.format(pindent(), expression)
+                python_src += "{}{}\n".format(pindent(), expression)
         return python_src
 
     @staticmethod
@@ -839,7 +844,7 @@ class Template(object):
         for content_tree in content_trees:
             for frame in get_image_frames(content_tree, namespaces):
                 py3o_statement = urllib.parse.unquote(
-                    frame.attrib['{%s}name' % namespaces['draw']]
+                    frame.attrib["{%s}name" % namespaces["draw"]]
                 )
                 # remove the "py3o.image("
                 py3o_base = py3o_statement[11:]
@@ -857,8 +862,8 @@ class Template(object):
         starting_tags = list()
         closing_tags = dict()
 
-        attrib_xlink = '{%s}href' % namespaces['xlink']
-        attrib_text = '{%s}description' % namespaces['text']
+        attrib_xlink = "{%s}href" % namespaces["xlink"]
+        attrib_text = "{%s}description" % namespaces["text"]
 
         for content_tree in content_trees:
             for link in get_instructions(content_tree, namespaces):
@@ -876,14 +881,15 @@ class Template(object):
                 py3o_base = py3o_statement[7:]
 
                 if not py3o_base.startswith("/"):
-                    if not py3o_base.startswith('function'):
+                    if not py3o_base.startswith("function"):
                         opened_starts.append(link)
                     starting_tags.append((link, py3o_base))
 
                 else:
                     if not opened_starts:
                         raise TemplateException(
-                            "No open instruction for %s" % py3o_base)
+                            "No open instruction for %s" % py3o_base
+                        )
 
                     closing_tags[id(opened_starts.pop())] = link
 
@@ -891,19 +897,21 @@ class Template(object):
 
     def apply_variable_type_in_cells(self, content_trees, namespaces):
         """Replace default 'string' type by a function call."""
-        text_nmspc = namespaces['text']
-        table_nmspc = namespaces['table']
+        text_nmspc = namespaces["text"]
+        table_nmspc = namespaces["table"]
         for e in get_all_python_expression(content_trees, namespaces):
-            if e.tag == '{%s}p' % text_nmspc:
+            if e.tag == "{%s}p" % text_nmspc:
                 if not e.text:
                     continue
                 parent = e.getparent()
-                varname = re.findall(r'\${([^{}]*)}', e.text)[0]
-                for ns in ('office', 'calcext'):
-                    parent.attrib['{%s}value-type' % namespaces[ns]] = (
-                        '${get_var_corresponding_ods_type(%s)}' % varname)
-                parent.attrib['{%s}value' % namespaces['office']] = (
-                    '${%s}' % varname)
+                varname = re.findall(r"\${([^{}]*)}", e.text)[0]
+                for ns in ("office", "calcext"):
+                    parent.attrib["{%s}value-type" % namespaces[ns]] = (
+                        "${get_var_corresponding_ods_type(%s)}" % varname
+                    )
+                parent.attrib["{%s}value" % namespaces["office"]] = (
+                    "${%s}" % varname
+                )
 
     @staticmethod
     def validate_link(link, py3o_base):
@@ -916,7 +924,7 @@ class Template(object):
         :raises: TemplateException
         """
         # Don't enfoce on text-input fields
-        if link.tag.endswith('text-input'):
+        if link.tag.endswith("text-input"):
             return
         # OLD open office version
         if link.text is not None and link.text.strip():
@@ -940,22 +948,24 @@ class Template(object):
         dictionary to be called back from inside the template
         """
         image_inserter = "__py3o_image(%s)" % py3o_base
-        frame_args = py3o_base + six.u(', origin_attrib=') + six.text_type(
-            frame.attrib)
+        frame_args = (
+            py3o_base + six.u(", origin_attrib=") + six.text_type(frame.attrib)
+        )
         frame_inserter = "__py3o_frame(%s)" % frame_args
-        attrib_image = {'{%s}attrs' % self.namespaces['py']: image_inserter}
-        attrib_frame = {'{%s}attrs' % self.namespaces['py']: frame_inserter}
-        nsmap = {
-            'draw': self.namespaces['draw'],
-            'py': GENSHI_URI,
-            }
+        attrib_image = {"{%s}attrs" % self.namespaces["py"]: image_inserter}
+        attrib_frame = {"{%s}attrs" % self.namespaces["py"]: frame_inserter}
+        nsmap = {"draw": self.namespaces["draw"], "py": GENSHI_URI}
         drawframe = lxml.etree.Element(
-            '{%s}frame' % self.namespaces['draw'],
-            attrib=attrib_frame, nsmap=nsmap)
+            "{%s}frame" % self.namespaces["draw"],
+            attrib=attrib_frame,
+            nsmap=nsmap,
+        )
         lxml.etree.SubElement(
             drawframe,
-            '{%s}image' % self.namespaces['draw'],
-            attrib=attrib_image, nsmap=nsmap)
+            "{%s}image" % self.namespaces["draw"],
+            attrib=attrib_image,
+            nsmap=nsmap,
+        )
         # first child in the frame (ie: draw:text-box or equivalent), will be
         # removed and replaced by our new draw:image node we created
         frame.getparent().replace(frame, drawframe)
@@ -977,7 +987,7 @@ class Template(object):
         previous_node = link.getprevious()
 
         if parent.getparent() is not None and parent.getparent().tag == (
-            "{%s}table-cell" % self.namespaces['table']
+            "{%s}table-cell" % self.namespaces["table"]
         ):
             # we are in a table
             opening_paragraph = parent
@@ -997,9 +1007,10 @@ class Template(object):
             else:
                 opening_row = opening_paragraph
 
-        elif (parent.tag == "{%s}p" % self.namespaces['text'] or
-              parent.tag == "{%s}span" % self.namespaces['text']
-              ):
+        elif (
+            parent.tag == "{%s}p" % self.namespaces["text"]
+            or parent.tag == "{%s}span" % self.namespaces["text"]
+        ):
             # if we are using text we want to keep start/end nodes
             keep_start_boundary, keep_end_boundary = detect_keep_boundary(
                 link, closing_link, self.namespaces
@@ -1007,54 +1018,53 @@ class Template(object):
             # we are in a text paragraph
             opening_row = parent
             closing_row = (
-                closing_link.getparent()
-                if closing_link is not None
-                else None
+                closing_link.getparent() if closing_link is not None else None
             )
 
         else:  # pragma: no cover
             raise NotImplementedError(
                 "We handle urls in tables or text paragraph only "
-                "(url: %s)" % py3o_base)
+                "(url: %s)" % py3o_base
+            )
 
         # max split is one
         try:
             instruction, instruction_value = py3o_base.split("=", 1)
         except Exception:
             raise TemplateException(
-                "Missing '=' in instruction '%s'" % py3o_base)
+                "Missing '=' in instruction '%s'" % py3o_base
+            )
         instruction_value = instruction_value.strip('"')
 
         # Handle function call
-        if instruction == 'function':
-            instruction = 'content'
+        if instruction == "function":
+            instruction = "content"
 
         attribs = dict()
-        attribs['{%s}strip' % GENSHI_URI] = 'True'
-        attribs['{%s}%s' % (GENSHI_URI, instruction)] = instruction_value
+        attribs["{%s}strip" % GENSHI_URI] = "True"
+        attribs["{%s}%s" % (GENSHI_URI, instruction)] = instruction_value
 
         genshi_node = lxml.etree.Element(
-            'span',
-            attrib=attribs,
-            nsmap={'py': GENSHI_URI},
+            "span", attrib=attribs, nsmap={"py": GENSHI_URI}
         )
 
         link.getparent().remove(link)
         if closing_link is not None:
             closing_link.getparent().remove(closing_link)
 
-        if instruction == 'content':
+        if instruction == "content":
             # Find the previous node style
             style_node = previous_node if previous_node is not None else parent
 
             # Create a span
             new_span = lxml.etree.Element(
-                '{%s}span' % self.namespaces['text'],
+                "{%s}span" % self.namespaces["text"],
                 attrib={
-                    '{%s}style-name' % self.namespaces['text']: style_node.get(
-                        '{%s}style-name' % self.namespaces['text']
+                    "{%s}style-name"
+                    % self.namespaces["text"]: style_node.get(
+                        "{%s}style-name" % self.namespaces["text"]
                     )
-                }
+                },
             )
             # Put the span at the same place the link was
             new_span.append(genshi_node)
@@ -1062,15 +1072,18 @@ class Template(object):
         else:
             try:
                 move_siblings(
-                    opening_row, closing_row, genshi_node,
+                    opening_row,
+                    closing_row,
+                    genshi_node,
                     keep_start_boundary=keep_start_boundary,
                     keep_end_boundary=keep_end_boundary,
                 )
             except ValueError:  # pragma: no cover
                 excrepr = traceback.format_exc()
                 log.exception(excrepr)
-                raise TemplateException("Could not move siblings for '%s'" %
-                                        py3o_base)
+                raise TemplateException(
+                    "Could not move siblings for '%s'" % py3o_base
+                )
 
     def __prepare_userfield_decl(self):
         self.field_info = dict()
@@ -1080,23 +1093,22 @@ class Template(object):
             # doing the same operation multiple times.
             for userfield in get_user_fields(content_tree, self.namespaces):
 
-                value = userfield.attrib[
-                    '{%s}name' % self.namespaces['text']
-                ][5:]
+                value = userfield.attrib["{%s}name" % self.namespaces["text"]][
+                    5:
+                ]
 
                 value_type = userfield.attrib.get(
-                    '{%s}value-type' % self.namespaces['office'],
-                    'string'
+                    "{%s}value-type" % self.namespaces["office"], "string"
                 )
 
                 value_datastyle_name = userfield.attrib.get(
-                    '{%s}data-style-name' % self.namespaces['style'],
+                    "{%s}data-style-name" % self.namespaces["style"]
                 )
 
                 self.field_info[value] = {
                     "name": value,
                     "value_type": value_type,
-                    'value_datastyle_name': value_datastyle_name,
+                    "value_datastyle_name": value_datastyle_name,
                 }
 
     def __prepare_calc_formulas(self):
@@ -1124,17 +1136,16 @@ class Template(object):
         for content_tree in self.content_trees:
 
             for userfield in content_tree.xpath(
-                field_expr,
-                namespaces=self.namespaces
+                field_expr, namespaces=self.namespaces
             ):
                 parent = userfield.getparent()
-                formula_attr = '{%s}formula' % self.namespaces['table']
+                formula_attr = "{%s}formula" % self.namespaces["table"]
                 value = userfield.attrib[formula_attr]
                 userfield.attrib[formula_attr] = re.sub(
-                    r'\"?\${([\w.]*?)(?<!odf_value)}\"?',
-                    r'VALUE(${\1 if isinstance(\1, (int, float)) '
+                    r"\"?\${([\w.]*?)(?<!odf_value)}\"?",
+                    r"VALUE(${\1 if isinstance(\1, (int, float)) "
                     r'else getattr(\1, "odf_value", "\"{}\"".format(\1))})',
-                    value
+                    value,
                 )
 
     def __prepare_usertexts(self):
@@ -1147,43 +1158,42 @@ class Template(object):
         for content_tree in self.content_trees:
 
             for userfield in content_tree.xpath(
-                field_expr,
-                namespaces=self.namespaces
+                field_expr, namespaces=self.namespaces
             ):
                 parent = userfield.getparent()
-                value = userfield.attrib[
-                    '{%s}name' % self.namespaces['text']
-                ][5:]
-                style_attr = '{%s}data-style-name' % self.namespaces['style']
+                value = userfield.attrib["{%s}name" % self.namespaces["text"]][
+                    5:
+                ]
+                style_attr = "{%s}data-style-name" % self.namespaces["style"]
                 style = userfield.attrib.get(style_attr)
-                if_attr = '{%s}if' % self.namespaces['py']
+                if_attr = "{%s}if" % self.namespaces["py"]
 
                 attribs = dict()
-                attribs['{%s}strip' % GENSHI_URI] = 'True'
-                attribs['{%s}content' % GENSHI_URI] = value
+                attribs["{%s}strip" % GENSHI_URI] = "True"
+                attribs["{%s}content" % GENSHI_URI] = value
 
                 if self.escape_false:
                     attribs[if_attr] = value
 
                 if style is not None:
-                    node_tag = '{%s}expression' % self.namespaces['text']
+                    node_tag = "{%s}expression" % self.namespaces["text"]
 
                     formula = (
                         "ooow:VALUE(\"${{getattr({val}, '{key}', '')}}\")"
-                    ).format(val=value, key='odf_value')
+                    ).format(val=value, key="odf_value")
                     vtype = "${{getattr({val}, '{key}', '{default}')}}".format(
-                        val=value, key='odf_type', default='string'
+                        val=value, key="odf_type", default="string"
                     )
                     if_condition = "hasattr({val}, '{key}')".format(
-                        val=value, key='odf_value'
+                        val=value, key="odf_value"
                     )
 
                     formula_attribs = {
-                        '{%s}content' % GENSHI_URI: value,
+                        "{%s}content" % GENSHI_URI: value,
                         style_attr: style,
                         if_attr: if_condition,
-                        '{%s}formula' % self.namespaces['text']: formula,
-                        '{%s}value-type' % self.namespaces['office']: vtype,
+                        "{%s}formula" % self.namespaces["text"]: formula,
+                        "{%s}value-type" % self.namespaces["office"]: vtype,
                     }
                     formula_node = lxml.etree.Element(
                         node_tag, attrib=formula_attribs, nsmap=self.namespaces
@@ -1193,9 +1203,7 @@ class Template(object):
                     attribs[if_attr] = "not {cond}".format(cond=if_condition)
 
                 genshi_node = lxml.etree.Element(
-                    'span',
-                    attrib=attribs,
-                    nsmap={'py': GENSHI_URI}
+                    "span", attrib=attribs, nsmap={"py": GENSHI_URI}
                 )
 
                 if userfield.tail:
@@ -1217,13 +1225,12 @@ class Template(object):
 
             # Find draw:frame tags.
             for draw_frame in content_tree.xpath(
-                image_expr,
-                namespaces=self.namespaces
+                image_expr, namespaces=self.namespaces
             ):
                 # Find the identifier of the image
                 # (py3o.staticimage[identifier]).
                 image_id = draw_frame.attrib[
-                    '{%s}name' % self.namespaces['draw']
+                    "{%s}name" % self.namespaces["draw"]
                 ][5:]
                 if image_id not in self.images:
                     if not self.ignore_undefined_variables:
@@ -1237,9 +1244,7 @@ class Template(object):
                 # Replace the xlink:href attribute of the image to point to
                 # ours.
                 image = draw_frame[0]
-                image.attrib[
-                    '{%s}href' % self.namespaces['xlink']
-                ] = image_id
+                image.attrib["{%s}href" % self.namespaces["xlink"]] = image_id
 
     def __add_images_to_manifest(self):
         """Add entries for py3o images into the manifest file."""
@@ -1250,23 +1255,22 @@ class Template(object):
 
             # Find manifest:manifest tags.
             manifest_e = content_tree.xpath(
-                xpath_expr,
-                namespaces=self.namespaces
+                xpath_expr, namespaces=self.namespaces
             )
             if not manifest_e:
                 continue
 
             for identifier in self.images.keys():
-                mime = self.images.get(identifier).get('mime_type', None)
+                mime = self.images.get(identifier).get("mime_type", None)
                 attribs = {
-                    '{%s}full-path' % self.namespaces['manifest']: identifier,
-                    '{%s}media-type' % self.namespaces['manifest']: mime or ''
+                    "{%s}full-path" % self.namespaces["manifest"]: identifier,
+                    "{%s}media-type" % self.namespaces["manifest"]: mime or "",
                 }
                 # Add a manifest:file-entry tag.
                 lxml.etree.SubElement(
                     manifest_e[0],
-                    '{%s}file-entry' % self.namespaces['manifest'],
-                    attrib=attribs
+                    "{%s}file-entry" % self.namespaces["manifest"],
+                    attrib=attribs,
                 )
             return manifest_e[0]
 
@@ -1300,8 +1304,7 @@ class Template(object):
         # first we need to transform the py3o template into a valid
         # Genshi template.
         starting_tags, closing_tags = self.find_instructions(
-            self.content_trees,
-            self.namespaces
+            self.content_trees, self.namespaces
         )
         parent2tag = {}  # key = parent ; value = tag
         for tag in starting_tags:
@@ -1317,11 +1320,7 @@ class Template(object):
         parents = parent2tag.keys()
 
         for link, py3o_base in starting_tags:
-            self.handle_link(
-                link,
-                py3o_base,
-                closing_tags.get(id(link), None),
-            )
+            self.handle_link(link, py3o_base, closing_tags.get(id(link), None))
 
         # handle all draw links that will need to receive image content
         # in their childrens
@@ -1329,10 +1328,7 @@ class Template(object):
         # draw frames with special names will be auto injected with image
         # injectors
         for frame, py3o_base in tags:
-            self.handle_draw_frame(
-                frame,
-                py3o_base,
-            )
+            self.handle_draw_frame(frame, py3o_base)
 
         # check variable types and apply them to the resulting doc
         self.apply_variable_type_in_cells(self.content_trees, self.namespaces)
@@ -1350,7 +1346,7 @@ class Template(object):
         for fnum, content_tree in enumerate(self.content_trees):
             content = lxml.etree.tostring(content_tree.getroot())
             if self.ignore_undefined_variables:
-                template = MarkupTemplate(content, lookup='lenient')
+                template = MarkupTemplate(content, lookup="lenient")
             else:
                 template = MarkupTemplate(content)
 
@@ -1364,7 +1360,7 @@ class Template(object):
             self.output_streams.append(
                 (
                     self.templated_files[fnum],
-                    template.generate(**template_dict)
+                    template.generate(**template_dict),
                 )
             )
 
@@ -1404,7 +1400,7 @@ class Template(object):
         @type path: string
         """
 
-        f = open(path, 'rb')
+        f = open(path, "rb")
         self.set_image_data(identifier, f.read())
         f.close()
 
@@ -1420,15 +1416,12 @@ class Template(object):
         @type data: binary
         """
 
-        self.images[identifier] = {
-            'data': data,
-            'mime_type': mime_type,
-        }
+        self.images[identifier] = {"data": data, "mime_type": mime_type}
 
     def __save_output(self):
         """Saves the output into a native OOo document format.
         """
-        out = zipfile.ZipFile(self.outputfilename, 'w', allowZip64=True)
+        out = zipfile.ZipFile(self.outputfilename, "w", allowZip64=True)
 
         manifest_info = None
         for info_zip in self.infile.infolist():
@@ -1450,7 +1443,7 @@ class Template(object):
 
                 # write the whole stream to it
                 for chunk in nstream.serialize():
-                    streamout.write(chunk.encode('utf-8'))
+                    streamout.write(chunk.encode("utf-8"))
                     yield True
 
                 streamout.seek(0)
@@ -1477,7 +1470,7 @@ class Template(object):
 
         # Save images in the "Pictures" sub-directory of the archive.
         for identifier, im_struct in self.images.items():
-            out.writestr(identifier, im_struct.get('data'))
+            out.writestr(identifier, im_struct.get("data"))
 
         # close the zipfile before leaving
         out.close()

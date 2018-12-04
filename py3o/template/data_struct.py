@@ -19,10 +19,7 @@ class Py3oObject(dict):
 
     def __repr__(self):  # pragma: no cover
         res = super(Py3oObject, self).__repr__()
-        return "{}({})".format(
-            self.__class__.__name__,
-            res
-        )
+        return "{}({})".format(self.__class__.__name__, res)
 
     def get_size(self):
         """Return the max depth of the object
@@ -60,9 +57,9 @@ class Py3oObject(dict):
         else:
             diff = len(target_tup) - len(self_tup)
             if diff != 0:  # pragma: no cover
-                raise ValueError(u"Unpack Error: {} != {}".format(
-                    target_tup, self_tup
-                ))
+                raise ValueError(
+                    u"Unpack Error: {} != {}".format(target_tup, self_tup)
+                )
             for t in zip(target_tup, self_tup):
                 yield t
 
@@ -176,6 +173,7 @@ class Py3oArray(Py3oObject):
     The attribute direct_access will tell if this class should be considered
      as a list of dict or a list of values.
     """
+
     def __init__(self):
         super(Py3oArray, self).__init__()
         self.direct_access = False
@@ -199,6 +197,7 @@ class Py3oName(Py3oObject):
      (another Py3o class or a simple value)
     i.e.: i.egg -> Py3oName({'i': Py3oName({'egg': Py3oName({})})})
     """
+
     def render(self, data):
         """ This function will render the datastruct according
         to the user's data
@@ -268,6 +267,7 @@ class Py3oCall(Py3oObject):
 
 class Py3oEnumerate(Py3oCall):
     """Represent an enumerate call"""
+
     return_format = (None, 0)
 
 
@@ -277,6 +277,7 @@ class Py3oContainer(Py3oObject):
     _ A literal list, tuple, set or dict definition
     _ A tuple of variables that are the target of an unpack assignment
     """
+
     def __init__(self, values):
         super(Py3oContainer, self).__init__()
         self.values = values
@@ -290,6 +291,7 @@ class Py3oDummy(Py3oObject):
     """ This class holds temporary dict, or unused attribute
      such as counters from enumerate()
     """
+
     pass
 
 
@@ -297,9 +299,7 @@ class Py3oBuiltin(Py3oObject):
     """ This class holds information about builtins
     """
 
-    builtins = {
-        'enumerate': Py3oEnumerate
-    }
+    builtins = {"enumerate": Py3oEnumerate}
 
     @classmethod
     def from_name(cls, name=None):
