@@ -5,6 +5,10 @@ py3o.template
   :target: https://drone-ci.xcg.io/faide/py3o.template
   :alt: Build Status
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+  :target: https://github.com/ambv/black
+  :alt: Code Style: Black
+
 Introduction
 ============
 
