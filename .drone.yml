@@ -19,8 +19,7 @@ pipeline:
       - pip install setuptools --upgrade
 
       - pip install tox
-      # tox only pycodestyle & py27 because python3 requires a genshi trunk from svn...
-      - tox -e pycodestyle,py27
+      - tox
 
   black:
     image: houzefaabba/python3-black

@@ -19,6 +19,8 @@ merging your data sets with a corresponding templated OpenOffice document.
 It is plateform independent and does not require LibreOffice/OpenOffice itself
 to generate an ODF file.
 
+Supported Python versions: 2.7, >= 3.5.
+
 This work was originally inspired by `relatorio`_ and diverged in
 implementation, scope and ambitions. Relatorio has many more features
 when py3o.template is mainly focused on ODT, ODS and text output.
@@ -31,22 +33,6 @@ the `docker hub`_
 If you want to have templating fusion & document conversion in one
 single web service usable from any language with just HTTP/POST you can install
 `py3o.fusion`_ server. Which also exists as a `docker image`_
-
-Python 3 support
-================
-
-py3o.template is python3 ready. But, yes there is a but... alas!,
-you'll need to install a trunk version of Genshi::
-
-    $ # activate your python env...
-    $ svn checkout http://svn.edgewall.org/repos/genshi/trunk genshi_trunk
-    $ cd genshi_trunk
-    $ python setup.py build
-    $ python setup.py install
-
-We tested this with revision 1271.
-When genshi 0.8 is released we can officially say we support Python3 out of
-the box.
 
 Full Documentation
 ==================
@@ -102,6 +88,7 @@ directory.
     data = dict(items=items, document=document)
     t.render(data)
 
+
 Changelog
 =========
 
@@ -123,6 +110,9 @@ NEXT
 
         function="format_currency(123456789.4242, 'EUR', locale='fr_FR')"
             -> 123 456 789,42 €
+
+  - Re-enable Python 3 in our test suite now that a recent ``genshi`` has been
+    released.
 
 
 0.9.13 2018-07-03

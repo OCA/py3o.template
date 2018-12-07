@@ -1,11 +1,14 @@
 Contributing to py3o.template
 =============================
 
+Tests
+-----
+
 Tests are easy to run; they rely on ``tox``::
 
     pip install tox
     tox # Run all tests
-    tox -e py27 # Run Python 2.7 tests only
+    tox -e py3 # Run Python 3 tests only
 
 Tests reside in ``py3o/tests``. To add one:
 
