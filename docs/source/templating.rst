@@ -123,7 +123,7 @@ Insert variables
 Once you have setup variables and defined some optional control structures
 you can start inserting variables inside the document.
 
-The best way it to use the menu::
+The best way is to use the menu::
 
     Insert > Field > Other
 
@@ -138,7 +138,7 @@ variable in the second column and then finally click insert at the bottom:
 
 This operation will insert your user field near your cursor.
 This field will be replaced at template.render() time by the real value
-coming from the dataset (see above python code)
+coming from the dataset (see above python code).
 
 Insert placeholder images
 -------------------------
