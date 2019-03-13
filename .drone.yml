@@ -7,17 +7,9 @@ clone:
 pipeline:
 
   test:
-    # TODO babel currency formatting change when using python:3 as base image;
-    # "test_format_currency" then fails.
-    image: xcgd/dronebase
+    image: python:3
     pull: true
     commands:
-
-      # The following won't be needed once we switch to python:3 as base image.
-      - apt  -qq update
-      - DEBIAN_FRONTEND=noninteractive apt -qq -y install python3-dev
-      - pip install setuptools --upgrade
-
       - pip install tox
       - tox
 
