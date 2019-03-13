@@ -250,12 +250,15 @@ def format_currency(*args, **kwargs):
     * Make the 2nd argument (currency) optional. When not displaying the
       currency symbol, no need to provide a currency.
 
+    Note: Specifying the "locale" kwarg is recommended; otherwise the default
+    system locale will be used.
+
     Their parameter docstring has been copied below.
 
     :param number: the number to format
     :param currency: the currency code, optional unless displaying the currency
     :param format: the format string to use
-    :param locale: locale identifier
+    :param locale: locale identifier - recommended, see above
     :param currency_digits: use the currency's natural number of decimal digits
     :param format_type: the currency format type to use
     :param decimal_quantization: Truncate and round high-precision numbers to
@@ -309,8 +312,8 @@ def format_date(date, format=ISO_DATE_FORMAT):
 def format_datetime(date_obj, format=None, locale=None):
     """Format the specified date / date-time according to a format string.
 
-    :param date: One of: datetime.date object, datetime.datetime object, ISO
-    formatted string ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S').
+    :param date_obj: One of: datetime.date object, datetime.datetime object,
+    ISO formatted string ('%Y-%m-%d' or '%Y-%m-%d %H:%M:%S').
 
     :param format: How the date should be formatted. We use babel to format;
     see <http://babel.pocoo.org/en/latest/dates.html#pattern-syntax>. Optional;
@@ -319,7 +322,8 @@ def format_datetime(date_obj, format=None, locale=None):
     * 'YYYY-MM-dd HH:mm:ss' for datetime.datetime objects.
     :type format: String.
 
-    :param locale: Locale identifier used during babel formatting. Optional.
+    :param locale: Locale identifier used during babel formatting. Optional but
+    recommended; otherwise the default system locale will be used.
     :type locale: String.
 
     :rtype: String.

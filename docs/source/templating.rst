@@ -222,6 +222,9 @@ Changes we provide here:
 * Make the 2nd argument (currency) optional. When not displaying the
   currency symbol, no need to provide a currency.
 
+Note: Specifying the "locale" kwarg is recommended; otherwise the default
+system locale will be used.
+
 Their parameter docstring has been copied below.
 
 number
@@ -234,7 +237,7 @@ format
     the format string to use
 
 locale
-    locale identifier
+    locale identifier - recommended, see above
 
 currency_digits
     use the currency's natural number of decimal digits
@@ -248,11 +251,11 @@ decimal_quantization
 
 Examples used in tests::
 
-    function="format_currency(0, format='#')" -> 0
-    function="format_currency(1, 'USD')" -> $1.00
-    function="format_currency(42.42, 'EUR')" -> €42.42
-    function="format_currency(123456789.4242, 'EUR')" -> €123,456,789.42
-    function="format_currency(123456789.4242, 'EUR', locale='fr_FR')" -> 123 456 789,42 €
+    function="format_currency(0, format='#', locale='en_US_POSIX')" -> 0
+    function="format_currency(1, 'USD', locale='en_US_POSIX')" -> $ 1.00
+    function="format_currency(42.42, 'EUR', locale='en_US_POSIX')" -> € 42.42
+    function="format_currency(123456789.4242, 'EUR', locale='en_US_POSIX')" -> € 123456789.42
+    function="format_currency(123456789.4242, 'EUR', locale='fr_FR')" -> 123 456 789,42 €
 
 Date Formatting
 ---------------
@@ -270,6 +273,10 @@ format (string)
     when left as is, the default format is:
     * 'YYYY-MM-dd' for datetime.date objects.
     * 'YYYY-MM-dd HH:mm:ss' for datetime.datetime objects.
+
+locale (string)
+    Locale identifier used during babel formatting. Optional but recommended;
+    otherwise the default system locale will be used.
 
 Examples used in tests::
 
