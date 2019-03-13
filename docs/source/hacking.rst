@@ -10,6 +10,9 @@ Tests are easy to run; they rely on ``tox``::
     tox # Run all tests
     tox -e py3 # Run Python 3 tests only
 
+Tests may also be run via a Python Docker image (same as our CI) through the
+``run-tests-via-docker.sh`` script.
+
 Tests reside in ``py3o/template/tests``. To add one:
 
 * Add a test ODT file into ``py3o/template/tests/templates``.
