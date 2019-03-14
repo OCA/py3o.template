@@ -96,6 +96,8 @@ Changelog
 NEXT
 ----
 
+  - Save embedded images into "Pictures" directory to work with lowriter>=6.0
+
   - Rely on `babel`_ to format dates & numbers from now on.
 
     -> ``format_date`` has been deprecated in favor of the new

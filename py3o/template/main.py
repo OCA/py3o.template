@@ -562,7 +562,7 @@ class ImageInjector(object):
         if isb64:
             # we need to decode the base64 data to obtain the raw data version
             data = b64decode(data)
-        identifier = hashlib.sha256(data).hexdigest()
+        identifier = "Pictures/" + hashlib.sha256(data).hexdigest()
         self.template.set_image_data(identifier, data, mime_type=mime_type)
 
         attrs = {
