@@ -93,8 +93,8 @@ Changelog
 =========
 
 
-NEXT
-----
+0.10.0 2019-03-15
+-----------------
 
   - Save embedded images into "Pictures" directory to work with lowriter>=6.0
 
