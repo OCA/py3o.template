@@ -65,7 +65,7 @@
       </text:p>
       <text:p text:style-name="P5">
         <text:span text:style-name="T2">rich EUR in French: </text:span>
-        <text:span text:style-name="T2">123&#160;456&#160;789,42&#160;&#8364;</text:span>
+        <text:span text:style-name="T2">123&#x202F;456&#x202F;789,42&#160;&#8364;</text:span>
       </text:p>
     </office:text>
   </office:body>
