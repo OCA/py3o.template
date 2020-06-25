@@ -10,6 +10,7 @@ import pkg_resources
 import six
 
 from pyjon.utils import get_secure_filename
+from xmldiff import main as xmldiff
 
 from py3o.template.main import move_siblings, detect_keep_boundary, Template
 
@@ -408,10 +409,7 @@ class TestHelpers(unittest.TestCase):
             )
         ).read()
 
-        result_a = result_a.replace("\n", "").replace(" ", "")
-        result_e = result_e.replace("\n", "").replace(" ", "")
-
-        assert result_a == result_e
+        self._ensureSameXml(result_a, result_e)
 
     def test_content_tree_with_child_instruction(self):
         template_xml = pkg_resources.resource_filename(
@@ -947,3 +945,10 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(
             json_dict, {"myarray": [[1, {"c": 2}], [4, {"c": 5}]]}
         )
+
+    def _ensureSameXml(self, tested, expected):
+        """Rely on the nice xmldiff lib to compare XML data, see
+        <https://pypi.org/project/xmldiff/>.
+        """
+
+        self.assertEqual(xmldiff.diff_texts(tested, expected), [])

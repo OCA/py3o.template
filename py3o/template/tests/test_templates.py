@@ -17,6 +17,7 @@ from io import BytesIO
 from genshi.template import TemplateError
 from PIL import Image
 from pyjon.utils import get_secure_filename
+from xmldiff import main as xmldiff
 
 from py3o.template import Template, TextTemplate, TemplateException
 from py3o.template.main import (
@@ -499,25 +500,16 @@ class TestTemplate(unittest.TestCase):
         template.render(data_dict)
         outodt = zipfile.ZipFile(outname, "r")
 
-        content_list = lxml.etree.parse(
-            BytesIO(outodt.read(template.templated_files[0]))
-        )
-
-        result_a = lxml.etree.tostring(content_list, pretty_print=True).decode(
-            "utf-8"
-        )
-
-        result_e = open(
+        with open(
             pkg_resources.resource_filename(
                 "py3o.template",
                 "tests/templates/template_format_currency_result.xml",
-            )
-        ).read()
+            ),
+            "r",
+        ) as expected_f:
+            expected = expected_f.read()
 
-        result_a = result_a.replace("\n", "").replace(" ", "")
-        result_e = result_e.replace("\n", "").replace(" ", "")
-
-        self.assertEqual(result_a, result_e)
+        self._ensureSameXml(expected, outodt.read(template.templated_files[0]))
 
     def test_format_date(self):
         template_name = pkg_resources.resource_filename(
@@ -540,25 +532,16 @@ class TestTemplate(unittest.TestCase):
         template.render(data_dict)
         outodt = zipfile.ZipFile(outname, "r")
 
-        content_list = lxml.etree.parse(
-            BytesIO(outodt.read(template.templated_files[0]))
-        )
-
-        result_a = lxml.etree.tostring(content_list, pretty_print=True).decode(
-            "utf-8"
-        )
-
-        result_e = open(
+        with open(
             pkg_resources.resource_filename(
                 "py3o.template",
                 "tests/templates/template_format_date_result.xml",
-            )
-        ).read()
+            ),
+            "r",
+        ) as expected_f:
+            expected = expected_f.read()
 
-        result_a = result_a.replace("\n", "").replace(" ", "")
-        result_e = result_e.replace("\n", "").replace(" ", "")
-
-        assert result_a == result_e
+        self._ensureSameXml(outodt.read(template.templated_files[0]), expected)
 
     def test_format_datetime(self):
         """Test py3o.template.main.format_datetime which relies on babel.
@@ -1119,25 +1102,16 @@ class TestTemplate(unittest.TestCase):
 
         template.render(data_dict)
         outodt = zipfile.ZipFile(outname, "r")
-        content_list = lxml.etree.parse(
-            BytesIO(outodt.read(template.templated_files[0]))
-        )
 
-        expected_xml = lxml.etree.parse(
+        with open(
             pkg_resources.resource_filename(
                 "py3o.template", "tests/templates/odt_value_styles_result.xml"
-            )
-        )
-        result = lxml.etree.tostring(content_list, pretty_print=True).decode(
-            "utf-8"
-        )
-        expected = lxml.etree.tostring(expected_xml, pretty_print=True).decode(
-            "utf-8"
-        )
-        result = result.replace("\n", "").replace(" ", "")
-        expected = expected.replace("\n", "").replace(" ", "")
+            ),
+            "r",
+        ) as expected_f:
+            expected = expected_f.read()
 
-        self.assertEqual(result, expected)
+        self._ensureSameXml(outodt.read(template.templated_files[0]), expected)
 
     def test_ods_value_styles(self):
         u"""Test odf_value attribute and ODS styles"""
@@ -1158,25 +1132,16 @@ class TestTemplate(unittest.TestCase):
 
         template.render(data_dict)
         outodt = zipfile.ZipFile(outname, "r")
-        content_list = lxml.etree.parse(
-            BytesIO(outodt.read(template.templated_files[0]))
-        )
 
-        expected_xml = lxml.etree.parse(
+        with open(
             pkg_resources.resource_filename(
                 "py3o.template", "tests/templates/ods_value_styles_result.xml"
-            )
-        )
-        result = lxml.etree.tostring(content_list, pretty_print=True).decode(
-            "utf-8"
-        )
-        expected = lxml.etree.tostring(expected_xml, pretty_print=True).decode(
-            "utf-8"
-        )
-        result = result.replace("\n", "").replace(" ", "")
-        expected = expected.replace("\n", "").replace(" ", "")
+            ),
+            "r",
+        ) as expected_f:
+            expected = expected_f.read()
 
-        self.assertEqual(result, expected)
+        self._ensureSameXml(outodt.read(template.templated_files[0]), expected)
 
     def test_input_fields_with_function(self):
         template_name = pkg_resources.resource_filename(
@@ -1321,3 +1286,10 @@ class TestTemplate(unittest.TestCase):
         result_e = result_e.replace("\n", "").replace(" ", "")
 
         assert result_a == result_e
+
+    def _ensureSameXml(self, tested, expected):
+        """Rely on the nice xmldiff lib to compare XML data, see
+        <https://pypi.org/project/xmldiff/>.
+        """
+
+        self.assertEqual(xmldiff.diff_texts(tested, expected), [])
