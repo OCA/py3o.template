@@ -1,8 +1,8 @@
 py3o.template
 *************
 
-.. image:: https://drone-ci.xcg.io/api/badges/faide/py3o.template/status.svg
-  :target: https://drone-ci.xcg.io/faide/py3o.template
+.. image:: https://orus.io/florent.aide/py3o.template/badges/branch/default/pipeline.svg
+  :target: https://orus.io/florent.aide/py3o.template/pipelines
   :alt: Build Status
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
@@ -253,7 +253,7 @@ Changelog
     data. This is useful for some clients like `Odoo's report_py3o`_ because
     they store image data as base64 encoded fields.
 
-.. _Odoo's report_py3o: https://bitbucket.org/xcg/report_py3o
+.. _Odoo's report_py3o: https://github.com/OCA/reporting-engine
 
 0.9.1 Jun. 3 2015
 ~~~~~~~~~~~~~~~~~
@@ -311,11 +311,11 @@ By order of contribution date:
   - `Zakaria Makrelouf`_
   - `Tom Gottfried`_
 
-.. _Florent Aide: https://bitbucket.org/faide
+.. _Florent Aide: https://orus.io/florent.aide
 .. _Emmanuel Cazenave: https://bitbucket.org/cazino
 .. _jon1012: https://bitbucket.org/jon1012
 .. _Eugene Morozov: https://bitbucket.org/mojo
-.. _Houzéfa Abbasbay: https://bitbucket.org/houzefa-abba
+.. _Houzéfa Abbasbay: https://orus.io/houzefa.abba
 .. _Torsten Irländer: https://bitbucket.org/ti
 .. _Sergey Fedoseev: https://bitbucket.org/sir_sigurd
 .. _Vincent Lhote-Hatakeyama: https://bitbucket.org/vincent_lhote
@@ -332,11 +332,11 @@ By order of contribution date:
 .. _Zakaria Makrelouf https://bitbucket.org/z_makrelouf/
 .. _Tom Gottfried https://bitbucket.org/tfried/
 
-.. _py3o.renderserver: https://bitbucket.org/faide/py3o.renderserver/
+.. _py3o.renderserver: https://orus.io/florent.aide/py3o.renderserver
 .. _provide a documentation: http://py3otemplate.readthedocs.org
-.. _in our ticketing system: https://bitbucket.org/faide/py3o.template/issues?status=new&status=open
+.. _in our ticketing system: https://orus.io/florent.aide/py3o.template/issues
 .. _docker hub: https://registry.hub.docker.com/u/xcgd/py3oserver-docker/
-.. _py3o.fusion: https://bitbucket.org/faide/py3o.fusion
+.. _py3o.fusion: https://orus.io/florent.aide/py3o.fusion
 .. _docker image: https://registry.hub.docker.com/u/xcgd/py3o.fusion
 .. _relatorio: http://relatorio.tryton.org/
 .. _babel: http://babel.pocoo.org

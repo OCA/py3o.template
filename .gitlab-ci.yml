@@ -1,0 +1,17 @@
+# vim: set shiftwidth=2 softtabstop=2:
+
+test:
+  image:
+    name: python:3
+    entrypoint: [""]
+  script:
+    - pip install tox
+    - tox
+
+black:
+  image:
+    name: houzefaabba/python3-black
+    entrypoint: [""]
+  script:
+    # Ensure our code is black-valid <https://pypi.org/project/black/>.
+    - black --check .
