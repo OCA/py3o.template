@@ -1,31 +1,31 @@
 # -*- encoding: utf-8 -*-
-import babel.dates
-import babel.numbers
-from base64 import b64decode
 import codecs
-from copy import copy
-from datetime import datetime
 import decimal
 import hashlib
-from io import BytesIO
-import logging
 import locale
+import logging
 import os
 import re
-import traceback
-from uuid import uuid4
-import warnings
-from xml.sax.saxutils import escape
-import zipfile
-import urllib.parse
 import tempfile
+import traceback
+import urllib.parse
+import warnings
+import zipfile
+from base64 import b64decode
+from copy import copy
+from datetime import datetime
+from io import BytesIO
+from uuid import uuid4
+from xml.sax.saxutils import escape
 
+import babel.dates
+import babel.numbers
 import lxml.etree
-from PIL import Image
+from genshi.core import Markup
+from genshi.filters.transform import Transformer
 from genshi.template import MarkupTemplate
 from genshi.template.text import NewTextTemplate as GenshiTextTemplate
-from genshi.filters.transform import Transformer
-from genshi.core import Markup
+from PIL import Image
 
 log = logging.getLogger(__name__)
 

@@ -1,20 +1,20 @@
 # -*- encoding: utf-8 -*-
-from py3o.template.data_struct import Py3oDataError
-from py3o.template.helpers import Py3oConvertor
-
-import unittest
 import os
+import unittest
 from unittest.mock import Mock
 
 import lxml.etree
 import pkg_resources
-
 from xmldiff import main as xmldiff
 
-from py3o.template.main import move_siblings, detect_keep_boundary, Template
-
-from py3o.template.data_struct import Py3oName
-from py3o.template.main import _get_secure_filename
+from py3o.template.data_struct import Py3oDataError, Py3oName
+from py3o.template.helpers import Py3oConvertor
+from py3o.template.main import (
+    Template,
+    _get_secure_filename,
+    detect_keep_boundary,
+    move_siblings,
+)
 
 
 class TestHelpers(unittest.TestCase):

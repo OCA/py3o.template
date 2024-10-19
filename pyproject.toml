@@ -42,4 +42,7 @@ exclude = ["py3o/template/tests"]
 line-length = 79
 
 [tool.ruff.lint]
-extend-select = []
+extend-select = ["I"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["py3o.template"]

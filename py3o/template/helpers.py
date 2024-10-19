@@ -2,16 +2,16 @@ import ast
 import copy
 import pprint
 from textwrap import dedent
+
 from py3o.template.data_struct import (
+    Py3oArray,
     Py3oBuiltin,
+    Py3oCall,
+    Py3oContainer,
+    Py3oDummy,
     Py3oModule,
     Py3oName,
-    Py3oArray,
-    Py3oContainer,
-    Py3oCall,
-    Py3oDummy,
 )
-
 
 # This is used as global context key in the convertor
 PY3O_MODULE_KEY = "__py3o_module__"

@@ -3,6 +3,8 @@
 documents into real OpenOffice documents with all your data merged-in.
 """
 
-from py3o.template.main import Template  # noqa: F401
-from py3o.template.main import TextTemplate  # noqa: F401
-from py3o.template.main import TemplateException  # noqa: F401
+from py3o.template.main import (
+    Template,  # noqa: F401
+    TemplateException,  # noqa: F401
+    TextTemplate,  # noqa: F401
+)

@@ -1,33 +1,30 @@
 # -*- encoding: utf-8 -*-
+import base64
+import copy
 import datetime
 import os
 import re
+import sys
+import traceback
 import unittest
 import zipfile
-import traceback
-import copy
-import base64
-import sys
+from io import BytesIO
 from unittest.mock import Mock
 
 import lxml.etree
 import pkg_resources
-
-from io import BytesIO
-
+import pytest
 from genshi.template import TemplateError
 from PIL import Image
 from xmldiff import main as xmldiff
 
-import pytest
-
-from py3o.template import Template, TextTemplate, TemplateException
+from py3o.template import Template, TemplateException, TextTemplate
 from py3o.template.main import (
-    XML_NS,
-    get_image_frames,
-    _get_secure_filename,
-    get_soft_breaks,
     MANIFEST,
+    XML_NS,
+    _get_secure_filename,
+    get_image_frames,
+    get_soft_breaks,
 )
 
 
