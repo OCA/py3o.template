@@ -8,10 +8,10 @@ import traceback
 import copy
 import base64
 import sys
+from unittest.mock import Mock
 
 import lxml.etree
 import pkg_resources
-import six
 
 from io import BytesIO
 
@@ -29,13 +29,6 @@ from py3o.template.main import (
     get_soft_breaks,
     MANIFEST,
 )
-
-if six.PY3:
-    # noinspection PyUnresolvedReferences
-    from unittest.mock import Mock
-elif six.PY2:
-    # noinspection PyUnresolvedReferences
-    from mock import Mock
 
 
 class TestTemplate(unittest.TestCase):

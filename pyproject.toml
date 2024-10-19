@@ -19,7 +19,6 @@ authors = [{name = "Florent Aide", email = "florent.aide@gmail.com"}]
 license = "MIT"
 dependencies = [
     "setuptools",
-    "six >= 1.9",
     "babel",
     "lxml",
     "genshi >= 0.7",
