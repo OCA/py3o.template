@@ -623,7 +623,7 @@ class TestHelpers(unittest.TestCase):
 
         user_data = {"false_value": false_mock}
         json_dict = res.render(user_data)
-        assert json_dict == {"false_value": u""}
+        assert json_dict == {"false_value": ""}
 
     def test_enumerate(self):
         py_expr = self.__load_and_convert_template(
@@ -916,7 +916,7 @@ class TestHelpers(unittest.TestCase):
         assert json_dict == {"myarray": [0, 1, 2, 3]}
 
     def test_empty_for_loop(self):
-        u"""Test ast extraction on for loops whose body do not use any data"""
+        """Test ast extraction on for loops whose body do not use any data"""
         expressions = ['for="var in myarray"', "/for"]
         py_expr = Template.convert_py3o_to_python_ast(expressions)
         self.assertEqual(py_expr.strip(), "for var in myarray:\n pass")
@@ -927,7 +927,6 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(json_dict, data)
 
     def test_unpack_from_data_source(self):
-
         expressions = ['for="a, b in myarray"', "a", "b.c", "/for"]
 
         py_expr = Template.convert_py3o_to_python_ast(expressions)

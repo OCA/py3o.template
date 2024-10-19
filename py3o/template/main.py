@@ -55,8 +55,7 @@ class TemplateException(ValueError):
     """
 
     def __init__(self, message):
-        """define the __init__ to handle message... for python3's sake
-        """
+        """define the __init__ to handle message... for python3's sake"""
         self.message = message
 
     def __str__(self):  # pragma: no cover
@@ -64,8 +63,7 @@ class TemplateException(ValueError):
 
 
 def detect_keep_boundary(start, end, namespaces):
-    """a helper to inspect a link and see if we should keep the link boundary
-    """
+    """a helper to inspect a link and see if we should keep the link boundary"""
     result_start, result_end = False, False
     parent_start = start.getparent()
 
@@ -159,8 +157,7 @@ def get_list_transformer(namespaces):
 
 
 def get_all_python_expression(content_trees, namespaces):
-    """Return all the python expressions found in the whole document
-    """
+    """Return all the python expressions found in the whole document"""
     xpath_expr = (
         r"//text:a[starts-with(@xlink:href, 'py3o://')] | "
         r"//text:text-input[starts-with(@text:description, 'py3o://')] | "
@@ -175,15 +172,13 @@ def get_all_python_expression(content_trees, namespaces):
 
 
 def get_image_frames(content_tree, namespaces):
-    """find all draw frames that must be converted to draw:image
-    """
+    """find all draw frames that must be converted to draw:image"""
     xpath_expr = "//draw:frame[starts-with(@draw:name, 'py3o.image')]"
     return content_tree.xpath(xpath_expr, namespaces=namespaces)
 
 
 def get_instructions(content_tree, namespaces):
-    """find all text links that have a py3o
-    """
+    """find all text links that have a py3o"""
     xpath_expr = (
         "//text:a[starts-with(@xlink:href, 'py3o://')] | "
         "//text:text-input[starts-with(@text:description, 'py3o://')]"
@@ -202,8 +197,7 @@ def get_soft_breaks(content_tree, namespaces):
 
 
 def format_amount(amount, format="%f"):
-    """Replace the thousands separator from '.' to ','
-    """
+    """Replace the thousands separator from '.' to ','"""
 
     warnings.warn(
         "The format_locale function is marked for deprecation in 2019, please "
@@ -334,7 +328,6 @@ def format_datetime(date_obj, format=None, locale=None):
 
     # Deserialize when we got a string.
     if isinstance(date_obj, str):
-
         try:
             date_obj = datetime.strptime(date_obj, ISO_DATE_FORMAT)
             is_datetime = False  # This is a date (not a datetime).
@@ -369,7 +362,7 @@ def format_multiline(value):
     Escape and replace code originally by tonthon tonthon.
     """
     value = escape(value)
-    value = value.replace(u"\n", u"<text:line-break/>")
+    value = value.replace("\n", "<text:line-break/>")
     return Markup(value)
 
 
@@ -485,14 +478,14 @@ class FrameInjector(object):
                     height_float = width_float / img_ratio
                     height = "%.3f%s" % (height_float, uom)
         if width:
-            origin_attrib[
-                "{%s}width" % self.template.namespaces["svg"]
-            ] = width
+            origin_attrib["{%s}width" % self.template.namespaces["svg"]] = (
+                width
+            )
 
         if height:
-            origin_attrib[
-                "{%s}height" % self.template.namespaces["svg"]
-            ] = height
+            origin_attrib["{%s}height" % self.template.namespaces["svg"]] = (
+                height
+            )
         return origin_attrib
 
 
@@ -567,8 +560,9 @@ class ImageInjector(object):
         attrs = {
             "{%s}href" % self.template.namespaces["xlink"]: identifier,
             "{%s}type" % self.template.namespaces["xlink"]: "simple",
-            "{%s}name"
-            % self.template.namespaces["draw"]: ("py3o: %s" % identifier),
+            "{%s}name" % self.template.namespaces["draw"]: (
+                "py3o: %s" % identifier
+            ),
         }
         return attrs
 
@@ -627,7 +621,6 @@ class TextTemplate(object):
         with codecs.open(
             self.outputfilename, "wb+", encoding=self.encoding
         ) as outfile:
-
             for kind, data, pos in self.template.generate(**data):
                 outfile.write(data)
 
@@ -681,8 +674,7 @@ class Template(object):
         self.escape_false = escape_false
 
     def __prepare_namespaces(self):
-        """create proper namespaces for our document
-        """
+        """create proper namespaces for our document"""
         # create needed namespaces
         self.namespaces = dict(
             text="urn:text",
@@ -709,8 +701,7 @@ class Template(object):
         self.namespaces["py3o"] = PY3O_URI
 
     def get_all_user_python_expression(self):
-        """  Public method to get all python expression
-        """
+        """Public method to get all python expression"""
         res = []
         text_nmspc = self.namespaces["text"]
         table_nmspc = self.namespaces["table"]
@@ -735,7 +726,7 @@ class Template(object):
         return res
 
     def get_user_instructions(self):
-        """ Public method to help report engine to find all instructions
+        """Public method to help report engine to find all instructions
         This method will be removed in a future version.
         Please use :meth:`.Py3oTemplate.get_all_user_python_expression`.
         """
@@ -840,8 +831,7 @@ class Template(object):
 
     @staticmethod
     def find_image_frames(content_trees, namespaces):
-        """find all frames that must be converted to images
-        """
+        """find all frames that must be converted to images"""
         tags = []
 
         for content_tree in content_trees:
@@ -860,7 +850,6 @@ class Template(object):
 
     @staticmethod
     def find_instructions(content_trees, namespaces):
-
         opened_starts = list()
         starting_tags = list()
         closing_tags = dict()
@@ -950,9 +939,7 @@ class Template(object):
         dictionary to be called back from inside the template
         """
         image_inserter = "__py3o_image(%s)" % py3o_base
-        frame_args = (
-            py3o_base + ", origin_attrib=" + str(frame.attrib)
-        )
+        frame_args = py3o_base + ", origin_attrib=" + str(frame.attrib)
         frame_inserter = "__py3o_frame(%s)" % frame_args
         attrib_image = {"{%s}attrs" % self.namespaces["py"]: image_inserter}
         attrib_frame = {"{%s}attrs" % self.namespaces["py"]: frame_inserter}
@@ -1062,8 +1049,7 @@ class Template(object):
             new_span = lxml.etree.Element(
                 "{%s}span" % self.namespaces["text"],
                 attrib={
-                    "{%s}style-name"
-                    % self.namespaces["text"]: style_node.get(
+                    "{%s}style-name" % self.namespaces["text"]: style_node.get(
                         "{%s}style-name" % self.namespaces["text"]
                     )
                 },
@@ -1094,7 +1080,6 @@ class Template(object):
             # here we gather the fields info in one pass to be able to avoid
             # doing the same operation multiple times.
             for userfield in get_user_fields(content_tree, self.namespaces):
-
                 value = userfield.attrib["{%s}name" % self.namespaces["text"]][
                     5:
                 ]
@@ -1136,7 +1121,6 @@ class Template(object):
         )
 
         for content_tree in self.content_trees:
-
             for userfield in content_tree.xpath(
                 field_expr, namespaces=self.namespaces
             ):
@@ -1157,7 +1141,6 @@ class Template(object):
         field_expr = r"//text:user-field-get[starts-with(@text:name, 'py3o.')]"
 
         for content_tree in self.content_trees:
-
             for userfield in content_tree.xpath(
                 field_expr, namespaces=self.namespaces
             ):
@@ -1223,7 +1206,6 @@ class Template(object):
         )
 
         for content_tree in self.content_trees:
-
             # Find draw:frame tags.
             for draw_frame in content_tree.xpath(
                 image_expr, namespaces=self.namespaces
@@ -1253,7 +1235,6 @@ class Template(object):
         xpath_expr = "//manifest:manifest[1]"
 
         for content_tree in self.content_trees:
-
             # Find manifest:manifest tags.
             manifest_e = content_tree.xpath(
                 xpath_expr, namespaces=self.namespaces
@@ -1419,8 +1400,7 @@ class Template(object):
         self.images[identifier] = {"data": data, "mime_type": mime_type}
 
     def __save_output(self):
-        """Saves the output into a native OOo document format.
-        """
+        """Saves the output into a native OOo document format."""
         out = zipfile.ZipFile(self.outputfilename, "w", allowZip64=True)
 
         manifest_info = None
