@@ -302,6 +302,7 @@ By order of contribution date:
   - `Björn Ricks`_
   - `Agix`_
   - `Jérémie Gavrel`_
+  - Stéphane Bidoul
   - `Laurent Mignon`_
   - `Alexis de Lattre`_
   - `JosDeGraeve`_
