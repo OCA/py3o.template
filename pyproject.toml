@@ -53,3 +53,8 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["py3o.template"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:py3o.template.*"
+]
