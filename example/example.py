@@ -5,7 +5,7 @@ t = Template("py3o_example_template.odt", "py3o_example_output.odt")
 t.set_image_path("staticimage.logo", "images/new_logo.png")
 
 
-class Item(object):
+class Item:
     pass
 
 

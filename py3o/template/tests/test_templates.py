@@ -1,33 +1,29 @@
-# -*- encoding: utf-8 -*-
+import base64
+import copy
 import datetime
 import os
 import re
+import sys
+import traceback
 import unittest
 import zipfile
-import traceback
-import copy
-import base64
-import sys
+from io import BytesIO
 from unittest.mock import Mock
 
 import lxml.etree
 import pkg_resources
-
-from io import BytesIO
-
+import pytest
 from genshi.template import TemplateError
 from PIL import Image
 from xmldiff import main as xmldiff
 
-import pytest
-
-from py3o.template import Template, TextTemplate, TemplateException
+from py3o.template import Template, TemplateException, TextTemplate
 from py3o.template.main import (
-    XML_NS,
-    get_image_frames,
-    _get_secure_filename,
-    get_soft_breaks,
     MANIFEST,
+    XML_NS,
+    _get_secure_filename,
+    get_image_frames,
+    get_soft_breaks,
 )
 
 
@@ -53,7 +49,7 @@ class TestTemplate(unittest.TestCase):
             ),
         )
 
-        class Item(object):
+        class Item:
             pass
 
         items = list()
@@ -101,7 +97,7 @@ class TestTemplate(unittest.TestCase):
 
         template = Template(template_name, outname)
 
-        class Item(object):
+        class Item:
             def __init__(self, val):
                 self.val = val
 
@@ -119,7 +115,7 @@ class TestTemplate(unittest.TestCase):
             template.render(data_dict)
         except TemplateException as e:
             except_occured = True
-            error_text = "{}".format(e)
+            error_text = f"{e}"
 
         assert except_occured is True
         assert error_text == (
@@ -127,7 +123,7 @@ class TestTemplate(unittest.TestCase):
         )
 
     @pytest.mark.xfail(
-        sys.platform == "win32", 
+        sys.platform == "win32",
         reason="Windows support to be investigated",
     )
     def test_list_duplicate(self):
@@ -139,7 +135,7 @@ class TestTemplate(unittest.TestCase):
 
         template = Template(template_name, outname)
 
-        class Item(object):
+        class Item:
             def __init__(self, val):
                 self.val = val
 
@@ -163,7 +159,7 @@ class TestTemplate(unittest.TestCase):
             ]
         except lxml.etree.XMLSyntaxError as e:
             error = True
-            print("List was not deduplicated->{}".format(e))
+            print(f"List was not deduplicated->{e}")
 
         # remove end file
         os.unlink(outname)
@@ -176,7 +172,7 @@ class TestTemplate(unittest.TestCase):
         list_items = content.xpath(list_expr, namespaces=template.namespaces)
         ids = []
         for list_item in list_items:
-            ids.append(list_item.get("{}id".format(XML_NS)))
+            ids.append(list_item.get(f"{XML_NS}id"))
         assert ids, "this list of ids should not be empty"
         assert len(ids) == len(set(ids)), "all ids should have been unique"
 
@@ -192,7 +188,7 @@ class TestTemplate(unittest.TestCase):
         finally:
             os.remove(outname)
 
-        class Item(object):
+        class Item:
             def __init__(self, val):
                 self.val = val
 
@@ -218,7 +214,6 @@ class TestTemplate(unittest.TestCase):
         assert error_occured is True
 
     def test_ignore_undefined_variables_logo(self):
-
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_logo.odt"
         )
@@ -255,7 +250,6 @@ class TestTemplate(unittest.TestCase):
         assert error is False
 
     def test_ignore_undefined_variables_1(self):
-
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_undefined_variables_1.odt"
         )
@@ -404,7 +398,7 @@ class TestTemplate(unittest.TestCase):
 
         template = Template(template_name, outname)
 
-        class Item(object):
+        class Item:
             pass
 
         items = list()
@@ -477,8 +471,7 @@ class TestTemplate(unittest.TestCase):
         assert result_a == result_e
 
     def test_format_currency(self):
-        """Test py3o.template.main.format_currency which relies on babel.
-        """
+        """Test py3o.template.main.format_currency which relies on babel."""
 
         template_name = pkg_resources.resource_filename(
             "py3o.template",
@@ -505,7 +498,6 @@ class TestTemplate(unittest.TestCase):
                 "py3o.template",
                 "tests/templates/template_format_currency_result.xml",
             ),
-            "r",
         ) as expected_f:
             expected = expected_f.read()
 
@@ -537,7 +529,6 @@ class TestTemplate(unittest.TestCase):
                 "py3o.template",
                 "tests/templates/template_format_date_result.xml",
             ),
-            "r",
         ) as expected_f:
             expected = expected_f.read()
 
@@ -548,8 +539,7 @@ class TestTemplate(unittest.TestCase):
         reason="Windows support to be investigated",
     )
     def test_format_datetime(self):
-        """Test py3o.template.main.format_datetime which relies on babel.
-        """
+        """Test py3o.template.main.format_datetime which relies on babel."""
 
         template_name = pkg_resources.resource_filename(
             "py3o.template",
@@ -665,7 +655,7 @@ class TestTemplate(unittest.TestCase):
         image_names = [
             pkg_resources.resource_filename(
                 "py3o.template",
-                "tests/templates/images/image{i}.png".format(i=i),
+                f"tests/templates/images/image{i}.png",
             )
             for i in range(1, 4)
         ]
@@ -677,7 +667,7 @@ class TestTemplate(unittest.TestCase):
 
         data_dict = {
             "items": [
-                Mock(val1=i, val3=i ** 2, image=base64.b64encode(image))
+                Mock(val1=i, val3=i**2, image=base64.b64encode(image))
                 for i, image in enumerate(images, start=1)
             ],
             "document": Mock(total=6),
@@ -698,7 +688,6 @@ class TestTemplate(unittest.TestCase):
         frame_path = "table:table-cell/text:p/draw:frame"
         images_hrefs = set()
         for row in table.findall("table:table-row", nmspc):
-
             frame_elem = row.find(frame_path, nmspc)
             if frame_elem is None:
                 continue
@@ -714,7 +703,7 @@ class TestTemplate(unittest.TestCase):
             images_hrefs.add(href)
             i += 1
 
-        self.assertEqual(i, 3, u"Images were not found in the output")
+        self.assertEqual(i, 3, "Images were not found in the output")
 
         # check if images are into the manifest
         manifest_el = lxml.etree.parse(BytesIO(outodt.read(MANIFEST)))
@@ -742,7 +731,7 @@ class TestTemplate(unittest.TestCase):
         image_names = [
             pkg_resources.resource_filename(
                 "py3o.template",
-                "tests/templates/images/image{i}.png".format(i=i),
+                f"tests/templates/images/image{i}.png",
             )
             for i in range(1, 4)
         ]
@@ -754,7 +743,7 @@ class TestTemplate(unittest.TestCase):
 
         data_dict = {
             "items": [
-                Mock(val1=i, val3=i ** 2, image=base64.b64encode(image))
+                Mock(val1=i, val3=i**2, image=base64.b64encode(image))
                 for i, image in enumerate(images, start=1)
             ],
             "document": Mock(total=6),
@@ -774,7 +763,7 @@ class TestTemplate(unittest.TestCase):
         )
         ids = []
         for list_item in list_items:
-            ids.append(list_item.get("{}id".format(XML_NS)))
+            ids.append(list_item.get(f"{XML_NS}id"))
         assert ids, "this list of ids should not be empty"
         assert len(ids) == len(set(ids)), "all ids should have been unique"
 
@@ -888,7 +877,6 @@ class TestTemplate(unittest.TestCase):
                 self.assertLessEqual(width, twidth)
 
     def test_text_template(self):
-
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_text_template"
         )
@@ -907,15 +895,14 @@ class TestTemplate(unittest.TestCase):
         template.render(user_data)
         result = open(outname, "rb").read()
 
-        expected = u"".join(
-            u"{} {} {}{}".format(line.var0, line.var1, line.var2, os.linesep)
+        expected = "".join(
+            f"{line.var0} {line.var1} {line.var2}{os.linesep}"
             for line in user_data["mylist"]
         ).encode("utf-8")
 
         self.assertEqual(result, expected)
 
     def test_ignore_undefined_variables_text_template(self):
-
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_text_template"
         )
@@ -991,18 +978,18 @@ class TestTemplate(unittest.TestCase):
                 continue
             text = p.text.strip()
             if text == (
-                u"This is a text with a margin at the bottom and a "
-                u"soft-page-break"
+                "This is a text with a margin at the bottom and a "
+                "soft-page-break"
             ):
                 bottom_break_paragraphs += 1
             elif text == (
-                u"This is a paragraph that is cut in half by a "
-                u"soft-page-break. This text should not remain cut "
-                u"in half after rendering."
+                "This is a paragraph that is cut in half by a "
+                "soft-page-break. This text should not remain cut "
+                "in half after rendering."
             ):
                 middle_break_paragraphs += 1
             else:
-                self.fail(u"Unidentified text in result: {}".format(text))
+                self.fail(f"Unidentified text in result: {text}")
 
         self.assertEqual(bottom_break_paragraphs, 3)
         self.assertEqual(middle_break_paragraphs, 3)
@@ -1036,7 +1023,7 @@ class TestTemplate(unittest.TestCase):
         assert len(soft_breaks) == 0
 
     def test_invalid_links(self):
-        u"""Check that exceptions are raised on link url and text mismatch"""
+        """Check that exceptions are raised on link url and text mismatch"""
 
         templates = [
             ("py3o_invalid_link.odt", "url and text do not match.*"),
@@ -1046,14 +1033,14 @@ class TestTemplate(unittest.TestCase):
 
         for template, error in templates:
             template_fname = pkg_resources.resource_filename(
-                "py3o.template", "tests/templates/{}".format(template)
+                "py3o.template", f"tests/templates/{template}"
             )
             t = Template(template_fname, _get_secure_filename())
             with self.assertRaisesRegex(TemplateException, error):
                 t.render({"amount": 0.0})
 
     def test_table_cell_function_call(self):
-        u"""Test function calls inside ODT table cells"""
+        """Test function calls inside ODT table cells"""
         template_name = pkg_resources.resource_filename(
             "py3o.template",
             "tests/templates/py3o_table_cell_function_call.odt",
@@ -1063,7 +1050,7 @@ class TestTemplate(unittest.TestCase):
 
         data_dict = {
             "items": [
-                Mock(val1=i, val2=range(i), val3=i ** 2) for i in range(1, 4)
+                Mock(val1=i, val2=range(i), val3=i**2) for i in range(1, 4)
             ],
             "document": Mock(total=6),
         }
@@ -1071,7 +1058,7 @@ class TestTemplate(unittest.TestCase):
         template.render(data_dict)
 
     def test_table_cell_for_loop(self):
-        u"""Test for loop inside ODT table cells"""
+        """Test for loop inside ODT table cells"""
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_table_cell_for_loop.odt"
         )
@@ -1080,7 +1067,7 @@ class TestTemplate(unittest.TestCase):
 
         data_dict = {
             "items": [
-                Mock(val1=i, val2=range(i), val3=i ** 2) for i in range(1, 4)
+                Mock(val1=i, val2=range(i), val3=i**2) for i in range(1, 4)
             ],
             "document": Mock(total=6),
         }
@@ -1088,7 +1075,7 @@ class TestTemplate(unittest.TestCase):
         template.render(data_dict)
 
     def test_odt_value_styles(self):
-        u"""Test odf_value attribute and ODT styles"""
+        """Test odf_value attribute and ODT styles"""
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_odt_value_styles.odt"
         )
@@ -1111,14 +1098,13 @@ class TestTemplate(unittest.TestCase):
             pkg_resources.resource_filename(
                 "py3o.template", "tests/templates/odt_value_styles_result.xml"
             ),
-            "r",
         ) as expected_f:
             expected = expected_f.read()
 
         self._ensureSameXml(outodt.read(template.templated_files[0]), expected)
 
     def test_ods_value_styles(self):
-        u"""Test odf_value attribute and ODS styles"""
+        """Test odf_value attribute and ODS styles"""
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_ods_value_styles.ods"
         )
@@ -1141,7 +1127,6 @@ class TestTemplate(unittest.TestCase):
             pkg_resources.resource_filename(
                 "py3o.template", "tests/templates/ods_value_styles_result.xml"
             ),
-            "r",
         ) as expected_f:
             expected = expected_f.read()
 

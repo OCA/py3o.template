@@ -47,8 +47,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"py3o.template"
-copyright = u"2013, Florent Aide"
+project = "py3o.template"
+copyright = "2013, Florent Aide"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -191,8 +191,8 @@ latex_documents = [
     (
         "index",
         "py3otemplate.tex",
-        u"py3o.template Documentation",
-        u"Florent Aide",
+        "py3o.template Documentation",
+        "Florent Aide",
         "manual",
     )
 ]
@@ -226,8 +226,8 @@ man_pages = [
     (
         "index",
         "py3otemplate",
-        u"py3o.template Documentation",
-        [u"Florent Aide"],
+        "py3o.template Documentation",
+        ["Florent Aide"],
         1,
     )
 ]
@@ -245,8 +245,8 @@ texinfo_documents = [
     (
         "index",
         "py3otemplate",
-        u"py3o.template Documentation",
-        u"Florent Aide",
+        "py3o.template Documentation",
+        "Florent Aide",
         "py3otemplate",
         "One line description of project.",
         "Miscellaneous",

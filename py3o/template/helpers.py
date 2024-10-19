@@ -2,16 +2,16 @@ import ast
 import copy
 import pprint
 from textwrap import dedent
+
 from py3o.template.data_struct import (
+    Py3oArray,
     Py3oBuiltin,
+    Py3oCall,
+    Py3oContainer,
+    Py3oDummy,
     Py3oModule,
     Py3oName,
-    Py3oArray,
-    Py3oContainer,
-    Py3oCall,
-    Py3oDummy,
 )
-
 
 # This is used as global context key in the convertor
 PY3O_MODULE_KEY = "__py3o_module__"
@@ -136,7 +136,7 @@ class Py3oConvertor(ast.NodeVisitor):
 
     def visit(self, node, local_context=None):
         """Call the node-class specific visit function,
-         and propagate the context
+        and propagate the context
         """
         method = "visit_" + node.__class__.__name__.lower()
         visitor = getattr(self, method, None)
@@ -165,7 +165,7 @@ class Py3oConvertor(ast.NodeVisitor):
 
     def visit_for(self, node, local_context):
         """Update the context so our chidren have access
-         to the newly declared variable.
+        to the newly declared variable.
         """
 
         body_context = copy.copy(local_context)
@@ -211,7 +211,7 @@ class Py3oConvertor(ast.NodeVisitor):
         return Py3oDummy({node.id: Py3oName()})
 
     def visit_attribute(self, node, local_context):
-        """ Visit our children and return a Py3oDummy equivalent
+        """Visit our children and return a Py3oDummy equivalent
         Example:
           i.egg.foo -> Py3oDummy({
               'i': Py3oName({
@@ -266,8 +266,7 @@ class Py3oConvertor(ast.NodeVisitor):
             raise NotImplementedError
 
     def visit_call(self, node, local_context):
-        """Visit a function call.
-        """
+        """Visit a function call."""
         # Get the name of the function and obtain its class
         name = self.visit(node.func, local_context)
         py3o_class = Py3oBuiltin.from_name(name)
@@ -291,8 +290,7 @@ class Py3oConvertor(ast.NodeVisitor):
         return node.arg, self.visit(node.value, local_context)
 
     def visit_str(self, node, local_context):
-        """Do nothing
-        """
+        """Do nothing"""
         return Py3oDummy()
 
     def visit_if(self, node, local_context):

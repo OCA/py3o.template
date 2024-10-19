@@ -5,9 +5,9 @@ py3o.template
   :target: https://orus.io/florent.aide/py3o.template/pipelines
   :alt: Build Status
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-  :target: https://github.com/ambv/black
-  :alt: Code Style: Black
+.. image:: https://results.pre-commit.ci/badge/github/OCA/py3o.template/main.svg
+   :target: https://results.pre-commit.ci/latest/github/OCA/py3o.template/main
+   :alt: pre-commit.ci status
 
 Introduction
 ============

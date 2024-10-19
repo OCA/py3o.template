@@ -1,6 +1,7 @@
 """This file contains all the data structures used by Py3oConvertor
 See the docstring of Py3oConvertor.__call__() for further information
 """
+
 from numbers import Number
 
 
@@ -9,8 +10,7 @@ class Py3oDataError(Exception):
 
 
 class Py3oObject(dict):
-    """ Base class to be inherited.
-    """
+    """Base class to be inherited."""
 
     is_list = False
 
@@ -18,20 +18,18 @@ class Py3oObject(dict):
         raise NotImplementedError("This function should be overriden")
 
     def __repr__(self):  # pragma: no cover
-        res = super(Py3oObject, self).__repr__()
-        return "{}({})".format(self.__class__.__name__, res)
+        res = super().__repr__()
+        return f"{self.__class__.__name__}({res})"
 
     def get_size(self):
-        """Return the max depth of the object
-        """
+        """Return the max depth of the object"""
         sizes = [val.get_size() for val in self.values()]
         if not sizes:
             return 0
         return max(sizes) + 1
 
     def get_key(self):
-        """Return the first key
-        """
+        """Return the first key"""
         return next(iter(self.keys()))
 
     def get_tuple(self):
@@ -57,11 +55,8 @@ class Py3oObject(dict):
         else:
             diff = len(target_tup) - len(self_tup)
             if diff != 0:  # pragma: no cover
-                raise ValueError(
-                    u"Unpack Error: {} != {}".format(target_tup, self_tup)
-                )
-            for t in zip(target_tup, self_tup):
-                yield t
+                raise ValueError(f"Unpack Error: {target_tup} != {self_tup}")
+            yield from zip(target_tup, self_tup)
 
     def rupdate(self, other):
         """Update recursively the Py3oObject self with the Py3oObject other.
@@ -150,8 +145,8 @@ class Py3oObject(dict):
 
 class Py3oModule(Py3oObject):
     def render(self, data):
-        """ This function will render the datastruct according
-         to the user's data
+        """This function will render the datastruct according
+        to the user's data
         """
         res = {}
         for key, value in self.items():
@@ -169,17 +164,17 @@ class Py3oModule(Py3oObject):
 
 
 class Py3oArray(Py3oObject):
-    """ A class representing an iterable value in the data structure.
+    """A class representing an iterable value in the data structure.
     The attribute direct_access will tell if this class should be considered
      as a list of dict or a list of values.
     """
 
     def __init__(self):
-        super(Py3oArray, self).__init__()
+        super().__init__()
         self.direct_access = False
 
     def render(self, data):
-        """ This function will render the datastruct according
+        """This function will render the datastruct according
         to the user's data
         """
         if self.direct_access:
@@ -192,20 +187,20 @@ class Py3oArray(Py3oObject):
 
 
 class Py3oName(Py3oObject):
-    """ This class holds information of variables.
+    """This class holds information of variables.
     Keys are attributes and values the type of this attribute
      (another Py3o class or a simple value)
     i.e.: i.egg -> Py3oName({'i': Py3oName({'egg': Py3oName({})})})
     """
 
     def render(self, data):
-        """ This function will render the datastruct according
+        """This function will render the datastruct according
         to the user's data
         """
         if not self:
             # We only send False values if the value is a number
             # otherwise we convert the False into an empty string
-            res = data if data or isinstance(data, Number) else u""
+            res = data if data or isinstance(data, Number) else ""
         else:
             res = self.render_children(data)
         return res
@@ -222,11 +217,11 @@ class Py3oCall(Py3oObject):
     return_format = None
 
     def __init__(self, name, dict):
-        super(Py3oCall, self).__init__(dict)
+        super().__init__(dict)
         self.name = name
 
     def get_tuple(self):  # pragma: no cover
-        raise SyntaxError(u"Can't assign to function call")
+        raise SyntaxError("Can't assign to function call")
 
     def unpack(self, target):
         target_tup = target.get_tuple()
@@ -255,14 +250,13 @@ class Py3oCall(Py3oObject):
             #     res += [(self[arg], None) for arg in args]
 
             else:  # pragma: no cover
-                raise ValueError(u"Unpack Error")
+                raise ValueError("Unpack Error")
 
         else:
             # Single return value is bound to one of the arguments.
             res = [(target, self.get(self.return_format, None))]
 
-        for tup in res:
-            yield tup
+        yield from res
 
 
 class Py3oEnumerate(Py3oCall):
@@ -279,7 +273,7 @@ class Py3oContainer(Py3oObject):
     """
 
     def __init__(self, values):
-        super(Py3oContainer, self).__init__()
+        super().__init__()
         self.values = values
 
     def get_tuple(self):
@@ -288,16 +282,15 @@ class Py3oContainer(Py3oObject):
 
 
 class Py3oDummy(Py3oObject):
-    """ This class holds temporary dict, or unused attribute
-     such as counters from enumerate()
+    """This class holds temporary dict, or unused attribute
+    such as counters from enumerate()
     """
 
     pass
 
 
 class Py3oBuiltin(Py3oObject):
-    """ This class holds information about builtins
-    """
+    """This class holds information about builtins"""
 
     builtins = {"enumerate": Py3oEnumerate}
 

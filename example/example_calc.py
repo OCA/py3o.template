@@ -1,10 +1,9 @@
-# -*- encoding: utf-8 -*-
 from py3o.template import Template
 
 t = Template("simple_calc.ods", "calc.ods")
 
 
-class Item(object):
+class Item:
     pass
 
 

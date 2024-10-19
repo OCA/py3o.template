@@ -3,7 +3,7 @@ from py3o.template import TextTemplate
 t = TextTemplate("simple_text.txt", "text.txt")
 
 
-class Item(object):
+class Item:
     pass
 
 

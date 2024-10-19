@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 from py3o.template import Template
 
 t = Template(
@@ -8,11 +7,11 @@ t = Template(
 t.set_image_path("staticimage.logo", "images/new_logo.png")
 
 
-class Item(object):
+class Item:
     pass
 
 
-class Line(object):
+class Line:
     pass
 
 

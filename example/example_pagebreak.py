@@ -5,7 +5,7 @@ t = Template(
 )
 
 
-class Item(object):
+class Item:
     pass
 
 
@@ -20,7 +20,7 @@ item1.Amount = "12345.35"
 item1.InvoiceRef = "#1234"
 items.append(item1)
 
-for i in xrange(10):
+for i in range(10):
     item = Item()
     item.val1 = "Item%s Value1" % i
     item.val2 = "Item%s Value2" % i
