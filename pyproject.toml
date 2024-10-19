@@ -1,5 +1,44 @@
-# See <https://pypi.org/project/black/>.
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
+[project]
+name = "py3o.template"
+version = "0.10.1dev1"
+description = "An easy solution to design reports using LibreOffice"
+readme = "README.rst"
+classifiers = [
+    "Programming Language :: Python",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ["LibreOffice", "OpenOffice", "templating", "PDF"]
+authors = [{name = "Florent Aide", email = "florent.aide@gmail.com"}]
+license = "MIT"
+dependencies = [
+    "setuptools",
+    "six >= 1.9",
+    "babel",
+    "lxml",
+    "genshi >= 0.7",
+    "pyjon.utils > 0.6",
+    "Pillow",
+]
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/OCA/py3o.template/"
+Source = "https://github.com/OCA/py3o.template/"
+Issues = "https://github.com/OCA/py3o.template/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["py3o"]
+exclude = ["py3o/template/tests"]
+
+# See <https://pypi.org/project/black/>.
 # black defaults to "line-length = 88"; we prefer "line-length = 79" for now to
 # please our various tools / IDEs / linters.
 [tool.black]
