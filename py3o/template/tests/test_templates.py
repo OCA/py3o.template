@@ -684,7 +684,7 @@ class TestTemplate(unittest.TestCase):
 
         i = 0
         nmspc = template.namespaces
-        table = content_list.find("//table:table", nmspc)
+        table = content_list.find(".//table:table", nmspc)
         frame_path = "table:table-cell/text:p/draw:frame"
         images_hrefs = set()
         for row in table.findall("table:table-row", nmspc):
@@ -707,7 +707,7 @@ class TestTemplate(unittest.TestCase):
 
         # check if images are into the manifest
         manifest_el = lxml.etree.parse(BytesIO(outodt.read(MANIFEST)))
-        file_entries = manifest_el.findall("//manifest:file-entry", nmspc)
+        file_entries = manifest_el.findall(".//manifest:file-entry", nmspc)
         for entry in file_entries:
             path = entry.get("{{{}}}full-path".format(nmspc["manifest"]))
             if path in images_hrefs:
@@ -971,7 +971,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         nmspc = template.namespaces
-        paragraphs = content_list.findall("//text:p", nmspc)
+        paragraphs = content_list.findall(".//text:p", nmspc)
         bottom_break_paragraphs, middle_break_paragraphs = 0, 0
         for p in paragraphs:
             if not p.text:
