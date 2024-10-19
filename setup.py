@@ -37,9 +37,4 @@ setup(
         "pyjon.utils > 0.6",
         "Pillow",
     ],
-    entry_points="""
-    # -*- Entry points: -*-
-    """,
-    tests_require=["nose", "nosexcover", "mock"],
-    test_suite="nose.collector",
 )
