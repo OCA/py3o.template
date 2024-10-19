@@ -11,7 +11,6 @@ from io import BytesIO
 from unittest.mock import Mock
 
 import lxml.etree
-import pkg_resources
 import pytest
 from genshi.template import TemplateError
 from PIL import Image
@@ -26,6 +25,8 @@ from py3o.template.main import (
     get_soft_breaks,
 )
 
+from .utils import resource_filename
+
 
 class TestTemplate(unittest.TestCase):
     def tearDown(self):
@@ -35,7 +36,7 @@ class TestTemplate(unittest.TestCase):
         pass
 
     def test_example_1(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_example_template.odt"
         )
 
@@ -44,7 +45,7 @@ class TestTemplate(unittest.TestCase):
         template = Template(template_name, outname)
         template.set_image_path(
             "staticimage.logo",
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/images/new_logo.png"
             ),
         )
@@ -90,7 +91,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_link_validation_missing_equal(self):
         """test a missing equal sign in a link raises a template error"""
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_missing_eq_in_link.odt"
         )
         outname = _get_secure_filename()
@@ -105,7 +106,7 @@ class TestTemplate(unittest.TestCase):
 
         template.set_image_path(
             "staticimage.logo",
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/images/new_logo.png"
             ),
         )
@@ -128,7 +129,7 @@ class TestTemplate(unittest.TestCase):
     )
     def test_list_duplicate(self):
         """test duplicated listed get a unique id"""
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_list_template.odt"
         )
         outname = _get_secure_filename()
@@ -145,7 +146,7 @@ class TestTemplate(unittest.TestCase):
 
         template.set_image_path(
             "staticimage.logo",
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/images/new_logo.png"
             ),
         )
@@ -178,7 +179,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_missing_opening(self):
         """test orphaned /for raises a TemplateException"""
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_missing_open_template.odt"
         )
         outname = _get_secure_filename()
@@ -196,7 +197,7 @@ class TestTemplate(unittest.TestCase):
 
         template.set_image_path(
             "staticimage.logo",
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/images/new_logo.png"
             ),
         )
@@ -214,7 +215,7 @@ class TestTemplate(unittest.TestCase):
         assert error_occured is True
 
     def test_ignore_undefined_variables_logo(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_logo.odt"
         )
 
@@ -250,7 +251,7 @@ class TestTemplate(unittest.TestCase):
         assert error is False
 
     def test_ignore_undefined_variables_1(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_undefined_variables_1.odt"
         )
 
@@ -290,7 +291,7 @@ class TestTemplate(unittest.TestCase):
         py3o.document.value
         """
 
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_undefined_variables_2.odt"
         )
 
@@ -328,7 +329,7 @@ class TestTemplate(unittest.TestCase):
         assert error is False
 
     def test_escape_false_template(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/test_false_value.odt"
         )
 
@@ -347,7 +348,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/template_test_false_value_result.xml",
             )
@@ -373,7 +374,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/template_test_escape_false_value_result.xml",
             )
@@ -389,7 +390,7 @@ class TestTemplate(unittest.TestCase):
         paragraph
         """
 
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/py3o_example_invalid_template.odt",
         )
@@ -437,7 +438,7 @@ class TestTemplate(unittest.TestCase):
         assert error is True, "This template should have been refused"
 
     def test_template_with_function_call(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_template_function_call.odt"
         )
 
@@ -459,7 +460,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/template_with_function_call_result.xml",
             )
@@ -473,7 +474,7 @@ class TestTemplate(unittest.TestCase):
     def test_format_currency(self):
         """Test py3o.template.main.format_currency which relies on babel."""
 
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/py3o_template_format_currency.odt",
         )
@@ -494,7 +495,7 @@ class TestTemplate(unittest.TestCase):
         outodt = zipfile.ZipFile(outname, "r")
 
         with open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/template_format_currency_result.xml",
             ),
@@ -504,7 +505,7 @@ class TestTemplate(unittest.TestCase):
         self._ensureSameXml(expected, outodt.read(template.templated_files[0]))
 
     def test_format_date(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_template_format_date.odt"
         )
 
@@ -525,7 +526,7 @@ class TestTemplate(unittest.TestCase):
         outodt = zipfile.ZipFile(outname, "r")
 
         with open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/template_format_date_result.xml",
             ),
@@ -541,7 +542,7 @@ class TestTemplate(unittest.TestCase):
     def test_format_datetime(self):
         """Test py3o.template.main.format_datetime which relies on babel."""
 
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/py3o_template_format_datetime.odt",
         )
@@ -571,7 +572,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/template_format_datetime_result.xml",
             )
@@ -583,7 +584,7 @@ class TestTemplate(unittest.TestCase):
         self.assertEqual(result_a, result_e)
 
     def test_format_date_exception(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/py3o_template_format_date_exception.odt",
         )
@@ -606,7 +607,7 @@ class TestTemplate(unittest.TestCase):
         assert error_occured is True
 
     def test_style_application_with_function_call(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/style_application_with_function_call.odt",
         )
@@ -629,7 +630,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 (
                     "tests/templates/"
@@ -646,14 +647,14 @@ class TestTemplate(unittest.TestCase):
     def test_image_injection(self):
         """Test insertion of images from the data source into the template"""
 
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_image_injection.odt"
         )
-        logo_name = pkg_resources.resource_filename(
+        logo_name = resource_filename(
             "py3o.template", "tests/templates/images/new_logo.png"
         )
         image_names = [
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 f"tests/templates/images/image{i}.png",
             )
@@ -722,14 +723,14 @@ class TestTemplate(unittest.TestCase):
         at least twice into the template
         """
 
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_image_injection_twice.odt"
         )
-        logo_name = pkg_resources.resource_filename(
+        logo_name = resource_filename(
             "py3o.template", "tests/templates/images/new_logo.png"
         )
         image_names = [
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 f"tests/templates/images/image{i}.png",
             )
@@ -770,7 +771,7 @@ class TestTemplate(unittest.TestCase):
     def test_ignore_undefined_variables_image_injection(self):
         """Test ignore undefined variables for injected image"""
 
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_image_injection.odt"
         )
 
@@ -805,11 +806,11 @@ class TestTemplate(unittest.TestCase):
     def test_image_keep_ratio(self):
         """Test keep_ratio parameter with insertion of images"""
 
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_image_keep_ratio.odt"
         )
 
-        image_name = pkg_resources.resource_filename(
+        image_name = resource_filename(
             "py3o.template", "tests/templates/images/new_logo.png"
         )
         image = open(image_name, "rb").read()
@@ -877,7 +878,7 @@ class TestTemplate(unittest.TestCase):
                 self.assertLessEqual(width, twidth)
 
     def test_text_template(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_text_template"
         )
 
@@ -903,7 +904,7 @@ class TestTemplate(unittest.TestCase):
         self.assertEqual(result, expected)
 
     def test_ignore_undefined_variables_text_template(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_text_template"
         )
 
@@ -936,7 +937,7 @@ class TestTemplate(unittest.TestCase):
         self.assertFalse(error)
 
     def test_remove_soft_page_breaks(self):
-        template_xml = pkg_resources.resource_filename(
+        template_xml = resource_filename(
             "py3o.template", "tests/templates/py3o_soft_page_break.odt"
         )
         outname = _get_secure_filename()
@@ -995,7 +996,7 @@ class TestTemplate(unittest.TestCase):
         self.assertEqual(middle_break_paragraphs, 3)
 
     def test_remove_soft_breaks_without_tail(self):
-        template_xml = pkg_resources.resource_filename(
+        template_xml = resource_filename(
             "py3o.template", "tests/templates/py3o_page_break_without_tail.odt"
         )
         t = Template(template_xml, _get_secure_filename())
@@ -1032,7 +1033,7 @@ class TestTemplate(unittest.TestCase):
         ]
 
         for template, error in templates:
-            template_fname = pkg_resources.resource_filename(
+            template_fname = resource_filename(
                 "py3o.template", f"tests/templates/{template}"
             )
             t = Template(template_fname, _get_secure_filename())
@@ -1041,7 +1042,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_table_cell_function_call(self):
         """Test function calls inside ODT table cells"""
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/py3o_table_cell_function_call.odt",
         )
@@ -1059,7 +1060,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_table_cell_for_loop(self):
         """Test for loop inside ODT table cells"""
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_table_cell_for_loop.odt"
         )
         outname = _get_secure_filename()
@@ -1076,7 +1077,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_odt_value_styles(self):
         """Test odf_value attribute and ODT styles"""
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_odt_value_styles.odt"
         )
         outname = _get_secure_filename()
@@ -1095,7 +1096,7 @@ class TestTemplate(unittest.TestCase):
         outodt = zipfile.ZipFile(outname, "r")
 
         with open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/odt_value_styles_result.xml"
             ),
         ) as expected_f:
@@ -1105,7 +1106,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_ods_value_styles(self):
         """Test odf_value attribute and ODS styles"""
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_ods_value_styles.ods"
         )
         outname = _get_secure_filename()
@@ -1124,7 +1125,7 @@ class TestTemplate(unittest.TestCase):
         outodt = zipfile.ZipFile(outname, "r")
 
         with open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/ods_value_styles_result.xml"
             ),
         ) as expected_f:
@@ -1133,7 +1134,7 @@ class TestTemplate(unittest.TestCase):
         self._ensureSameXml(outodt.read(template.templated_files[0]), expected)
 
     def test_input_fields_with_function(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/py3o_template_input_fields_for_function.odt",
         )
@@ -1156,7 +1157,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/input_fields_function_result.xml",
             )
@@ -1168,7 +1169,7 @@ class TestTemplate(unittest.TestCase):
         assert result_a == result_e
 
     def test_input_fields_with_control(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/py3o_template_for_loop_input_field.odt",
         )
@@ -1191,7 +1192,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/input_fields_for_loop_result.xml",
             )
@@ -1203,7 +1204,7 @@ class TestTemplate(unittest.TestCase):
         assert result_a == result_e
 
     def test_variable_type_checking(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_ods_variable_type.ods"
         )
 
@@ -1230,7 +1231,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/py3o_ods_variable_type_result.xml",
             )
@@ -1242,7 +1243,7 @@ class TestTemplate(unittest.TestCase):
         assert result_a == result_e
 
     def test_template_with_function_call_multiline(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template",
             "tests/templates/py3o_template_function_call_multiline.odt",
         )
@@ -1265,7 +1266,7 @@ class TestTemplate(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template",
                 "tests/templates/template_function_call_multiline_result.xml",
             )

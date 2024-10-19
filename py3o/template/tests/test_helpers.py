@@ -3,7 +3,6 @@ import unittest
 from unittest.mock import Mock
 
 import lxml.etree
-import pkg_resources
 from xmldiff import main as xmldiff
 
 from py3o.template.data_struct import Py3oDataError, Py3oName
@@ -15,13 +14,15 @@ from py3o.template.main import (
     move_siblings,
 )
 
+from .utils import resource_filename
+
 
 class TestHelpers(unittest.TestCase):
     def tearDown(self):
         pass
 
     def setUp(self):
-        template_name = pkg_resources.resource_filename(
+        template_name = resource_filename(
             "py3o.template", "tests/templates/py3o_example_template.odt"
         )
 
@@ -32,7 +33,7 @@ class TestHelpers(unittest.TestCase):
 
     def test_move_1(self):
         """test that siblings are properly moved without keeping boundaries"""
-        template_one_name = pkg_resources.resource_filename(
+        template_one_name = resource_filename(
             "py3o.template", "tests/templates/move_one.xml"
         )
         test_template_one = lxml.etree.parse(template_one_name)
@@ -47,7 +48,7 @@ class TestHelpers(unittest.TestCase):
         ).decode("utf-8")
 
         expected_result = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/move_one_result.xml"
             )
         ).read()
@@ -62,7 +63,7 @@ class TestHelpers(unittest.TestCase):
 
     def test_move_2(self):
         """start.tail is correctly copied without keeping boundaries"""
-        template_two_name = pkg_resources.resource_filename(
+        template_two_name = resource_filename(
             "py3o.template", "tests/templates/move_two.xml"
         )
         test_template_two = lxml.etree.parse(template_two_name)
@@ -77,7 +78,7 @@ class TestHelpers(unittest.TestCase):
         ).decode("utf-8")
 
         expected_result = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/move_two_result.xml"
             )
         ).read()
@@ -92,7 +93,7 @@ class TestHelpers(unittest.TestCase):
 
     def test_move_keep_boundaries(self):
         """test that siblings are properly moved keeping boundaries"""
-        template_three_name = pkg_resources.resource_filename(
+        template_three_name = resource_filename(
             "py3o.template", "tests/templates/move_three.xml"
         )
         test_template_three = lxml.etree.parse(template_three_name)
@@ -110,7 +111,7 @@ class TestHelpers(unittest.TestCase):
         ).decode("utf-8")
 
         expected_result = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/move_three_result.xml"
             )
         ).read()
@@ -125,7 +126,7 @@ class TestHelpers(unittest.TestCase):
 
     def test_move_2_keep_boundaries(self):
         """test that start.tail is correctly copied keeping boundaries"""
-        template_four_name = pkg_resources.resource_filename(
+        template_four_name = resource_filename(
             "py3o.template", "tests/templates/move_four.xml"
         )
         test_template_four = lxml.etree.parse(template_four_name)
@@ -143,7 +144,7 @@ class TestHelpers(unittest.TestCase):
         ).decode("utf-8")
 
         expected_result = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/move_four_result.xml"
             )
         ).read()
@@ -157,7 +158,7 @@ class TestHelpers(unittest.TestCase):
         assert result_s == expected_result
 
     def test_get_user_variables(self):
-        source_odt_filename = pkg_resources.resource_filename(
+        source_odt_filename = resource_filename(
             "py3o.template", "tests/templates/py3o_example_template.odt"
         )
         outfilename = _get_secure_filename()
@@ -178,7 +179,7 @@ class TestHelpers(unittest.TestCase):
         assert set(user_vars) == set(expected_vars)
 
     def test_convertor(self):
-        source_odt_filename = pkg_resources.resource_filename(
+        source_odt_filename = resource_filename(
             "py3o.template", "tests/templates/py3o_if_parser.odt"
         )
         outfilename = _get_secure_filename()
@@ -211,7 +212,7 @@ class TestHelpers(unittest.TestCase):
         assert set(user_vars) == set(expected_vars)
 
     def test_get_user_instructions(self):
-        source_odt_filename = pkg_resources.resource_filename(
+        source_odt_filename = resource_filename(
             "py3o.template", "tests/templates/py3o_example_template.odt"
         )
         outfilename = _get_secure_filename()
@@ -232,7 +233,7 @@ class TestHelpers(unittest.TestCase):
 
     def test_calc(self):
         """Test date source extraction in ods files"""
-        source_ods_filename = pkg_resources.resource_filename(
+        source_ods_filename = resource_filename(
             "py3o.template", "tests/templates/py3o_simple_calc.ods"
         )
         outfilename = _get_secure_filename()
@@ -276,7 +277,7 @@ class TestHelpers(unittest.TestCase):
     def test_detect_boundary_false(self):
         """boundary detection should say no!!"""
 
-        source_xml_filename = pkg_resources.resource_filename(
+        source_xml_filename = resource_filename(
             "py3o.template", "tests/templates/keepboundary_detection_false.xml"
         )
 
@@ -295,7 +296,7 @@ class TestHelpers(unittest.TestCase):
     def test_detect_boundary_true(self):
         """boundary detection should say yes!!"""
 
-        source_xml_filename = pkg_resources.resource_filename(
+        source_xml_filename = resource_filename(
             "py3o.template", "tests/templates/keepboundary_detection_true.xml"
         )
 
@@ -316,7 +317,7 @@ class TestHelpers(unittest.TestCase):
                 assert False, "We should find one single link"
 
     def test_move_siblings_1(self):
-        template_xml = pkg_resources.resource_filename(
+        template_xml = resource_filename(
             "py3o.template", "tests/templates/move_siblings.xml"
         )
         test_xml = lxml.etree.parse(template_xml)
@@ -358,7 +359,7 @@ class TestHelpers(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/move_siblings_result_1.xml"
             )
         ).read()
@@ -369,7 +370,7 @@ class TestHelpers(unittest.TestCase):
         assert result_a == result_e
 
     def test_move_siblings_2(self):
-        template_xml = pkg_resources.resource_filename(
+        template_xml = resource_filename(
             "py3o.template", "tests/templates/move_siblings.xml"
         )
         test_xml = lxml.etree.parse(template_xml)
@@ -396,7 +397,7 @@ class TestHelpers(unittest.TestCase):
         )
 
         result_e = open(
-            pkg_resources.resource_filename(
+            resource_filename(
                 "py3o.template", "tests/templates/move_siblings_result_2.xml"
             )
         ).read()
@@ -404,7 +405,7 @@ class TestHelpers(unittest.TestCase):
         self._ensureSameXml(result_a, result_e)
 
     def test_content_tree_with_child_instruction(self):
-        template_xml = pkg_resources.resource_filename(
+        template_xml = resource_filename(
             "py3o.template",
             "tests/templates/py3o_example_invalid_template.odt",
         )
@@ -420,7 +421,7 @@ class TestHelpers(unittest.TestCase):
         ]
 
     def __load_and_convert_template(self, path):
-        template_xml = pkg_resources.resource_filename("py3o.template", path)
+        template_xml = resource_filename("py3o.template", path)
         t = Template(template_xml, _get_secure_filename())
         expressions = t.get_all_user_python_expression()
         py_expr = t.convert_py3o_to_python_ast(expressions)
