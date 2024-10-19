@@ -18,7 +18,6 @@ keywords = ["LibreOffice", "OpenOffice", "templating", "PDF"]
 authors = [{name = "Florent Aide", email = "florent.aide@gmail.com"}]
 license = "MIT"
 dependencies = [
-    "setuptools",
     "babel",
     "lxml",
     "genshi >= 0.7",
