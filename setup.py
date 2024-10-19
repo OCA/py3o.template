@@ -22,7 +22,7 @@ setup(
     keywords="LibreOffice OpenOffice templating PDF",
     author="Florent Aide",
     author_email="florent.aide@gmail.com",
-    url="http://bitbucket.org/faide/py3o.template",
+    url="http://github.com/OCA/py3o.template",
     license="MIT License",
     packages=find_packages(exclude=["ez_setup", "examples", "tests"]),
     namespace_packages=["py3o"],
