@@ -24,9 +24,5 @@ Tests reside in ``py3o/template/tests``. To add one:
 Code style
 ----------
 
-We let ``black`` <https://pypi.org/project/black/> take care of everything
-here.
-
-Follow its install guide to get it (requires Python 3.6).
-Alternatively, the <https://hub.docker.com/r/houzefaabba/python3-black/> Docker
-image contains Python 3.6 with ``black`` installed inside.
+We let ``pre-commit`` <https://pre-commit.com/> and ``ruff``
+<https://pypi.org/project/ruff/> take care of everything here.
