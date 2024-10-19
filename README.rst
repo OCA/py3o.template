@@ -19,7 +19,7 @@ merging your data sets with a corresponding templated OpenOffice document.
 It is plateform independent and does not require LibreOffice/OpenOffice itself
 to generate an ODF file.
 
-Supported Python versions: 2.7, >= 3.5.
+Supported Python versions: >= 3.8.
 
 This work was originally inspired by `relatorio`_ and diverged in
 implementation, scope and ambitions. Relatorio has many more features
