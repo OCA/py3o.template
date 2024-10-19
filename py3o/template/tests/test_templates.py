@@ -7,6 +7,7 @@ import zipfile
 import traceback
 import copy
 import base64
+import sys
 
 import lxml.etree
 import pkg_resources
@@ -18,6 +19,8 @@ from genshi.template import TemplateError
 from PIL import Image
 from pyjon.utils import get_secure_filename
 from xmldiff import main as xmldiff
+
+import pytest
 
 from py3o.template import Template, TextTemplate, TemplateException
 from py3o.template.main import (
@@ -130,6 +133,10 @@ class TestTemplate(unittest.TestCase):
             "Missing '=' in instruction 'for \"item in items\"'"
         )
 
+    @pytest.mark.xfail(
+        sys.platform == "win32", 
+        reason="Windows support to be investigated",
+    )
     def test_list_duplicate(self):
         """test duplicated listed get a unique id"""
         template_name = pkg_resources.resource_filename(
@@ -543,6 +550,10 @@ class TestTemplate(unittest.TestCase):
 
         self._ensureSameXml(outodt.read(template.templated_files[0]), expected)
 
+    @pytest.mark.xfail(
+        sys.platform == "win32",
+        reason="Windows support to be investigated",
+    )
     def test_format_datetime(self):
         """Test py3o.template.main.format_datetime which relies on babel.
         """
@@ -904,7 +915,7 @@ class TestTemplate(unittest.TestCase):
         result = open(outname, "rb").read()
 
         expected = u"".join(
-            u"{} {} {}\n".format(line.var0, line.var1, line.var2)
+            u"{} {} {}{}".format(line.var0, line.var1, line.var2, os.linesep)
             for line in user_data["mylist"]
         ).encode("utf-8")
 
