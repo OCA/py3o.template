@@ -56,7 +56,7 @@
       </text:p>
       <text:p text:style-name="P4">
         <text:span text:style-name="T4">Datetime in French: </text:span>
-        <text:span text:style-name="T4">dimanche 2 ao&#251;t 2015 &#224; 17:05:06 Temps universel coordonn&#233;</text:span>
+        <text:span text:style-name="T4">dimanche 2 ao&#251;t 2015, 17:05:06 temps universel coordonn&#233;</text:span>
       </text:p>
     </office:text>
   </office:body>
