@@ -443,7 +443,7 @@ class TestHelpers(unittest.TestCase):
 
         user_data = {"global_var": Mock(val=1), "my4list": [0, 1, 2, 3]}
         json_str = res.render(user_data)
-        self.assertEquals(
+        self.assertEqual(
             json_str, {"global_var": dict(val=1), "my4list": [0, 1, 2, 3]}
         )
 

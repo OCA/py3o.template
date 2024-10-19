@@ -1045,7 +1045,7 @@ class TestTemplate(unittest.TestCase):
                 "py3o.template", "tests/templates/{}".format(template)
             )
             t = Template(template_fname, get_secure_filename())
-            with self.assertRaisesRegexp(TemplateException, error):
+            with self.assertRaisesRegex(TemplateException, error):
                 t.render({"amount": 0.0})
 
     def test_table_cell_function_call(self):
