@@ -37,4 +37,5 @@ setup(
         "pyjon.utils > 0.6",
         "Pillow",
     ],
+    python_requires=">=3.8",
 )
