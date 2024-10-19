@@ -17,7 +17,6 @@ from io import BytesIO
 
 from genshi.template import TemplateError
 from PIL import Image
-from pyjon.utils import get_secure_filename
 from xmldiff import main as xmldiff
 
 import pytest
@@ -26,6 +25,7 @@ from py3o.template import Template, TextTemplate, TemplateException
 from py3o.template.main import (
     XML_NS,
     get_image_frames,
+    _get_secure_filename,
     get_soft_breaks,
     MANIFEST,
 )
@@ -43,7 +43,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_example_template.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
         template.set_image_path(
@@ -97,7 +97,7 @@ class TestTemplate(unittest.TestCase):
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_missing_eq_in_link.odt"
         )
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -135,7 +135,7 @@ class TestTemplate(unittest.TestCase):
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_list_template.odt"
         )
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -185,7 +185,7 @@ class TestTemplate(unittest.TestCase):
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_missing_open_template.odt"
         )
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
         try:
             template = Template(template_name, outname)
 
@@ -223,7 +223,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_logo.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -260,7 +260,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_undefined_variables_1.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -300,7 +300,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_undefined_variables_2.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -338,7 +338,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/test_false_value.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
         template.render({"false_value": False})
@@ -364,7 +364,7 @@ class TestTemplate(unittest.TestCase):
 
         self.assertEqual(result_a, result_e)
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname, escape_false=True)
         template.render({"false_value": False})
@@ -400,7 +400,7 @@ class TestTemplate(unittest.TestCase):
             "tests/templates/py3o_example_invalid_template.odt",
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -447,7 +447,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_template_function_call.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -485,7 +485,7 @@ class TestTemplate(unittest.TestCase):
             "tests/templates/py3o_template_format_currency.odt",
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -516,7 +516,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_template_format_date.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -556,7 +556,7 @@ class TestTemplate(unittest.TestCase):
             "tests/templates/py3o_template_format_datetime.odt",
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -598,7 +598,7 @@ class TestTemplate(unittest.TestCase):
             "tests/templates/py3o_template_format_date_exception.odt",
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -621,7 +621,7 @@ class TestTemplate(unittest.TestCase):
             "tests/templates/style_application_with_function_call.odt",
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -669,7 +669,7 @@ class TestTemplate(unittest.TestCase):
             )
             for i in range(1, 4)
         ]
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
         logo = open(logo_name, "rb").read()
@@ -746,7 +746,7 @@ class TestTemplate(unittest.TestCase):
             )
             for i in range(1, 4)
         ]
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
         logo = open(logo_name, "rb").read()
@@ -785,7 +785,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_image_injection.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         data = {"items": [], "document": Mock(total=6)}
 
@@ -827,7 +827,7 @@ class TestTemplate(unittest.TestCase):
         pil_img = Image.open(BytesIO(image))
         img_ratio = pil_img.size[0] / float(pil_img.size[1])
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
         nmspc = template.namespaces
@@ -901,7 +901,7 @@ class TestTemplate(unittest.TestCase):
             ]
         }
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = TextTemplate(template_name, outname)
         template.render(user_data)
@@ -922,7 +922,7 @@ class TestTemplate(unittest.TestCase):
 
         user_data = {}
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = TextTemplate(template_name, outname)
         error = True
@@ -952,7 +952,7 @@ class TestTemplate(unittest.TestCase):
         template_xml = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_soft_page_break.odt"
         )
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_xml, outname)
         soft_breaks = get_soft_breaks(
@@ -1011,7 +1011,7 @@ class TestTemplate(unittest.TestCase):
         template_xml = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_page_break_without_tail.odt"
         )
-        t = Template(template_xml, get_secure_filename())
+        t = Template(template_xml, _get_secure_filename())
         soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
         assert len(soft_breaks) > 0
 
@@ -1019,7 +1019,7 @@ class TestTemplate(unittest.TestCase):
         soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
         assert len(soft_breaks) == 0
 
-        t = Template(template_xml, get_secure_filename())
+        t = Template(template_xml, _get_secure_filename())
         soft_breaks = get_soft_breaks(t.content_trees[0], t.namespaces)
         assert len(soft_breaks) > 0
 
@@ -1048,7 +1048,7 @@ class TestTemplate(unittest.TestCase):
             template_fname = pkg_resources.resource_filename(
                 "py3o.template", "tests/templates/{}".format(template)
             )
-            t = Template(template_fname, get_secure_filename())
+            t = Template(template_fname, _get_secure_filename())
             with self.assertRaisesRegex(TemplateException, error):
                 t.render({"amount": 0.0})
 
@@ -1058,7 +1058,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template",
             "tests/templates/py3o_table_cell_function_call.odt",
         )
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
         template = Template(template_name, outname)
 
         data_dict = {
@@ -1075,7 +1075,7 @@ class TestTemplate(unittest.TestCase):
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_table_cell_for_loop.odt"
         )
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
         template = Template(template_name, outname)
 
         data_dict = {
@@ -1092,7 +1092,7 @@ class TestTemplate(unittest.TestCase):
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_odt_value_styles.odt"
         )
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
         template = Template(template_name, outname)
 
         data_dict = {
@@ -1122,7 +1122,7 @@ class TestTemplate(unittest.TestCase):
         template_name = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_ods_value_styles.ods"
         )
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
         template = Template(template_name, outname)
 
         data_dict = {
@@ -1153,7 +1153,7 @@ class TestTemplate(unittest.TestCase):
             "tests/templates/py3o_template_input_fields_for_function.odt",
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -1188,7 +1188,7 @@ class TestTemplate(unittest.TestCase):
             "tests/templates/py3o_template_for_loop_input_field.odt",
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -1222,7 +1222,7 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_ods_variable_type.ods"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
@@ -1262,7 +1262,7 @@ class TestTemplate(unittest.TestCase):
             "tests/templates/py3o_template_function_call_multiline.odt",
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         template = Template(template_name, outname)
 
