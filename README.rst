@@ -1,8 +1,8 @@
 py3o.template
 *************
 
-.. image:: https://orus.io/florent.aide/py3o.template/badges/branch/default/pipeline.svg
-  :target: https://orus.io/florent.aide/py3o.template/pipelines
+.. image:: https://github.com/OCA/py3o.template/actions/workflows/ci.yml/badge.svg
+  :target: https://github.com/OCA/py3o.template/actions/workflows/ci.yml
   :alt: Build Status
 
 .. image:: https://results.pre-commit.ci/badge/github/OCA/py3o.template/main.svg
