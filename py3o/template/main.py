@@ -18,6 +18,7 @@ import warnings
 from xml.sax.saxutils import escape
 import zipfile
 import urllib.parse
+import tempfile
 
 import lxml.etree
 from PIL import Image
@@ -25,7 +26,6 @@ from genshi.template import MarkupTemplate
 from genshi.template.text import NewTextTemplate as GenshiTextTemplate
 from genshi.filters.transform import Transformer
 from genshi.core import Markup
-from pyjon.utils import get_secure_filename
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +36,17 @@ GENSHI_URI = "http://genshi.edgewall.org/"
 REGEXP_URI = "http://exslt.org/regular-expressions"
 PY3O_URI = "http://py3o.org/"
 MANIFEST = "META-INF/manifest.xml"
+
+
+def _get_secure_filename(prefix="tmp", suffix=""):
+    """creates a tempfile in the most secure manner possible,
+    make sure is it closed and return the filename for
+    easy usage.
+    """
+    file_handle, filename = tempfile.mkstemp(suffix=suffix, prefix=prefix)
+    tmpfile = os.fdopen(file_handle, "r")
+    tmpfile.close()
+    return filename
 
 
 class TemplateException(ValueError):
@@ -1420,7 +1431,7 @@ class Template(object):
 
             if info_zip.filename in self.templated_files:
                 # get a temp file
-                streamout = open(get_secure_filename(), "w+b")
+                streamout = open(_get_secure_filename(), "w+b")
 
                 # Template file - we have edited these.
                 fname, output_stream = self.output_streams[

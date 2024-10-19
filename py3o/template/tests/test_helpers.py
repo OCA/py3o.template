@@ -9,12 +9,12 @@ from unittest.mock import Mock
 import lxml.etree
 import pkg_resources
 
-from pyjon.utils import get_secure_filename
 from xmldiff import main as xmldiff
 
 from py3o.template.main import move_siblings, detect_keep_boundary, Template
 
 from py3o.template.data_struct import Py3oName
+from py3o.template.main import _get_secure_filename
 
 
 class TestHelpers(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestHelpers(unittest.TestCase):
             "py3o.template", "tests/templates/py3o_example_template.odt"
         )
 
-        outname = get_secure_filename()
+        outname = _get_secure_filename()
 
         self.reference_template = Template(template_name, outname)
         os.unlink(outname)
@@ -161,7 +161,7 @@ class TestHelpers(unittest.TestCase):
         source_odt_filename = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_example_template.odt"
         )
-        outfilename = get_secure_filename()
+        outfilename = _get_secure_filename()
 
         template = Template(source_odt_filename, outfilename)
 
@@ -182,7 +182,7 @@ class TestHelpers(unittest.TestCase):
         source_odt_filename = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_if_parser.odt"
         )
-        outfilename = get_secure_filename()
+        outfilename = _get_secure_filename()
 
         template = Template(source_odt_filename, outfilename)
 
@@ -215,7 +215,7 @@ class TestHelpers(unittest.TestCase):
         source_odt_filename = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_example_template.odt"
         )
-        outfilename = get_secure_filename()
+        outfilename = _get_secure_filename()
 
         template = Template(source_odt_filename, outfilename)
 
@@ -236,7 +236,7 @@ class TestHelpers(unittest.TestCase):
         source_ods_filename = pkg_resources.resource_filename(
             "py3o.template", "tests/templates/py3o_simple_calc.ods"
         )
-        outfilename = get_secure_filename()
+        outfilename = _get_secure_filename()
 
         template = Template(source_ods_filename, outfilename)
 
@@ -409,7 +409,7 @@ class TestHelpers(unittest.TestCase):
             "py3o.template",
             "tests/templates/py3o_example_invalid_template.odt",
         )
-        t = Template(template_xml, get_secure_filename())
+        t = Template(template_xml, _get_secure_filename())
         usr_insts = t.get_user_instructions()
         assert usr_insts == [
             'for="item in items"',
@@ -422,7 +422,7 @@ class TestHelpers(unittest.TestCase):
 
     def __load_and_convert_template(self, path):
         template_xml = pkg_resources.resource_filename("py3o.template", path)
-        t = Template(template_xml, get_secure_filename())
+        t = Template(template_xml, _get_secure_filename())
         expressions = t.get_all_user_python_expression()
         py_expr = t.convert_py3o_to_python_ast(expressions)
         return py_expr
