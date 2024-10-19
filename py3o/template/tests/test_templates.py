@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 import base64
 import copy
 import datetime
@@ -50,7 +49,7 @@ class TestTemplate(unittest.TestCase):
             ),
         )
 
-        class Item(object):
+        class Item:
             pass
 
         items = list()
@@ -98,7 +97,7 @@ class TestTemplate(unittest.TestCase):
 
         template = Template(template_name, outname)
 
-        class Item(object):
+        class Item:
             def __init__(self, val):
                 self.val = val
 
@@ -116,7 +115,7 @@ class TestTemplate(unittest.TestCase):
             template.render(data_dict)
         except TemplateException as e:
             except_occured = True
-            error_text = "{}".format(e)
+            error_text = f"{e}"
 
         assert except_occured is True
         assert error_text == (
@@ -136,7 +135,7 @@ class TestTemplate(unittest.TestCase):
 
         template = Template(template_name, outname)
 
-        class Item(object):
+        class Item:
             def __init__(self, val):
                 self.val = val
 
@@ -160,7 +159,7 @@ class TestTemplate(unittest.TestCase):
             ]
         except lxml.etree.XMLSyntaxError as e:
             error = True
-            print("List was not deduplicated->{}".format(e))
+            print(f"List was not deduplicated->{e}")
 
         # remove end file
         os.unlink(outname)
@@ -173,7 +172,7 @@ class TestTemplate(unittest.TestCase):
         list_items = content.xpath(list_expr, namespaces=template.namespaces)
         ids = []
         for list_item in list_items:
-            ids.append(list_item.get("{}id".format(XML_NS)))
+            ids.append(list_item.get(f"{XML_NS}id"))
         assert ids, "this list of ids should not be empty"
         assert len(ids) == len(set(ids)), "all ids should have been unique"
 
@@ -189,7 +188,7 @@ class TestTemplate(unittest.TestCase):
         finally:
             os.remove(outname)
 
-        class Item(object):
+        class Item:
             def __init__(self, val):
                 self.val = val
 
@@ -399,7 +398,7 @@ class TestTemplate(unittest.TestCase):
 
         template = Template(template_name, outname)
 
-        class Item(object):
+        class Item:
             pass
 
         items = list()
@@ -499,7 +498,6 @@ class TestTemplate(unittest.TestCase):
                 "py3o.template",
                 "tests/templates/template_format_currency_result.xml",
             ),
-            "r",
         ) as expected_f:
             expected = expected_f.read()
 
@@ -531,7 +529,6 @@ class TestTemplate(unittest.TestCase):
                 "py3o.template",
                 "tests/templates/template_format_date_result.xml",
             ),
-            "r",
         ) as expected_f:
             expected = expected_f.read()
 
@@ -658,7 +655,7 @@ class TestTemplate(unittest.TestCase):
         image_names = [
             pkg_resources.resource_filename(
                 "py3o.template",
-                "tests/templates/images/image{i}.png".format(i=i),
+                f"tests/templates/images/image{i}.png",
             )
             for i in range(1, 4)
         ]
@@ -734,7 +731,7 @@ class TestTemplate(unittest.TestCase):
         image_names = [
             pkg_resources.resource_filename(
                 "py3o.template",
-                "tests/templates/images/image{i}.png".format(i=i),
+                f"tests/templates/images/image{i}.png",
             )
             for i in range(1, 4)
         ]
@@ -766,7 +763,7 @@ class TestTemplate(unittest.TestCase):
         )
         ids = []
         for list_item in list_items:
-            ids.append(list_item.get("{}id".format(XML_NS)))
+            ids.append(list_item.get(f"{XML_NS}id"))
         assert ids, "this list of ids should not be empty"
         assert len(ids) == len(set(ids)), "all ids should have been unique"
 
@@ -899,7 +896,7 @@ class TestTemplate(unittest.TestCase):
         result = open(outname, "rb").read()
 
         expected = "".join(
-            "{} {} {}{}".format(line.var0, line.var1, line.var2, os.linesep)
+            f"{line.var0} {line.var1} {line.var2}{os.linesep}"
             for line in user_data["mylist"]
         ).encode("utf-8")
 
@@ -992,7 +989,7 @@ class TestTemplate(unittest.TestCase):
             ):
                 middle_break_paragraphs += 1
             else:
-                self.fail("Unidentified text in result: {}".format(text))
+                self.fail(f"Unidentified text in result: {text}")
 
         self.assertEqual(bottom_break_paragraphs, 3)
         self.assertEqual(middle_break_paragraphs, 3)
@@ -1036,7 +1033,7 @@ class TestTemplate(unittest.TestCase):
 
         for template, error in templates:
             template_fname = pkg_resources.resource_filename(
-                "py3o.template", "tests/templates/{}".format(template)
+                "py3o.template", f"tests/templates/{template}"
             )
             t = Template(template_fname, _get_secure_filename())
             with self.assertRaisesRegex(TemplateException, error):
@@ -1101,7 +1098,6 @@ class TestTemplate(unittest.TestCase):
             pkg_resources.resource_filename(
                 "py3o.template", "tests/templates/odt_value_styles_result.xml"
             ),
-            "r",
         ) as expected_f:
             expected = expected_f.read()
 
@@ -1131,7 +1127,6 @@ class TestTemplate(unittest.TestCase):
             pkg_resources.resource_filename(
                 "py3o.template", "tests/templates/ods_value_styles_result.xml"
             ),
-            "r",
         ) as expected_f:
             expected = expected_f.read()
 

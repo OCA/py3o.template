@@ -8,7 +8,7 @@ t = Template(
 t.set_image_path("staticimage.logo", "images/new_logo.png")
 
 
-class Item(object):
+class Item:
     pass
 
 

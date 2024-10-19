@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 import codecs
 import decimal
 import hashlib
@@ -153,7 +152,7 @@ def get_list_transformer(namespaces):
     """
     return Transformer(
         '//list[namespace-uri()="%s"]' % namespaces.get("text")
-    ).attr("{0}id".format(XML_NS), lambda *args: "list{0}".format(uuid4().hex))
+    ).attr(f"{XML_NS}id", lambda *args: f"list{uuid4().hex}")
 
 
 def get_all_python_expression(content_trees, namespaces):
@@ -373,7 +372,7 @@ def get_var_corresponding_ods_type(var):
     return "string"
 
 
-class FrameInjector(object):
+class FrameInjector:
     def __init__(self, template):
         """Inject a proper <draw:frame/> attributes into the template manifest
         when called back from genshi template rendering
@@ -489,7 +488,7 @@ class FrameInjector(object):
         return origin_attrib
 
 
-class ImageInjector(object):
+class ImageInjector:
     def __init__(self, template):
         """Inject an image data into the template manifest when called back
         from genshi template rendering
@@ -567,7 +566,7 @@ class ImageInjector(object):
         return attrs
 
 
-class TextTemplate(object):
+class TextTemplate:
     """A specific template that can be used to output textual content.
 
     It works as the ODT or ODS templates, minus the fact that is does not
@@ -625,7 +624,7 @@ class TextTemplate(object):
                 outfile.write(data)
 
 
-class Template(object):
+class Template:
     """The default template to be used to output ODF content."""
 
     templated_files = ["content.xml", "styles.xml", MANIFEST]
@@ -803,30 +802,30 @@ class Template(object):
             if expression.startswith("for="):
                 # For loop
                 # We construct a python for loop with the py3o one
-                python_src += "{}for {}:\n".format(pindent(), expression[5:-1])
+                python_src += f"{pindent()}for {expression[5:-1]}:\n"
                 indent += 1
                 # Care of empty loop statement
                 if expressions[expressions.index(expression) + 1] == "/for":
-                    python_src += "{}pass\n".format(pindent())
+                    python_src += f"{pindent()}pass\n"
             elif expression == "/for":
                 # End of for loop
                 indent -= 1
             elif expression.startswith("if="):
                 # Construct an if statement
-                python_src += "{}if {}:\n".format(pindent(), expression[4:-1])
+                python_src += f"{pindent()}if {expression[4:-1]}:\n"
                 indent += 1
                 # Care of empty if statement
                 if expressions[expressions.index(expression) + 1] == "/if":
-                    python_src += "{}pass\n".format(pindent())
+                    python_src += f"{pindent()}pass\n"
             elif expression == "/if":
                 # End of if
                 indent -= 1
             elif expression.startswith("function="):
                 # Convert to a function call
-                python_src += "{}{}\n".format(pindent(), expression[10:-1])
+                python_src += f"{pindent()}{expression[10:-1]}\n"
             else:
                 # Variable access
-                python_src += "{}{}\n".format(pindent(), expression)
+                python_src += f"{pindent()}{expression}\n"
         return python_src
 
     @staticmethod
@@ -1184,7 +1183,7 @@ class Template(object):
                     )
                     userfield.addprevious(formula_node)
 
-                    attribs[if_attr] = "not {cond}".format(cond=if_condition)
+                    attribs[if_attr] = f"not {if_condition}"
 
                 genshi_node = lxml.etree.Element(
                     "span", attrib=attribs, nsmap={"py": GENSHI_URI}
@@ -1356,8 +1355,7 @@ class Template(object):
         self.render_tree(data)
 
         # then reconstruct a new ODT document with the generated content
-        for status in self.__save_output():
-            yield status
+        yield from self.__save_output()
 
     def render(self, data):
         """render the OpenDocument with the user data

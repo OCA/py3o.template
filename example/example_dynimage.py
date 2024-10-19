@@ -5,7 +5,7 @@ t = Template("asimage.odt", "asimage_output.odt")
 # t.set_image_path('logo', 'images/new_logo.png')
 
 
-class Item(object):
+class Item:
     pass
 
 

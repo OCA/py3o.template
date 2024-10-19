@@ -18,8 +18,8 @@ class Py3oObject(dict):
         raise NotImplementedError("This function should be overriden")
 
     def __repr__(self):  # pragma: no cover
-        res = super(Py3oObject, self).__repr__()
-        return "{}({})".format(self.__class__.__name__, res)
+        res = super().__repr__()
+        return f"{self.__class__.__name__}({res})"
 
     def get_size(self):
         """Return the max depth of the object"""
@@ -55,11 +55,8 @@ class Py3oObject(dict):
         else:
             diff = len(target_tup) - len(self_tup)
             if diff != 0:  # pragma: no cover
-                raise ValueError(
-                    "Unpack Error: {} != {}".format(target_tup, self_tup)
-                )
-            for t in zip(target_tup, self_tup):
-                yield t
+                raise ValueError(f"Unpack Error: {target_tup} != {self_tup}")
+            yield from zip(target_tup, self_tup)
 
     def rupdate(self, other):
         """Update recursively the Py3oObject self with the Py3oObject other.
@@ -173,7 +170,7 @@ class Py3oArray(Py3oObject):
     """
 
     def __init__(self):
-        super(Py3oArray, self).__init__()
+        super().__init__()
         self.direct_access = False
 
     def render(self, data):
@@ -220,7 +217,7 @@ class Py3oCall(Py3oObject):
     return_format = None
 
     def __init__(self, name, dict):
-        super(Py3oCall, self).__init__(dict)
+        super().__init__(dict)
         self.name = name
 
     def get_tuple(self):  # pragma: no cover
@@ -259,8 +256,7 @@ class Py3oCall(Py3oObject):
             # Single return value is bound to one of the arguments.
             res = [(target, self.get(self.return_format, None))]
 
-        for tup in res:
-            yield tup
+        yield from res
 
 
 class Py3oEnumerate(Py3oCall):
@@ -277,7 +273,7 @@ class Py3oContainer(Py3oObject):
     """
 
     def __init__(self, values):
-        super(Py3oContainer, self).__init__()
+        super().__init__()
         self.values = values
 
     def get_tuple(self):

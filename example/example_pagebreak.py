@@ -5,7 +5,7 @@ t = Template(
 )
 
 
-class Item(object):
+class Item:
     pass
 
 

@@ -39,10 +39,17 @@ packages = ["py3o"]
 exclude = ["py3o/template/tests"]
 
 [tool.ruff]
+fix = true
 line-length = 79
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = [
+    "I",
+    "UP",
+]
+ignore = [
+    "UP031", # % formatting
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["py3o.template"]
