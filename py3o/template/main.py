@@ -12,13 +12,12 @@ import logging
 import locale
 import os
 import re
-import six
-from six.moves import urllib
 import traceback
 from uuid import uuid4
 import warnings
 from xml.sax.saxutils import escape
 import zipfile
+import urllib.parse
 
 import lxml.etree
 from PIL import Image
@@ -27,17 +26,6 @@ from genshi.template.text import NewTextTemplate as GenshiTextTemplate
 from genshi.filters.transform import Transformer
 from genshi.core import Markup
 from pyjon.utils import get_secure_filename
-
-if six.PY3:  # pragma: no cover
-    # in python 3 we want to emulate  binary files
-    from six import BytesIO as StringIO
-else:  # pragma: no cover
-    # in python 2 we want to try and use the c Implementation if available
-    try:
-        from cStringIO import StringIO
-    except ImportError:
-        from StringIO import StringIO
-
 
 log = logging.getLogger(__name__)
 
@@ -294,7 +282,7 @@ def format_date(date, format=ISO_DATE_FORMAT):
     )
 
     # Deserialize when we got a string.
-    if isinstance(date, six.string_types):
+    if isinstance(date, str):
         try:
             date = datetime.strptime(date, ISO_DATE_FORMAT)
         except ValueError:
@@ -334,7 +322,7 @@ def format_datetime(date_obj, format=None, locale=None):
         locale = babel.dates.LC_TIME
 
     # Deserialize when we got a string.
-    if isinstance(date_obj, six.string_types):
+    if isinstance(date_obj, str):
 
         try:
             date_obj = datetime.strptime(date_obj, ISO_DATE_FORMAT)
@@ -450,7 +438,7 @@ class FrameInjector(object):
             # we need to decode the base64 data to obtain the raw data version
             data = b64decode(data)
         if keep_ratio:
-            ifile = StringIO(data)
+            ifile = BytesIO(data)
             ifile.seek(0)
             pil_img = Image.open(ifile)
             # img_ratio = width / height
@@ -952,7 +940,7 @@ class Template(object):
         """
         image_inserter = "__py3o_image(%s)" % py3o_base
         frame_args = (
-            py3o_base + six.u(", origin_attrib=") + six.text_type(frame.attrib)
+            py3o_base + ", origin_attrib=" + str(frame.attrib)
         )
         frame_inserter = "__py3o_frame(%s)" % frame_args
         attrib_image = {"{%s}attrs" % self.namespaces["py"]: image_inserter}

@@ -4,10 +4,10 @@ from py3o.template.helpers import Py3oConvertor
 
 import unittest
 import os
+from unittest.mock import Mock
 
 import lxml.etree
 import pkg_resources
-import six
 
 from pyjon.utils import get_secure_filename
 from xmldiff import main as xmldiff
@@ -15,13 +15,6 @@ from xmldiff import main as xmldiff
 from py3o.template.main import move_siblings, detect_keep_boundary, Template
 
 from py3o.template.data_struct import Py3oName
-
-if six.PY3:
-    # noinspection PyUnresolvedReferences
-    from unittest.mock import Mock
-elif six.PY2:
-    # noinspection PyUnresolvedReferences
-    from mock import Mock
 
 
 class TestHelpers(unittest.TestCase):
