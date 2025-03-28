@@ -558,7 +558,7 @@ class TestHelpers(unittest.TestCase):
 
     def test_access_variable_in_nested_loop(self):
         py_expr = self.__load_and_convert_template(
-            "tests/templates/" "py3o_access_variable_in_nested_loop.odt"
+            "tests/templates/py3o_access_variable_in_nested_loop.odt"
         )
         p = Py3oConvertor()
         res = p(py_expr)

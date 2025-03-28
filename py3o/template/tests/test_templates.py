@@ -264,9 +264,7 @@ class TestTemplate(unittest.TestCase):
         error = True
         try:
             template.render(data)
-            print(
-                "Error: template contains variables that must be " "replaced"
-            )
+            print("Error: template contains variables that must be replaced")
         except TemplateError:
             error = False
 
@@ -304,9 +302,7 @@ class TestTemplate(unittest.TestCase):
         error = True
         try:
             template.render(data)
-            print(
-                "Error: template contains variables that must be " "replaced"
-            )
+            print("Error: template contains variables that must be replaced")
         except TemplateError:
             error = False
 
@@ -783,9 +779,7 @@ class TestTemplate(unittest.TestCase):
         error = True
         try:
             template.render(data)
-            print(
-                "Error: template contains variables that must be " "replaced"
-            )
+            print("Error: template contains variables that must be replaced")
         except TemplateError:
             error = False
 
@@ -916,9 +910,7 @@ class TestTemplate(unittest.TestCase):
         error = True
         try:
             template.render(user_data)
-            print(
-                "Error: template contains variables that must be " "replaced"
-            )
+            print("Error: template contains variables that must be replaced")
         except TemplateError:
             error = False
 
