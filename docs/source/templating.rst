@@ -294,7 +294,7 @@ Example documents
 
 You can find several example templates (ODT and ODS) in `our source tree`_
 
-.. _our source tree: https://bitbucket.org/faide/py3o.template/src/default/example/
+.. _our source tree: https://github.com/OCA/py3o.template/tree/main/example
 
 Here is a screenshot to show you some control structures (for and if)
 in action. As you can see you can use these control structures
