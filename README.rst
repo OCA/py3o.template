@@ -16,7 +16,7 @@ py3o is an elegant and scalable solution to design reports using LibreOffice.
 py3o.template is the templating component that takes care of
 merging your data sets with a corresponding templated OpenOffice document.
 
-It is plateform independent and does not require LibreOffice/OpenOffice itself
+It is platform independent and does not require LibreOffice/OpenOffice itself
 to generate an ODF file.
 
 Supported Python versions: >= 3.8.
@@ -28,17 +28,17 @@ when py3o.template is mainly focused on ODT, ODS and text output.
 If you want to generate a PDF or any other supported output format you will then
 need to have a server with either LibreOffice or OpenOffice and to install
 the `py3o.renderserver`_ on it. We also provide a docker image on
-the `docker hub`_
+the `docker hub`_.
 
 If you want to have templating fusion & document conversion in one
 single web service usable from any language with just HTTP/POST you can install
-`py3o.fusion`_ server. Which also exists as a `docker image`_
+`py3o.fusion`_ server. Which also exists as a `docker image`_.
 
 Full Documentation
 ==================
 
 We `provide a documentation`_ for this package. If anything is not correctly
-explained, please! create a ticket `in our ticketing system`_
+explained, please! create a pull request or an issue.
 
 Docs also contain a "Hacking" part for contributors (how tests are run, code
 style...).
@@ -335,9 +335,8 @@ By order of contribution date:
 
 .. _py3o.renderserver: https://orus.io/florent.aide/py3o.renderserver
 .. _provide a documentation: http://py3otemplate.readthedocs.org
-.. _in our ticketing system: https://orus.io/florent.aide/py3o.template/issues
-.. _docker hub: https://registry.hub.docker.com/u/xcgd/py3oserver-docker/
+.. _docker hub: https://registry.hub.docker.com/r/xcgd/py3oserver-docker/
 .. _py3o.fusion: https://orus.io/florent.aide/py3o.fusion
-.. _docker image: https://registry.hub.docker.com/u/xcgd/py3o.fusion
+.. _docker image: https://registry.hub.docker.com/r/xcgd/py3o.fusion
 .. _relatorio: http://relatorio.tryton.org/
 .. _babel: http://babel.pocoo.org

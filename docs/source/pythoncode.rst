@@ -1,7 +1,7 @@
 The Python part
 ===============
 
-  .. _find in our source code: https://bitbucket.org/faide/py3o.template/src
+  .. _find in our source code: https://github.com/OCA/py3o.template
 
 Here is an example program that you can `find in our source code`_. It shows
 how you can use a templated odt and create a final odt with your dataset
