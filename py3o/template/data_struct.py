@@ -36,7 +36,7 @@ class Py3oObject(dict):
         """Return the value of the Py3oObject as a tuple.
         As a default behavior, the object returns None.
         """
-        return None
+        return
 
     def unpack(self, target):
         self_tup = self.get_tuple()
@@ -285,8 +285,6 @@ class Py3oDummy(Py3oObject):
     """This class holds temporary dict, or unused attribute
     such as counters from enumerate()
     """
-
-    pass
 
 
 class Py3oBuiltin(Py3oObject):
