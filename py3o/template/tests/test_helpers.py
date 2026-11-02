@@ -808,9 +808,9 @@ class TestHelpers(unittest.TestCase):
         py_expr = Template.convert_py3o_to_python_ast(expressions)
         p = Py3oConvertor()
         res = p(py_expr)
-        json_dict = res.render({"myarray": list(range(0, 5))})
+        json_dict = res.render({"myarray": list(range(5))})
 
-        assert json_dict == {"myarray": list(range(0, 5))}
+        assert json_dict == {"myarray": list(range(5))}
 
     def test_if_in_for(self):
         expressions = [
