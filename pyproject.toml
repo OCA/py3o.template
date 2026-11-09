@@ -21,7 +21,7 @@ dependencies = [
     "babel",
     "lxml",
     "genshi >= 0.7",
-    "Pillow",
+    "imagesize",
 ]
 requires-python = ">=3.8"
 dynamic = ["version"]
