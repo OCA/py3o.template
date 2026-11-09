@@ -19,12 +19,12 @@ from xml.sax.saxutils import escape
 
 import babel.dates
 import babel.numbers
+import imagesize
 import lxml.etree
 from genshi.core import Markup
 from genshi.filters.transform import Transformer
 from genshi.template import MarkupTemplate
 from genshi.template.text import NewTextTemplate as GenshiTextTemplate
-from PIL import Image
 
 log = logging.getLogger(__name__)
 
@@ -442,11 +442,10 @@ class FrameInjector:
             data = b64decode(data)
         if keep_ratio:
             ifile = BytesIO(data)
-            ifile.seek(0)
-            pil_img = Image.open(ifile)
+            img_width, img_height = imagesize.get(ifile)
             # img_ratio = width / height
-            if pil_img.size[0] and pil_img.size[1]:
-                img_ratio = pil_img.size[0] / float(pil_img.size[1])
+            if img_width and img_height:
+                img_ratio = img_width / img_height
                 if not (height or width):
                     # set either height or width in order to fit image to frame
                     frame_height = origin_attrib[

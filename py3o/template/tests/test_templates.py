@@ -10,10 +10,10 @@ import zipfile
 from io import BytesIO
 from unittest.mock import Mock
 
+import imagesize
 import lxml.etree
 import pytest
 from genshi.template import TemplateError
-from PIL import Image
 from xmldiff import main as xmldiff
 
 from py3o.template import Template, TemplateException, TextTemplate
@@ -808,8 +808,8 @@ class TestTemplate(unittest.TestCase):
             "py3o.template", "tests/templates/images/new_logo.png"
         )
         image = open(image_name, "rb").read()
-        pil_img = Image.open(BytesIO(image))
-        img_ratio = pil_img.size[0] / float(pil_img.size[1])
+        img_width, img_height = imagesize.get(image_name)
+        img_ratio = img_width / img_height
 
         outname = _get_secure_filename()
 
